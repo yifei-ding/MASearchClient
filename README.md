@@ -1,7 +1,7 @@
 # MASearchClient
 Run **build_and_run.sh** to build and run the client
 
-# Compiling the searchclient:
+# Compiling the searchclient
 javac service/SearchClient.java
 
 # Run a single level
