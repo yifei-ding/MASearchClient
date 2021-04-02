@@ -26,7 +26,7 @@ public class InMemoryDataSource {
         allAgents = new HashMap<Integer, Agent>();
         allBoxes = new HashMap<Integer, Box>();
         allGoals = new HashMap<Integer, Goal>();
-        allAgentsByColor = new HashMap<Color, ArrayList<Agent>>;
+        allAgentsByColor = new HashMap<Color, ArrayList<Agent>>();
     }
 
     public void addAgent(Agent agent){
@@ -41,6 +41,7 @@ public class InMemoryDataSource {
 
     public Agent getAgent(int id){
         return allAgents.get(id);
+
     }
 
     /*
