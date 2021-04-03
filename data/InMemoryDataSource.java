@@ -1,11 +1,9 @@
 package data;
 
-import domain.Agent;
-import domain.Box;
-import domain.Color;
-import domain.Goal;
+import domain.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class InMemoryDataSource {
@@ -14,9 +12,13 @@ public class InMemoryDataSource {
     private HashMap<Integer, Agent> allAgents;
     private HashMap<Integer, Box> allBoxes;
     private HashMap<Integer, Goal> allGoals;
-    //store 2D array for color-agent to support query
+    //store 2D array for color-agent, name-box, name-goal to support query
     private HashMap<Color, ArrayList<Agent>> allAgentsByColor;
-    //TODO: add 2D array for name-box, name-goal
+    private HashMap<String, ArrayList<Box>> allBoxesByName;
+    private HashMap<String, ArrayList<Goal>> allGoalsByName;
+
+    //store map
+    private HashMap<Location, Boolean> map;
 
 
     public static InMemoryDataSource getInstance(){
@@ -29,6 +31,10 @@ public class InMemoryDataSource {
         allBoxes = new HashMap<Integer, Box>();
         allGoals = new HashMap<Integer, Goal>();
         allAgentsByColor = new HashMap<Color, ArrayList<Agent>>();
+        allBoxesByName = new HashMap<String, ArrayList<Box>>();
+        allGoalsByName = new HashMap<String, ArrayList<Goal>>();
+        map = new HashMap<Location, Boolean>();
+
     }
 
     public void addAgent(Agent agent){
@@ -39,9 +45,10 @@ public class InMemoryDataSource {
             list = new ArrayList<>();
         }
         list.add(agent);
+        allAgentsByColor.put(agent.getColor(),list);
     }
 
-    public Agent getAgent(int id){
+    public Agent countAgent(int id){
         return allAgents.get(id);
 
     }
@@ -53,8 +60,52 @@ public class InMemoryDataSource {
     * @Param [color]
     * @return java.util.ArrayList<domain.Agent>
      **/
-    public ArrayList<Agent> getAgent(Color color){
+    public ArrayList<Agent> countAgent(Color color){
         return allAgentsByColor.get(color);
     }
 
+    public void addBox(Box box) {
+        //when adding box, add to both maps
+        allBoxes.put(box.getId(),box);
+        ArrayList<Box> list = allBoxesByName.get(box.getName());
+        if (list==null){
+            list = new ArrayList<>();
+        }
+        list.add(box);
+        allBoxesByName.put(box.getName(),list);
+    }
+
+    public void addGoal(Goal goal) {
+        //when adding goal, add to both maps
+        allGoals.put(goal.getId(), goal);
+        ArrayList<Goal> list = allGoalsByName.get(goal.getName());
+        if (list==null){
+            list = new ArrayList<>();
+        }
+        list.add(goal);
+        allGoalsByName.put(goal.getName(),list);
+    }
+
+    public void setMap(Location location, Boolean isWall){
+        map.put(location,isWall);
+    }
+
+    @Override
+    public String toString() {
+        return "InMemoryDataSource{" +
+                "allAgents=" + allAgents + "\n" +
+                ", allBoxes=" + allBoxes + "\n" +
+                ", allGoals=" + allGoals + "\n" +
+                ", allAgentsByColor=" + allAgentsByColor + "\n" +
+                ", allBoxesByName=" + allBoxesByName + "\n" +
+                ", allGoalsByName=" + allGoalsByName + "\n" +
+                '}';
+    }
+
+
+    public String toString2() {
+        return "InMemoryDataSource{" +
+                "map=" + map +
+                '}';
+    }
 }

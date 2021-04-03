@@ -11,6 +11,12 @@ public class Agent {
         this.location = location;
     }
 
+    public Agent(int id, Color color) {
+        this.id = id;
+        this.color = color;
+        this.location = new Location(0,0);
+    }
+
     public int getId() {
         return id;
     }

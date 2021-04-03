@@ -4,20 +4,25 @@ import data.InMemoryDataSource;
 import domain.Action;
 
 public class AgentManager {
-    static AgentManager instance;
+
     private InMemoryDataSource data;
-    private AgentManager(){
-        this.data = InMemoryDataSource.getInstance();
+    public AgentManager(InMemoryDataSource data){
+        this.data = data;
     }
-    public static AgentManager getInstance() {
-        if (instance == null)
-            instance = new AgentManager();
-        System.err.println("AgentManager instance");
-        return instance;
-    }
+
     public Action[][] search(){
-        //TODO: get map info from SearchClient and store to InMemoryDataSource
-        System.err.println("AgentManager search");
+
+        //get map info from SearchClient and store to InMemoryDataSource
+        System.err.println("AgentManager search " + data.toString());
+        System.err.println("Map " + data.toString2());
+
+        //TODO: for each goal, assign box, assign agent
+
+        //TODO: plan (for each subgoal, do graph search)
+
+        //TODO: merge plan
+
+        //return plan
 
         return null;
     }

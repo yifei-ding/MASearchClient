@@ -1,8 +1,7 @@
 package service;
 
 import data.InMemoryDataSource;
-import domain.Action;
-import domain.Color;
+import domain.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -12,8 +11,7 @@ import java.util.*;
 
 public class SearchClient
 {   private static String mapName;
-
-    private AgentManager agentManager;
+    private static InMemoryDataSource data;
 
     public static void parseLevel(BufferedReader serverMessages)
             throws IOException
@@ -44,6 +42,7 @@ public class SearchClient
                 if ('0' <= c && c <= '9')
                 {
                     agentColors[c - '0'] = color;
+
                 }
                 else if ('A' <= c && c <= 'Z')
                 {
@@ -121,11 +120,66 @@ public class SearchClient
         // End
         // line is currently "#end"
 
+        //return new State(agentRows, agentCols, agentColors, walls, boxes, boxColors, goals);
+
+        //store to data
+        int agentSize = agentRows.length;
+        for (int i = 0; i < agentSize; i ++ )
+        {
+            int id = i;
+            Color color = agentColors[i];
+            int agentRow = agentRows[i];
+            int agentCol = agentCols[i];
+            data.addAgent(new Agent(id, color, new Location(agentRow,agentCol)));
+        }
+
+        int boxId=0;
+        for (int boxRow = 0; boxRow < boxes.length; boxRow ++){
+            for (int boxCol=0; boxCol < boxes[boxRow].length; boxCol++){
+                if (boxes[boxRow][boxCol] != 0){
+                    char box = boxes[boxRow][boxCol];
+                    String boxName = String.valueOf(box);
+                    Color color = boxColors[box - 65];
+                    //add box color together with location
+                    Location location = new Location(boxRow,boxCol);
+                    data.addBox(new Box(boxId, boxName, color, location));
+                    boxId++;
+                }
+
+            }
+        }
+
+        int goalId=0;
+        for (int goalRow = 0; goalRow < goals.length; goalRow++){
+            for (int goalCol=0; goalCol < goals[goalRow].length;goalCol++){
+                if (goals[goalRow][goalCol] > 0){
+                    //System.err.println("In getGoalsMap: " + this.goals[row][col]);
+                    char goal = goals[goalRow][goalCol];
+                    String goalName = String.valueOf(goal);
+
+                    Location location = new Location(goalRow,goalCol);
+
+                    data.addGoal(new Goal(goalId, goalName, location));
+                    goalId++;
+                }
+
+            }
+        }
+
+        for (int i = 0; i < walls.length; i++){
+            for (int j=0; j < walls[i].length;j++){
+                    Location location = new Location(i,j);
+                    data.setMap(location, walls[i][j]);
+
+            }
+        }
+
+
     }
 
 
     public Action[][] search()
-    {   AgentManager agentManager = AgentManager.getInstance();
+    {   AgentManager agentManager = new AgentManager(data);
 
         return agentManager.search();
         //return null;
@@ -168,7 +222,7 @@ public class SearchClient
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.US_ASCII));
 
         SearchClient searchClient = new SearchClient();
-
+        data = InMemoryDataSource.getInstance();
         SearchClient.parseLevel(serverMessages);
 
         // Search for a plan.

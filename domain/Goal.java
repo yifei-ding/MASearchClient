@@ -28,7 +28,7 @@ public class Goal {
 
     @Override
     public String toString() {
-        return "Box{" +
+        return "Goal{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", location=" + location.toString() +
