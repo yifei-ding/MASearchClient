@@ -12,11 +12,9 @@ import java.util.*;
 
 public class SearchClient
 {   private static String mapName;
-    private InMemoryDataSource data;
+
     private AgentManager agentManager;
-    public SearchClient(){
-        data = InMemoryDataSource.getInstance();
-    }
+
     public static void parseLevel(BufferedReader serverMessages)
             throws IOException
     {
@@ -126,10 +124,11 @@ public class SearchClient
     }
 
 
-    public static Action[][] search()
-    {
-         //return AgentManager.search();
-        return null;
+    public Action[][] search()
+    {   AgentManager agentManager = AgentManager.getInstance();
+
+        return agentManager.search();
+        //return null;
     }
 //    public static void writeLog(String mapName, String type, int planLength, String elapsedTime, String remark) throws IOException {
 //        File F=new File("log.txt");

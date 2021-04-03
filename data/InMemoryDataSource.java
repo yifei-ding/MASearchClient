@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 public class InMemoryDataSource {
     private static final InMemoryDataSource dataSource = new InMemoryDataSource();
+
     private HashMap<Integer, Agent> allAgents;
     private HashMap<Integer, Box> allBoxes;
     private HashMap<Integer, Goal> allGoals;
@@ -19,10 +20,11 @@ public class InMemoryDataSource {
 
 
     public static InMemoryDataSource getInstance(){
+        System.err.println("InMemoryDataSource instance");
         return dataSource;
     }
 
-    public InMemoryDataSource() {
+    private InMemoryDataSource() {
         allAgents = new HashMap<Integer, Agent>();
         allBoxes = new HashMap<Integer, Box>();
         allGoals = new HashMap<Integer, Goal>();
