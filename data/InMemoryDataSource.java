@@ -48,7 +48,7 @@ public class InMemoryDataSource {
         allAgentsByColor.put(agent.getColor(),list);
     }
 
-    public Agent countAgent(int id){
+    public Agent getAgent(int id){
         return allAgents.get(id);
 
     }
@@ -60,7 +60,7 @@ public class InMemoryDataSource {
     * @Param [color]
     * @return java.util.ArrayList<domain.Agent>
      **/
-    public ArrayList<Agent> countAgent(Color color){
+    public ArrayList<Agent> getAgentByColor(Color color){
         return allAgentsByColor.get(color);
     }
 
