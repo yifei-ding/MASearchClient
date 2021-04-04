@@ -16,11 +16,11 @@ public class AgentManager {
         System.err.println("AgentManager search " + data.toString());
         System.err.println("Map " + data.toString2());
 
-        //TODO: for each goal, assign box, assign agent
+        //TODO: for each goal, assign box, assign agent -Ding
 
-        //TODO: plan (for each subgoal, do graph search)
+        //TODO: plan (for each subgoal, do graph search) -Ren & Liu
 
-        //TODO: merge plan
+        //TODO: merge plan (by each round) Agent1 :100; Agent2: 10  -Liu
 
         //return plan
 
