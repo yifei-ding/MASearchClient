@@ -3,7 +3,6 @@ package data;
 import domain.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class InMemoryDataSource {
@@ -86,6 +85,10 @@ public class InMemoryDataSource {
         allGoalsByName.put(goal.getName(),list);
     }
 
+    public HashMap<Integer, Goal> getAllGoals(){
+        return allGoals;
+    }
+
     public void setMap(Location location, Boolean isWall){
         map.put(location,isWall);
     }
@@ -107,5 +110,10 @@ public class InMemoryDataSource {
         return "InMemoryDataSource{" +
                 "map=" + map +
                 '}';
+    }
+
+
+    public ArrayList<Box> getBoxByName(String name) {
+       return allBoxesByName.get(name);
     }
 }
