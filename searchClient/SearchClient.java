@@ -213,7 +213,7 @@ public class SearchClient
         Action[][] plan;
         try
         {
-            plan = searchClient.search();
+            plan = searchClient.search(); // todo: Is this mean we should return all actions at once?
         }
         catch (OutOfMemoryError ex)
         {
