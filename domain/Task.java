@@ -1,18 +1,18 @@
 package domain;
 
 public class Task {
-    private int id;
+    private final int id;
     private Goal goal;
     private Box box;
     private Agent agent;
     private int priority;
     private boolean isCompleted;
-    /*
+    /**
     * @Author Yifei
     * @Description TaskId is equal to GoalId, this is designed for conveniently updating a task, since
     * task is goal-based.
     * @Date 15:37 2021/4/5
-     **/
+     */
     public Task(Goal goal, Box box, Agent agent) {
         this.id = goal.getId();
         this.goal = goal;

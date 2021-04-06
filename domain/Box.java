@@ -1,9 +1,9 @@
 package domain;
 
 public class Box {
-    private int id;
-    private String name;
-    private Color color;
+    private final int id;
+    private final String name;
+    private final Color color;
     private Location location;
 
     public Box(int id, String name, Color color, Location location) {

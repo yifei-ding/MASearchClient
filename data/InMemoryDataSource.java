@@ -8,16 +8,16 @@ import java.util.HashMap;
 public class InMemoryDataSource {
     private static final InMemoryDataSource dataSource = new InMemoryDataSource();
 
-    private HashMap<Integer, Agent> allAgents;
-    private HashMap<Integer, Box> allBoxes;
-    private HashMap<Integer, Goal> allGoals;
+    private final HashMap<Integer, Agent> allAgents;
+    private final HashMap<Integer, Box> allBoxes;
+    private final HashMap<Integer, Goal> allGoals;
     //store 2D array for color-agent, name-box, name-goal to support query
-    private HashMap<Color, ArrayList<Agent>> allAgentsByColor;
-    private HashMap<String, ArrayList<Box>> allBoxesByName;
-    private HashMap<String, ArrayList<Goal>> allGoalsByName;
+    private final HashMap<Color, ArrayList<Agent>> allAgentsByColor;
+    private final HashMap<String, ArrayList<Box>> allBoxesByName;
+    private final HashMap<String, ArrayList<Goal>> allGoalsByName;
 
     //store map
-    private HashMap<Location, Boolean> map;
+    private final HashMap<Location, Boolean> map;
 
 
     public static InMemoryDataSource getInstance(){
@@ -115,5 +115,9 @@ public class InMemoryDataSource {
 
     public ArrayList<Box> getBoxByName(String name) {
        return allBoxesByName.get(name);
+    }
+
+    public HashMap<Location, Boolean> getMap() {
+        return map;
     }
 }
