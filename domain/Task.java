@@ -73,7 +73,7 @@ public class Task {
                 ", goal=" + goal +
                 ", box=" + box +
                 ", agent=" + agent +
-                //", priority=" + priority +
+                ", priority=" + priority +
                 //", isCompleted=" + isCompleted +
                 '}';
     }

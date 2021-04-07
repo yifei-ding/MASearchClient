@@ -17,7 +17,9 @@ javac service/SearchClient.java
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g service.SearchClient" -g -s 500 -t 600 
 
-java -jar ../server.jar -l ../levels/MAthomasAppartment_redbluepurple.lvl -c "java -Xmx6g service.SearchClient" -g -s 500 -t 600 
+# java -jar ../server.jar -l ../levels/MAthomasAppartment_redbluepurple.lvl -c "java -Xmx6g service.SearchClient" -g -s 500 -t 600 
+
+java -jar ../server.jar -l ../levels/MAsimple2.lvl -c "java -Xmx6g service.SearchClient" -g -s 500 -t 600 
 
 # folder=../levels
 # files=$(ls $folder)

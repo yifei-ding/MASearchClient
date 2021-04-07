@@ -18,20 +18,22 @@ public class AgentManager {
 
     public Action[][] search(){
         /**
-         * 1.1 Assign tasks  --- Done
+         * 1.1 Assign tasks  ---  Done
          * 1.2 Update priority recursively (a goal surrounded by 3 walls is definitely with highest priority)
-         * 1.3 Identify blocking goals (mark map with costs from each goal seperately)
+         * 1.3 Identify blocking goals (mark map with costs from each goal separately)
          */
         TaskHandler taskHandler = new TaskHandler(data);
-        allTasks = taskHandler.assignTask();
-        System.err.println("Assign task: "+ allTasks.toString());
+//        allTasks = taskHandler.assignTask();
+        allTasks = taskHandler.updateTaskPriorityBy3Walls();
+
+//        System.err.println("Update task: "+ allTasks.toString());
+
+
+
+
 
         //TODO: plan (for each subgoal, do graph search)
-        map = data.getMap();
-
-
         //TODO: merge plan (by each round)
-
         //return plan
 
         return null;
