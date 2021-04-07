@@ -17,7 +17,9 @@ public class InMemoryDataSource {
     private final HashMap<String, ArrayList<Goal>> allGoalsByName;
 
     //store map
-    private final HashMap<Location, Boolean> map;
+    private final HashMap<Location, Object> staticMap;
+    private final HashMap<Location, Object> dynamicMap;
+
 
 
     public static InMemoryDataSource getInstance(){
@@ -32,7 +34,8 @@ public class InMemoryDataSource {
         allAgentsByColor = new HashMap<Color, ArrayList<Agent>>();
         allBoxesByName = new HashMap<String, ArrayList<Box>>();
         allGoalsByName = new HashMap<String, ArrayList<Goal>>();
-        map = new HashMap<Location, Boolean>();
+        staticMap = new HashMap<Location, Object>();
+        dynamicMap = new HashMap<Location, Object>();
 
     }
 
@@ -89,8 +92,8 @@ public class InMemoryDataSource {
         return allGoals;
     }
 
-    public void setMap(Location location, Boolean isWall){
-        map.put(location,isWall);
+    public void setStaticMap(Location location, Object object){
+        staticMap.put(location,object);
     }
 
     @Override
@@ -106,18 +109,21 @@ public class InMemoryDataSource {
     }
 
 
-    public String toString2() {
-        return "InMemoryDataSource{" +
-                "map=" + map +
-                '}';
-    }
+
 
 
     public ArrayList<Box> getBoxByName(String name) {
        return allBoxesByName.get(name);
     }
 
-    public HashMap<Location, Boolean> getMap() {
-        return map;
+    public HashMap<Location, Object> getStaticMap() {
+        return staticMap;
+    }
+
+    public void setDynamicMap(Location location, Object object) {
+        dynamicMap.put(location,object);
+    }
+    public HashMap<Location, Object> getDynamicMap() {
+        return dynamicMap;
     }
 }

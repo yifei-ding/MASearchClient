@@ -19,7 +19,7 @@ public class AgentManager {
     public Action[][] search(){
         /**
          * 1.1 Assign tasks  ---  Done
-         * 1.2 Update priority recursively (a goal surrounded by 3 walls is definitely with highest priority)
+         * 1.2 Update priority recursively (a goal surrounded by 3 walls is definitely with highest priority)  --partially done
          * 1.3 Identify blocking goals (mark map with costs from each goal separately)
          */
         TaskHandler taskHandler = new TaskHandler(data);

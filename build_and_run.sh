@@ -3,6 +3,7 @@
 
 # Compiling the searchclient:
 javac service/SearchClient.java
+javac service/TaskHandler.java
 
 # Starting the server using the searchclient:
 # The searchclient uses the BFS strategy by default.

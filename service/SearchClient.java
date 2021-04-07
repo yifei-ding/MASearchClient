@@ -130,19 +130,24 @@ public class SearchClient
             Color color = agentColors[i];
             int agentRow = agentRows[i];
             int agentCol = agentCols[i];
-            data.addAgent(new Agent(id, color, new Location(agentRow,agentCol)));
+            Location location = new Location(agentRow,agentCol);
+            Agent agent = new Agent(id, color, location);
+            data.addAgent(agent);
+            data.setDynamicMap(location,agent);
         }
 
         int boxId=0;
         for (int boxRow = 0; boxRow < boxes.length; boxRow ++){
             for (int boxCol=0; boxCol < boxes[boxRow].length; boxCol++){
                 if (boxes[boxRow][boxCol] != 0){
-                    char box = boxes[boxRow][boxCol];
-                    String boxName = String.valueOf(box);
-                    Color color = boxColors[box - 65];
+                    char boxChar = boxes[boxRow][boxCol];
+                    String boxName = String.valueOf(boxChar);
+                    Color color = boxColors[boxChar - 65];
                     //add box color together with location
                     Location location = new Location(boxRow,boxCol);
-                    data.addBox(new Box(boxId, boxName, color, location));
+                    Box box = new Box(boxId, boxName, color, location);
+                    data.addBox(box);
+                    data.setDynamicMap(location,box);
                     boxId++;
                 }
 
@@ -154,12 +159,13 @@ public class SearchClient
             for (int goalCol=0; goalCol < goals[goalRow].length;goalCol++){
                 if (goals[goalRow][goalCol] > 0){
                     //System.err.println("In getGoalsMap: " + this.goals[row][col]);
-                    char goal = goals[goalRow][goalCol];
-                    String goalName = String.valueOf(goal);
+                    char goalChar = goals[goalRow][goalCol];
+                    String goalName = String.valueOf(goalChar);
 
                     Location location = new Location(goalRow,goalCol);
-
-                    data.addGoal(new Goal(goalId, goalName, location));
+                    Goal goal = new Goal(goalId, goalName, location);
+                    data.addGoal(goal);
+                    data.setStaticMap(location,goal);
                     goalId++;
                 }
 
@@ -169,7 +175,8 @@ public class SearchClient
         for (int i = 0; i < walls.length; i++){
             for (int j=0; j < walls[i].length;j++){
                     Location location = new Location(i,j);
-                    data.setMap(location, walls[i][j]);
+                    Wall wall = new Wall(location, walls[i][j]);
+                    data.setStaticMap(location, wall);
 
             }
         }

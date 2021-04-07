@@ -9,8 +9,9 @@ import java.util.HashMap;
 public class TaskHandler {
     private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
     private InMemoryDataSource data;
-    private HashMap<Integer, Goal> allGoals;
-    private HashMap<Location, Boolean> map;
+    private HashMap<Integer, Goal> allGoals = new HashMap<Integer, Goal>();
+    private HashMap<Location, Object> map = new HashMap<Location, Object>();
+    private HashMap<Location, Object> dynamicMap = new HashMap<Location, Object>();
 
     public TaskHandler(InMemoryDataSource data) {
         this.data = data;
@@ -52,31 +53,10 @@ public class TaskHandler {
         * @return HashMap<Integer, Task> allTasks
          */
         allTasks = assignTask();
-        map = data.getMap();
-        allGoals = data.getAllGoals();
         for (Goal goal : allGoals.values()){
             //if the goal has 3 walls, set priority of that goal's task
-            Location up = goal.getLocation().getUpNeighbour();
-            Location down = goal.getLocation().getDownNeighbour();
-            Location left = goal.getLocation().getLeftNeighbour();
-            Location right = goal.getLocation().getRightNeighbour();
-            System.err.println("Goal: " + goal.getName());
-            int count = 0 ;
-            if (map.get(up)){
-                count++;
-            }
-            if (map.get(down)){
-                count++;
-            }
-            if (map.get(left)){
-                count++;
-            }
-            if (map.get(right)){
-                count++;
-            }
-            if (count == 3){
+            if (is3WallGoal(goal)) {
                 allTasks.get(goal.getId()).setPriority(5);
-                System.err.println("Three wall goal");
             }
         }
         System.err.println("Updating tasks: "+allTasks.toString());
@@ -84,5 +64,48 @@ public class TaskHandler {
         return allTasks;
     }
 
+    private Boolean is3WallGoal(Goal goal) {
+        /**
+        * @author Yifei
+        * @description To check whether a goal has 3 walls around it.
+        * @date 2021/4/7
+        * @param [goal]
+        * @return Boolean
+         */
+        map = data.getStaticMap();
+        Location up = goal.getLocation().getUpNeighbour();
+        Location down = goal.getLocation().getDownNeighbour();
+        Location left = goal.getLocation().getLeftNeighbour();
+        Location right = goal.getLocation().getRightNeighbour();
+        System.err.println("Goal: " + goal.getName());
+
+        int count = 0 ;
+        if (((Wall) map.get(up)).isWall())
+            count++;
+        if (((Wall)map.get(down)).isWall())
+            count++;
+        if (((Wall)map.get(left)).isWall())
+            count++;
+        if (((Wall)map.get(right)).isWall())
+            count++;
+        if (count == 3){
+            return true;
+        }
+        else return false;
+    }
+
+    public HashMap<Location, Integer> getCostMap(Goal goal){
+        /**
+        * @author Yifei
+        * @description Given a goal and the current location of boxes and agents, calculate the cost from
+         * every location on the map to the goal.
+        * @date 2021/4/7
+        * @param [goal]
+        * @return HashMap<Location, Integer>
+         */
+        HashMap<Location, Integer> costMap = new HashMap<Location, Integer>();
+        //get agent and box location on the map
+        return costMap;
+    }
 
 }
