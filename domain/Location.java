@@ -1,5 +1,6 @@
 package domain;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Location {
@@ -39,6 +40,14 @@ public class Location {
     }
     public Location getRightNeighbour(){
         return new Location(row, col+1);
+    }
+    public ArrayList<Location> getNeighbours(){
+        ArrayList<Location> neighbours = new ArrayList<>();
+        neighbours.add(this.getUpNeighbour());
+        neighbours.add(this.getDownNeighbour());
+        neighbours.add(this.getLeftNeighbour());
+        neighbours.add(this.getRightNeighbour());
+        return neighbours;
     }
     @Override
     public String toString() {

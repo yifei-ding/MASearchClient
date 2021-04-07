@@ -24,9 +24,11 @@ public class AgentManager {
          */
         TaskHandler taskHandler = new TaskHandler(data);
 //        allTasks = taskHandler.assignTask();
-        allTasks = taskHandler.updateTaskPriorityBy3Walls();
+//        allTasks = taskHandler.updateTa skPriorityBy3Walls();
+        allGoals = data.getAllGoals();
+        HashMap<Location,Integer> costMap = taskHandler.getCostMap(allGoals.get(0));
 
-//        System.err.println("Update task: "+ allTasks.toString());
+        System.err.println("Cost Map of goal 0: "+ costMap.toString());
 
 
 

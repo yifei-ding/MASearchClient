@@ -10,8 +10,10 @@ public class TaskHandler {
     private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
     private InMemoryDataSource data;
     private HashMap<Integer, Goal> allGoals = new HashMap<Integer, Goal>();
-    private HashMap<Location, Object> map = new HashMap<Location, Object>();
+    private HashMap<Location, Object> staticMap = new HashMap<Location, Object>();
     private HashMap<Location, Object> dynamicMap = new HashMap<Location, Object>();
+    private HashMap<Location, Integer> costMap = new HashMap<Location,Integer>();
+    private static final int INFINITY = 2147483647;
 
     public TaskHandler(InMemoryDataSource data) {
         this.data = data;
@@ -72,7 +74,7 @@ public class TaskHandler {
         * @param [goal]
         * @return Boolean
          */
-        map = data.getStaticMap();
+        staticMap = data.getStaticMap();
         Location up = goal.getLocation().getUpNeighbour();
         Location down = goal.getLocation().getDownNeighbour();
         Location left = goal.getLocation().getLeftNeighbour();
@@ -80,13 +82,13 @@ public class TaskHandler {
         System.err.println("Goal: " + goal.getName());
 
         int count = 0 ;
-        if (((Wall) map.get(up)).isWall())
+        if (((Wall) staticMap.get(up)).isWall())
             count++;
-        if (((Wall)map.get(down)).isWall())
+        if (((Wall) staticMap.get(down)).isWall())
             count++;
-        if (((Wall)map.get(left)).isWall())
+        if (((Wall) staticMap.get(left)).isWall())
             count++;
-        if (((Wall)map.get(right)).isWall())
+        if (((Wall) staticMap.get(right)).isWall())
             count++;
         if (count == 3){
             return true;
@@ -103,9 +105,53 @@ public class TaskHandler {
         * @param [goal]
         * @return HashMap<Location, Integer>
          */
-        HashMap<Location, Integer> costMap = new HashMap<Location, Integer>();
-        //get agent and box location on the map
+        costMap = new HashMap<Location,Integer>();
+        staticMap = data.getStaticMap();
+        dynamicMap = data.getDynamicMap();
+        //base case
+        Location goalLocation = goal.getLocation();
+        costMap.put(goalLocation,0);
+        //get 4 neighbours
+        ArrayList<Location> neighbours = goalLocation.getNeighbours();
+        //for the neighbours, calculate cost
+        for (Location neighbour:neighbours){
+            calculateCost(neighbour);
+        }
         return costMap;
+    }
+
+    public int calculateCost(Location location){
+        /**
+        * @author Yifei
+        * @description Recursively calculate the cost of each location, cost = (min cost of its neighbours) + 1 or INFINITY. //TODO: DEBUG
+        * @date 2021/4/7
+        * @param [location]
+        * @return int
+         */
+        int result = INFINITY;
+        ArrayList<Location> neighbours = location.getNeighbours();
+        int value = 0;
+        int min = INFINITY;
+        for (Location neighbour : neighbours){
+            value = INFINITY;
+            if (!costMap.containsKey(neighbour)){
+                //if neighbour is not wall nor occupied by an agent/box
+                if (!(staticMap.get(neighbour).getClass().getName().equals("Wall") &&
+                        ((Wall) staticMap.get(neighbour)).isWall()) || !dynamicMap.containsKey(neighbour)){
+                    value = calculateCost(neighbour);
+                    if (value<min){
+                        min = value;
+                    }
+
+                }
+                costMap.put(neighbour,value);
+            }
+        }
+        if (min < INFINITY)
+            result = min+1;
+
+        costMap.put(location,result);
+        return result;
     }
 
 }
