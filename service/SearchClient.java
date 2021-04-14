@@ -5,8 +5,6 @@ import domain.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class SearchClient
@@ -24,7 +22,7 @@ public class SearchClient
         // Read Level name
         serverMessages.readLine(); // #levelname
         mapName = serverMessages.readLine(); // <name>
-        System.err.println("Read map: "+ mapName);
+        System.err.println("[SearchClient] Read map: "+ mapName);
 
         // Read colors
         serverMessages.readLine(); // #colors
@@ -120,8 +118,6 @@ public class SearchClient
         // End
         // line is currently "#end"
 
-        //return new State(agentRows, agentCols, agentColors, walls, boxes, boxColors, goals);
-
         //store to data
         int agentSize = agentRows.length;
         for (int i = 0; i < agentSize; i ++ )
@@ -186,35 +182,13 @@ public class SearchClient
 
 
     public Action[][] search()
-    {   AgentManager agentManager = new AgentManager(data);
+    {
+        HighLevelSolver highLevelSolver = new HighLevelSolver(data);
 
-        return agentManager.search();
+        return highLevelSolver.solve();
         //return null;
     }
-//    public static void writeLog(String mapName, String type, int planLength, String elapsedTime, String remark) throws IOException {
-//        File F=new File("log.txt");
-//        if(!F.exists()){
-//            F.createNewFile();
-//        }
-//        FileWriter fw=null;
-//        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        Date date = new Date(System.currentTimeMillis());
-//        System.out.println(formatter.format(date));
-//        String writeLog=formatter.format(date)+" - "+mapName+" - "+ type + " - "+planLength + " - " +  elapsedTime + " - " +remark;
-//        try {
-//
-//            fw=new FileWriter(F, true);
-//            System.err.println("Write log successfully");
-//            fw.write(writeLog+"\r\n");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }finally{
-//            if(fw!=null){
-//                fw.close();
-//            }
-//        }
-//
-//    }
+
 
     public static void main(String[] args)
             throws IOException
@@ -223,14 +197,17 @@ public class SearchClient
         // Send client name to server. Don't remove. TODO: change to group name
         System.out.println("SearchClient");
 
-        System.err.println("Hello!");
-        long startTime = System.nanoTime();
+        System.err.println("[SearchClient] Start");
+
         // Parse the level.
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.US_ASCII));
 
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
         SearchClient.parseLevel(serverMessages);
+
+        TaskHandler taskHandler = new TaskHandler(data);
+        taskHandler.assignTask();
 
         // Search for a plan.
         Action[][] plan;
@@ -240,24 +217,20 @@ public class SearchClient
         }
         catch (OutOfMemoryError ex)
         {
-            System.err.println("Maximum memory usage exceeded.");
+            System.err.println("[SearchClient] Maximum memory usage exceeded.");
             plan = null;
         }
 
         // Print plan to server.
         if (plan == null)
         {
-            System.err.println("Unable to solve level.");
-            double elapsedTime = (System.nanoTime() - startTime) / 1_000_000_000d;
-            DecimalFormat df = new DecimalFormat("#.000");
-            String elapsedTimeStr = df.format(elapsedTime);
-            //SearchClient.writeLog(mapName,"searchType",plan.length, elapsedTimeStr, "fail");
+            System.err.println("[SearchClient] Unable to solve level.");
             System.exit(0);
 
         }
         else
         {
-            System.err.format("Found solution of length %,d.\n", plan.length);
+            System.err.format("[SearchClient] Found solution of length %,d.\n", plan.length);
 
             for (Action[] jointAction : plan)
             {
@@ -271,12 +244,7 @@ public class SearchClient
 
                 // We must read the server's response to not fill up the stdin buffer and block the server.
                 serverMessages.readLine();
-
             }
-            double elapsedTime = (System.nanoTime() - startTime) / 1_000_000_000d;
-            DecimalFormat df = new DecimalFormat("0.000");
-            String elapsedTimeStr = df.format(elapsedTime);
-            //SearchClient.writeLog(mapName,"searchType",plan.length, elapsedTimeStr, "baseline");
         }
     }
 

@@ -11,10 +11,11 @@ public class InMemoryDataSource {
     private final HashMap<Integer, Agent> allAgents;
     private final HashMap<Integer, Box> allBoxes;
     private final HashMap<Integer, Goal> allGoals;
+    private final HashMap<Integer, Task> allTasks;
     //store 2D array for color-agent, name-box, name-goal to support query
-    private final HashMap<Color, ArrayList<Agent>> allAgentsByColor;
-    private final HashMap<String, ArrayList<Box>> allBoxesByName;
-    private final HashMap<String, ArrayList<Goal>> allGoalsByName;
+    private final HashMap<Color, ArrayList<Integer>> allAgentsByColor;
+    private final HashMap<String, ArrayList<Integer>> allBoxesByName;
+    private final HashMap<String, ArrayList<Integer>> allGoalsByName;
 
     //store map
     private final HashMap<Location, Object> staticMap;
@@ -23,7 +24,7 @@ public class InMemoryDataSource {
 
 
     public static InMemoryDataSource getInstance(){
-        System.err.println("InMemoryDataSource instance");
+        System.err.println("[InMemoryDataSource] getInstance");
         return dataSource;
     }
 
@@ -31,9 +32,10 @@ public class InMemoryDataSource {
         allAgents = new HashMap<Integer, Agent>();
         allBoxes = new HashMap<Integer, Box>();
         allGoals = new HashMap<Integer, Goal>();
-        allAgentsByColor = new HashMap<Color, ArrayList<Agent>>();
-        allBoxesByName = new HashMap<String, ArrayList<Box>>();
-        allGoalsByName = new HashMap<String, ArrayList<Goal>>();
+        allTasks = new HashMap<Integer, Task>();
+        allAgentsByColor = new HashMap<Color, ArrayList<Integer>>();
+        allBoxesByName = new HashMap<String, ArrayList<Integer>>();
+        allGoalsByName = new HashMap<String, ArrayList<Integer>>();
         staticMap = new HashMap<Location, Object>();
         dynamicMap = new HashMap<Location, Object>();
 
@@ -42,12 +44,20 @@ public class InMemoryDataSource {
     public void addAgent(Agent agent){
         //when adding agent, add to both maps
         allAgents.put(agent.getId(),agent);
-        ArrayList<Agent> list = allAgentsByColor.get(agent.getColor());
+        ArrayList<Integer> list = allAgentsByColor.get(agent.getColor());
         if (list==null){
             list = new ArrayList<>();
         }
-        list.add(agent);
+        list.add(agent.getId());
         allAgentsByColor.put(agent.getColor(),list);
+    }
+
+    public void addTask(Task task){
+        allTasks.put(task.getId(),task);
+    }
+
+    public HashMap<Integer, Task> getAllTasks() {
+        return allTasks;
     }
 
     public Agent getAgent(int id){
@@ -55,36 +65,44 @@ public class InMemoryDataSource {
 
     }
 
+    public HashMap<Integer, Agent> getAllAgents() {
+        return allAgents;
+    }
+    public HashMap<Integer, Box> getAllBoxes() {
+        return allBoxes;
+    }
+
+
     /*
     * @Author Yifei
     * @Description Search agent by color, for goal-box-agent matching
     * @Date 17:14 2021/4/2
     * @Param [color]
-    * @return java.util.ArrayList<domain.Agent>
+    * @return AgentId list
      **/
-    public ArrayList<Agent> getAgentByColor(Color color){
+    public ArrayList<Integer> getAgentByColor(Color color){
         return allAgentsByColor.get(color);
     }
 
     public void addBox(Box box) {
         //when adding box, add to both maps
         allBoxes.put(box.getId(),box);
-        ArrayList<Box> list = allBoxesByName.get(box.getName());
+        ArrayList<Integer> list = allBoxesByName.get(box.getName());
         if (list==null){
             list = new ArrayList<>();
         }
-        list.add(box);
+        list.add(box.getId());
         allBoxesByName.put(box.getName(),list);
     }
 
     public void addGoal(Goal goal) {
         //when adding goal, add to both maps
         allGoals.put(goal.getId(), goal);
-        ArrayList<Goal> list = allGoalsByName.get(goal.getName());
+        ArrayList<Integer> list = allGoalsByName.get(goal.getName());
         if (list==null){
             list = new ArrayList<>();
         }
-        list.add(goal);
+        list.add(goal.getId());
         allGoalsByName.put(goal.getName(),list);
     }
 
@@ -112,7 +130,7 @@ public class InMemoryDataSource {
 
 
 
-    public ArrayList<Box> getBoxByName(String name) {
+    public ArrayList<Integer> getBoxByName(String name) {
        return allBoxesByName.get(name);
     }
 

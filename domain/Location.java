@@ -31,7 +31,6 @@ public class Location {
     public Location getUpNeighbour(){
         return new Location(row-1, col);
     }
-
     public Location getDownNeighbour(){
         return new Location(row+1, col);
     }
@@ -41,6 +40,10 @@ public class Location {
     public Location getRightNeighbour(){
         return new Location(row, col+1);
     }
+
+    /**
+     * @return 4 neighbouring locations of a location in an ArrayList
+     */
     public ArrayList<Location> getNeighbours(){
         ArrayList<Location> neighbours = new ArrayList<>();
         neighbours.add(this.getUpNeighbour());
