@@ -2,52 +2,69 @@ package domain;
 
 public class Task {
     private int id;
-    private Goal goal;
-    private Box box;
-    private Agent agent;
+    private int boxId;
+    private int agentId;
+    private Location targetLocation;
     private int priority;
     private boolean isCompleted;
-    /*
-    * @Author Yifei
-    * @Description TaskId is equal to GoalId, this is designed for conveniently updating a task, since
-    * task is goal-based.
-    * @Date 15:37 2021/4/5
-     **/
-    public Task(Goal goal, Box box, Agent agent) {
-        this.id = goal.getId();
-        this.goal = goal;
-        this.box = box;
-        this.agent = agent;
-        this.priority = 0; //by default
-        this.isCompleted = false; //by default
+
+    /**
+    * @author Yifei
+    * @description Construct a task with boxId means the agent need to push/pull the box to goal.
+    * @date 2021/4/14
+     */
+    public Task(int id, int boxId, int agentId, Location targetLocation, int priority) {
+        this.id = id;
+        this.boxId = boxId;
+        this.agentId = agentId;
+        this.targetLocation = targetLocation;
+        this.priority = priority;
+        this.isCompleted = false;
+    }
+    /**
+     * @author Yifei
+     * @description Construct a task without boxId means the agent is moving by itself. boxId = -1 denotes without box.
+     * @date 2021/4/14
+     */
+    public Task(int id, int agentId, Location targetLocation, int priority) {
+        this.id = id;
+        this.boxId = -1;
+        this.agentId = agentId;
+        this.targetLocation = targetLocation;
+        this.priority = priority;
+        this.isCompleted = false;
     }
 
     public int getId() {
         return id;
     }
 
-    public Goal getGoal() {
-        return goal;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setGoal(Goal goal) {
-        this.goal = goal;
+    public int getBoxId() {
+        return boxId;
     }
 
-    public Box getBox() {
-        return box;
+    public void setBoxId(int boxId) {
+        this.boxId = boxId;
     }
 
-    public void setBox(Box box) {
-        this.box = box;
+    public int getAgentId() {
+        return agentId;
     }
 
-    public Agent getAgent() {
-        return agent;
+    public void setAgentId(int agentId) {
+        this.agentId = agentId;
     }
 
-    public void setAgent(Agent agent) {
-        this.agent = agent;
+    public Location getTargetLocation() {
+        return targetLocation;
+    }
+
+    public void setTargetLocation(Location targetLocation) {
+        this.targetLocation = targetLocation;
     }
 
     public int getPriority() {
@@ -69,12 +86,15 @@ public class Task {
     @Override
     public String toString() {
         return "Task{" +
-                //"id=" + id +
-                ", goal=" + goal +
-                ", box=" + box +
-                ", agent=" + agent +
-                //", priority=" + priority +
-                //", isCompleted=" + isCompleted +
+                "id=" + id +
+                ", boxId=" + boxId +
+                ", agentId=" + agentId +
+                ", targetLocation=" + targetLocation +
+                ", priority=" + priority +
+                ", isCompleted=" + isCompleted +
                 '}';
     }
 }
+
+
+
