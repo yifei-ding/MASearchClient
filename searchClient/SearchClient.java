@@ -1,4 +1,4 @@
-package service;
+package searchClient;
 
 import data.InMemoryDataSource;
 import domain.*;
@@ -11,7 +11,7 @@ public class SearchClient
 {   private static String mapName;
     private static InMemoryDataSource data;
 
-    public static void parseLevel(BufferedReader serverMessages)
+    public static void readMap(BufferedReader serverMessages)
             throws IOException
     {
         // We can assume that the level file is conforming to specification, since the server verifies this.
@@ -204,7 +204,7 @@ public class SearchClient
 
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
-        SearchClient.parseLevel(serverMessages);
+        SearchClient.readMap(serverMessages);
 
         TaskHandler taskHandler = new TaskHandler(data);
         taskHandler.assignTask();

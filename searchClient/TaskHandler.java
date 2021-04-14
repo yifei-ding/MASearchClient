@@ -1,4 +1,4 @@
-package service;
+package searchClient;
 
 import data.InMemoryDataSource;
 import domain.*;

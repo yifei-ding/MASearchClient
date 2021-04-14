@@ -1,9 +1,8 @@
-package service;
+package searchClient;
 
 import data.InMemoryDataSource;
 import domain.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class HighLevelSolver {
