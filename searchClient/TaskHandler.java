@@ -44,14 +44,14 @@ public class TaskHandler {
         for (Goal goal : allGoals.values()){
             //for each goal, find a same name box. Currently use the first matching box.
             ArrayList<Integer> boxList = data.getBoxByName(goal.getName());
-            Box box = allBoxes.get(boxList.get(0)); //TODO: improve goal-box matching
+            Box box = allBoxes.get(boxList.get(0)); //TODO: improve goal-box matching. Remove box after pairing
             //then for the box, find a same color agent. Currently use the first matching agent.
             ArrayList<Integer> agentList = data.getAgentByColor(box.getColor());
             Agent agent = allAgents.get(agentList.get(0));//TODO: improve box-agent matching
 
             //for each goal, create 2 tasks. Tasks of the first goal has highest priority.
             //task1 is to find box. Task1 has higher priority than task2.
-            priority = goalCount*PRIORITY_SCALING_PARAM; //
+            priority = goalCount*PRIORITY_SCALING_PARAM;
             Task task1 = new Task(taskId,agent.getId(),box.getLocation(),priority);
             taskId++;
             //task2 is to push/pull box to goal.

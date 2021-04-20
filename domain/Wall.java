@@ -17,4 +17,11 @@ public class Wall {
         return isWall;
     }
 
+    @Override
+    public String toString() {
+        return "Wall{" +
+                "location=" + location +
+                ", isWall=" + isWall +
+                '}';
+    }
 }

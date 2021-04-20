@@ -13,7 +13,7 @@ public class Task {
     * @description Construct a task with boxId means the agent need to push/pull the box to goal.
     * @date 2021/4/14
      */
-    public Task(int id, int boxId, int agentId, Location targetLocation, int priority) {
+    public Task(int id, int agentId, int boxId, Location targetLocation, int priority) {
         this.id = id;
         this.boxId = boxId;
         this.agentId = agentId;
@@ -86,13 +86,13 @@ public class Task {
     @Override
     public String toString() {
         return "Task{" +
-                "id=" + id +
-                ", boxId=" + boxId +
+               // "id=" + id + ", "
+                "boxId=" + boxId +
                 ", agentId=" + agentId +
-                ", targetLocation=" + targetLocation +
-                ", priority=" + priority +
-                ", isCompleted=" + isCompleted +
-                '}';
+               // ", targetLocation=" + targetLocation +
+              //  ", priority=" + priority +
+               // ", isCompleted=" + isCompleted +
+                "}"+'\n' ;
     }
 }
 

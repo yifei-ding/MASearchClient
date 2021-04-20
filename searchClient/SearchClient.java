@@ -118,7 +118,15 @@ public class SearchClient
         // End
         // line is currently "#end"
 
-        //store to data
+        //store to all info on the map to ImMemoryDataSource
+//        boolean[][] staticMap = walls;
+//        int[][] dynamicMap = new int[numRows][numCols];
+        data.setCol(numCols);
+        data.setRow(numRows);
+
+        /**
+         * Store agents
+         */
         int agentSize = agentRows.length;
         for (int i = 0; i < agentSize; i ++ )
         {
@@ -172,7 +180,8 @@ public class SearchClient
             for (int j=0; j < walls[i].length;j++){
                     Location location = new Location(i,j);
                     Wall wall = new Wall(location, walls[i][j]);
-                    data.setStaticMap(location, wall);
+                    if (data.getStaticMap().get(location) == null) //If the location is already stored as a goal, don't overwrite
+                        data.setStaticMap(location, wall);
 
             }
         }
@@ -190,6 +199,10 @@ public class SearchClient
     }
 
 
+    public static void testLowLevel(InMemoryDataSource data) {
+        LowLevelSolver.solveForAllAgents(data,null);
+
+    }
     public static void main(String[] args)
             throws IOException
     {
@@ -208,6 +221,8 @@ public class SearchClient
 
         TaskHandler taskHandler = new TaskHandler(data);
         taskHandler.assignTask();
+        SearchClient.testLowLevel(data);
+        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
 
         // Search for a plan.
         Action[][] plan;

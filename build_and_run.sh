@@ -4,6 +4,8 @@
 # Compiling the searchclient:
 javac searchClient/SearchClient.java
 javac searchClient/TaskHandler.java
+javac searchClient/Frontier.java
+javac searchClient/State.java
 
 # Starting the server using the searchclient:
 # The searchclient uses the BFS strategy by default.
@@ -18,9 +20,10 @@ javac searchClient/TaskHandler.java
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
-# java -jar ../server.jar -l ../levels/MAthomasAppartment_redbluepurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
 java -jar ../server.jar -l ../levels/MAsimple2.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+
+# java -jar ../server.jar -l ../levels/MAthomasAppartment_redbluepurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
 
 # To observe maps:
