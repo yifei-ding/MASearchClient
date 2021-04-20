@@ -222,7 +222,7 @@ public class SearchClient
         TaskHandler taskHandler = new TaskHandler(data);
         taskHandler.assignTask();
         SearchClient.testLowLevel(data);
-        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
+//        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
 
         // Search for a plan.
         Action[][] plan;

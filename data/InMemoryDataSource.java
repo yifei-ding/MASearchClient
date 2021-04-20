@@ -27,8 +27,8 @@ public class InMemoryDataSource {
     private HashMap<Integer, ArrayList<Integer>> allTasksByAgent;
 
     //store map
-    private HashMap<Location, Object> staticMap;
-    private HashMap<Location, Object> dynamicMap;
+    private HashMap<Location, Object> staticMap; //goal+wall
+    private HashMap<Location, Object> dynamicMap; //agent+box
 
 
 

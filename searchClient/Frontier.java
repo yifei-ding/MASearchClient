@@ -118,56 +118,57 @@ class FrontierDFS
     }
 }
 
-//class FrontierBestFirst
-//        implements Frontier
-//{
-//    private Heuristic heuristic;
-//    private PriorityQueue<State> queue;
-//    private HashSet<State> set;
-//
-//    public FrontierBestFirst(Heuristic h)
-//    {
-//        this.heuristic = h;
-//        queue = new PriorityQueue<>(heuristic);
-//        set = new HashSet<>(65536);
-//    }
-//
-//    @Override
-//    public void add(State state)
-//    {
-//        this.queue.offer(state);
-//        this.set.add(state);
-//    }
-//
-//    @Override
-//    public State pop()
-//    {
-//        State state = this.queue.poll();
-//        this.set.remove(state);
-//        return state;
-//    }
-//
-//    @Override
-//    public boolean isEmpty()
-//    {
-//        return this.queue.isEmpty();
-//    }
-//
-//    @Override
-//    public int size()
-//    {
-//        return this.queue.size();
-//    }
-//
-//    @Override
-//    public boolean contains(State state)
-//    {
-//        return this.set.contains(state);
-//
-//    }
-//    @Override
-//    public String getName()
-//    {
-//        return String.format("best-first search using %s", this.heuristic.toString());
-//    }
-//}
+class FrontierBestFirst
+        implements Frontier
+{
+    private Heuristic heuristic;
+    private PriorityQueue<State> queue;
+    private HashSet<State> set;
+
+    public FrontierBestFirst(Heuristic h)
+    {
+        this.heuristic = h;
+        queue = new PriorityQueue<>(heuristic);
+        set = new HashSet<>(65536);
+    }
+
+    @Override
+    public void add(State state)
+    {
+//        System.err.println("[FrontierBestFirst] add state " + state.toString());
+        this.queue.offer(state);
+        this.set.add(state);
+    }
+
+    @Override
+    public State pop()
+    {
+        State state = this.queue.poll();
+        this.set.remove(state);
+        return state;
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return this.queue.isEmpty();
+    }
+
+    @Override
+    public int size()
+    {
+        return this.queue.size();
+    }
+
+    @Override
+    public boolean contains(State state)
+    {
+        return this.set.contains(state);
+
+    }
+    @Override
+    public String getName()
+    {
+        return String.format("best-first search using %s", this.heuristic.toString());
+    }
+}

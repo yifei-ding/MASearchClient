@@ -4,6 +4,7 @@ import data.InMemoryDataSource;
 import domain.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -34,10 +35,11 @@ public class LowLevelSolver {
             }
             to = task.getTargetLocation();
             //3. Preprocess: prepare map and constraints for LowLevelSolver.solve
-            //(TODO: maybe there's need to re-design map data structure)
+            //TODO: maybe there's need to re-design map data structure
             //4. Call LowLevelSolver.solve
             System.err.println("[LowLevelSolver]: solve for agent " + agent.getId());
             Action[] action = solve(constraints, from, to, agent.getId());
+            System.err.println("[LowLevelSolver]: action " + Arrays.toString(action));
         }
 
         //After each single agent planning, merge plan. Return Action[][]
@@ -50,9 +52,8 @@ public class LowLevelSolver {
     {
         //Use graph search to find a solution
         System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString());
-        Frontier frontier = new FrontierBFS();
-
         State initialState = new State(0, from, to, agentId);
+        Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
         frontier.add(initialState);
         HashSet<State> explored = new HashSet<>();
         while (true) {
@@ -80,7 +81,7 @@ public class LowLevelSolver {
                 }
             }
         }
-        //return null;
+
     }
 
 

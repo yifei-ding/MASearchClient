@@ -82,4 +82,9 @@ public enum Action
         this.boxRowDelta = brd; 
         this.boxColDelta = bcd;  
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
