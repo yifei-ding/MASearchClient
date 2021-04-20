@@ -183,10 +183,19 @@ public class InMemoryDataSource {
 
 
     /**
-     *  for graph search
+     *  for state.java to update agent location in parent constructor
      */
     public void setAgentLocation(int agentId, Location location){
-        allAgents.get(agentId).setLocation(location);
+        //update dynamic map
+        dynamicMap.remove(allAgents.get(agentId).getLocation());
+
+        //update agent map
+        Agent agent = allAgents.get(agentId);
+        agent.setLocation(location);
+        allAgents.put(agentId,agent);
+
+        dynamicMap.put(location,agent);
+
     }
 
 

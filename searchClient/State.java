@@ -41,8 +41,9 @@ public class State {
         this.parent = parent;
         this.g = parent.g +1;
 
-        //TODO
-        // Apply each action
+        //TODO:debug
+        //Apply action
+        data.setAgentLocation(agentId,location);
     }
 
     public boolean isGoalState() {
@@ -50,6 +51,7 @@ public class State {
     }
 
     public Action[] extractPlan() {
+//        System.err.println("Agent location: " + data.getAgent(agentId).getLocation().toString());
         //IMPORTANT.When finding box, extract plan starting from the parent of goal state. (Not the goal state)
         // Because goal location is the box. We need the neighbouring location of the box.
         //Else use State state = this;

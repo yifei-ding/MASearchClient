@@ -22,29 +22,36 @@ public class LowLevelSolver {
         allTasks = data.getAllTasks();
         Location from;
         Location to;
+        Action[][] plan = new Action[allAgents.size()][];
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority TODO: improve
             Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(0)); //get first task of the agent
             //2. Preprocess: check task type, whether it is with/without box
+            to = task.getTargetLocation();
             if (task.getBoxId() == -1){ //task without box
                 from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
+                Action[] action = solve(constraints, from, to, agent.getId());
+                //After single agent planning, add action list to plan[][]
+                plan[agent.getId()]= action;
+                System.err.println("[LowLevelSolver]: Agent " + agent.getId() + " " + Arrays.toString(action));
+
             }
             else { //task with box
                 from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
             }
-            to = task.getTargetLocation();
+
             //3. Preprocess: prepare map and constraints for LowLevelSolver.solve
             //TODO: maybe there's need to re-design map data structure
             //4. Call LowLevelSolver.solve
-            System.err.println("[LowLevelSolver]: solve for agent " + agent.getId());
-            Action[] action = solve(constraints, from, to, agent.getId());
-            System.err.println("[LowLevelSolver]: action " + Arrays.toString(action));
+
         }
+        //print merged plan
+        System.err.println("[LowLevelSolver]Merged plan:");
+        for (int i=0; i<plan.length;i++)
+            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
 
-        //After each single agent planning, merge plan. Return Action[][]
-
-        return null;
+        return plan;
     }
 
 
