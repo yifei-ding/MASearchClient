@@ -17,12 +17,31 @@ public class HighLevelSolver {
 
     public Action[][] solve(){
         System.err.println("[HighLevelSolver] Solving...");
+        HighLevelState root = new HighLevelState(null);
+        root.updateSolution();
+//        root.updateCost();
 
-        System.err.println("[HighLevelSolver] Get all tasks: " + data.getAllTasks().size());
-
-        //return plan
-
+//        checkConflict(allPaths);
         return null;
     }
+
+    /**
+    * @author Yifei
+    * @description
+    * @date 2021/4/23
+    * @param [allPaths]
+    * @return void
+     */
+    private void checkConflict(Location[][] allPaths) {
+        for (int i=0; i < allPaths[0].length; i++){ //i = timestep
+            for (int j=0; j< allPaths.length;j ++){ //j = agent
+
+            }
+
+        }
+
+
+    }
+
 
 }

@@ -18,16 +18,18 @@ public class State {
     private final int g;
     private int hash = 0;
     private int agentId;
+    private int boxId;
     private ArrayList<Constraint> constraints;
     private InMemoryDataSource data = InMemoryDataSource.getInstance();
     private HashMap<Location, Object> map = data.getStaticMap();
 
 
-    public State(int timeStep, Location location, Location goalLocation, int agentId) {
+    public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId) {
         this.timeStep = timeStep;
         this.location = location;
         this.goalLocation = goalLocation;
         this.agentId = agentId;
+        this.boxId = boxId;
         this.parent = null;
         this.g = 0;
     }
@@ -38,6 +40,7 @@ public class State {
         this.location = location;
         this.goalLocation = parent.goalLocation;
         this.agentId = parent.agentId;
+        this.boxId = parent.boxId;
         this.parent = parent;
         this.g = parent.g +1;
 
@@ -50,17 +53,22 @@ public class State {
         return this.location.equals(this.goalLocation);
     }
 
-    public Action[] extractPlan() {
+    public Location[] extractPlan() {
 //        System.err.println("Agent location: " + data.getAgent(agentId).getLocation().toString());
         //IMPORTANT.When finding box, extract plan starting from the parent of goal state. (Not the goal state)
         // Because goal location is the box. We need the neighbouring location of the box.
         //Else use State state = this;
-        State state = this.parent;
+        State state;
+//        if (this.boxId > -1)
+//            state = this.parent;
+//        else
+            state = this;
+
         int size = state.g;
-        Action[] plan = new Action[size];
+        Location[] plan = new Location[size];
         while (state.parent != null){
-            Action action = translateLocationChange2Action(state.parent.location, state.location);
-            plan[state.g-1] = action;
+            //Action action = translateLocationChange2Action(state.parent.location, state.location);
+            plan[state.g-1] = state.location;
             state = state.parent;
         }
 
@@ -92,7 +100,7 @@ public class State {
         ArrayList<Location> locations = this.location.getNeighbours();
         //TODO: need to get current timestep and check constraints
         for (Location location : locations) {
-            if (this.isApplicable(location)) {
+            if (this.isApplicable(location) ) {
                 expandedStates.add(new State(this,location));
             }
         }

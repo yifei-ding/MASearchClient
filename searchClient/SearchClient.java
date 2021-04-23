@@ -200,7 +200,7 @@ public class SearchClient
 
 
     public static void testLowLevel(InMemoryDataSource data) {
-        LowLevelSolver.solveForAllAgents(data,null);
+        LowLevelSolver.solveForAllAgents(null);
 
     }
     public static void main(String[] args)
@@ -220,8 +220,8 @@ public class SearchClient
         SearchClient.readMap(serverMessages);
 
         TaskHandler taskHandler = new TaskHandler(data);
-        taskHandler.assignTask();
-        SearchClient.testLowLevel(data);
+        taskHandler.assignTask3();
+//        SearchClient.testLowLevel(data);
 //        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
 
         // Search for a plan.

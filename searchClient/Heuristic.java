@@ -14,7 +14,18 @@ public abstract class Heuristic
 
     public int h(State s)
     {
-        return this.getManhattanDistance(s.getLocation(),s.getGoalLocation());
+        return this.closedFormSolution(s.getLocation(),s.getGoalLocation());
+    }
+
+    private int closedFormSolution(Location location1, Location location2){
+        int x1 = location1.getRow();
+        int x2 = location2.getRow();
+        int y1 = location1.getCol();
+        int y2 = location2.getCol();
+        int dx = Math.abs(x1-x2);
+        int dy = Math.abs(y1-y2);
+        double h = (dx+dy) + (Math.sqrt(2)-2)*Math.min(dx,dy);
+        return (int) Math.floor(h);
     }
 
     private int getManhattanDistance(Location location1, Location location2){

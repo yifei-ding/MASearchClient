@@ -12,8 +12,9 @@ public class LowLevelSolver {
     private static HashMap<Integer, Agent> allAgents;
     private static HashMap<Integer, Box> allBoxes;
     private static HashMap<Integer, Task> allTasks;
+    private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
-    public static Action[][] solveForAllAgents(InMemoryDataSource data, ArrayList<Constraint> constraints)
+    public static Location[][] solveForAllAgents( ArrayList<Constraint> constraints)
     {
         System.err.println("[LowLevelSolver]: solve for all agents");
 
@@ -22,16 +23,17 @@ public class LowLevelSolver {
         allTasks = data.getAllTasks();
         Location from;
         Location to;
-        Action[][] plan = new Action[allAgents.size()][];
+        Location[][] plan = new Location[allAgents.size()][];
+        Location[] action;
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority TODO: improve
-            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(0)); //get first task of the agent
+            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(1)); //get first task of the agent
             //2. Preprocess: check task type, whether it is with/without box
             to = task.getTargetLocation();
             if (task.getBoxId() == -1){ //task without box
                 from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
-                Action[] action = solve(constraints, from, to, agent.getId());
+                action = solve(constraints, from, to, agent.getId(), -1);
                 //After single agent planning, add action list to plan[][]
                 plan[agent.getId()]= action;
                 System.err.println("[LowLevelSolver]: Agent " + agent.getId() + " " + Arrays.toString(action));
@@ -39,6 +41,10 @@ public class LowLevelSolver {
             }
             else { //task with box
                 from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
+                action = solve(constraints, from, to, agent.getId(), task.getBoxId());
+                plan[agent.getId()]= action;
+                System.err.println("[LowLevelSolver]: Box " + task.getBoxId()+ " " + Arrays.toString(action));
+
             }
 
             //3. Preprocess: prepare map and constraints for LowLevelSolver.solve
@@ -47,26 +53,26 @@ public class LowLevelSolver {
 
         }
         //print merged plan
-        System.err.println("[LowLevelSolver]Merged plan:");
-        for (int i=0; i<plan.length;i++)
-            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
+//        System.err.println("[LowLevelSolver]Merged plan:");
+//        for (int i=0; i<plan.length;i++)
+//            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
 
         return plan;
     }
 
 
-    public static Action[] solve(ArrayList<Constraint> constraints, Location from, Location to, int agentId)
+    public static Location[] solve(ArrayList<Constraint> constraints, Location from, Location to, int agentId, int boxId)
     {
         //Use graph search to find a solution
         System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString());
-        State initialState = new State(0, from, to, agentId);
+        State initialState = new State(0, from, to, agentId, boxId);
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
         frontier.add(initialState);
         HashSet<State> explored = new HashSet<>();
         while (true) {
             //if frontier is null return false
             if (frontier.isEmpty())
-                return new Action[]{};
+                return new Location[]{};
             //choose a node n from frontier (and remove)
             State node = frontier.pop();
             //if n is a goal state then return solution
