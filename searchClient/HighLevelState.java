@@ -29,7 +29,9 @@ public class HighLevelState {
         return solution;
     }
 
-
+    public Location[][] getSolution() {
+        return solution;
+    }
 
     public int getCost() {
         return cost;
