@@ -4,6 +4,7 @@ import domain.Constraint;
 import domain.Location;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class HighLevelState {
 
@@ -25,7 +26,6 @@ public class HighLevelState {
 
     public Location[][] updateSolution() {
         this.solution = LowLevelSolver.solveForAllAgents(this.constraints);
-        System.err.println("[1111111]Solution length" + solution.length);
         return solution;
     }
 
@@ -38,6 +38,7 @@ public class HighLevelState {
     }
 
     public void updateCost() {
+        System.err.println("[HighLevelState] Update Cost: " + this.solution.length);
         //TODO: maybe change to total steps of all agents
         this.cost = this.solution.length; //currently it is makespan
     }

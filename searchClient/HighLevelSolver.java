@@ -20,22 +20,16 @@ public class HighLevelSolver {
 
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
-        HighLevelState root = new HighLevelState(null);
-//        root.updateCost();
-        root.updateSolution();
-        Conflict firstConflict = getFirstConflict(root);
-//        System.err.println("line 27 "+firstConflict.toString());
-        hasConflict(root.getSolution());
+        HighLevelState initialState = new HighLevelState(null);
+        initialState.updateSolution();
+        initialState.updateCost();
+        Conflict firstConflict = this.getFirstConflict(initialState);
+        System.err.println("[HighLevelSolver] Found first conflict at: "+firstConflict.toString());
+//        hasConflict(initialState.getSolution());
         return null;
     }
 
-    /**
-     * @return void
-     * @author Yifei
-     * @description
-     * @date 2021/4/23
-     * //    * @param [allPaths]
-     */
+
     private boolean hasConflict(Location[][] allPaths) {  // TODO: add boxes into the Pathes
         for (int i = 0; i < allPaths[0].length; i++) { //i = timestep
 //            ArrayList<Location> locations = new ArrayList<>();
@@ -67,7 +61,7 @@ public class HighLevelSolver {
                 } else {
                     int agentId_1 = j;
                     int agentId_2 = locations.get(location);
-                    Conflict conflict = new Conflict(agentId_1,agentId_2,location,i);
+                    Conflict conflict = new Conflict(agentId_1,agentId_2, location, location, i);
                     return conflict;
                 }
 

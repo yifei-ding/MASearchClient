@@ -99,14 +99,13 @@ public class TaskHandler {
             //for each goal, create 2 tasks. Tasks of the first goal has highest priority.
             //task1 is to find box. Task1 has higher priority than task2.
             priority = goalCount*PRIORITY_SCALING_PARAM;
-            Task task1 = new Task(taskId,agent.getId(),null,priority);
+            Task task1 = new Task(taskId,agent.getId(),goal.getLocation(),priority);
             taskId++;
             //task2 is to push/pull box to goal.
             //TODO: When planning task2, need to check if agent is beside the box. Otherwise create a new task of task1 to let agent find box.
-            Task task2 = new Task(taskId,agent.getId(),-1, goal.getLocation(),priority-1);
             taskId++;
             data.addTask(task1);
-            data.addTask(task2);
+
             goalCount--;
 
         }
