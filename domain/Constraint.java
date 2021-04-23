@@ -34,4 +34,13 @@ public class Constraint {
     public void setLocation(Location location) {
         this.location = location;
     }
+
+    @Override
+    public String toString() {
+        return "Constraint{" +
+                "agentId=" + agentId +
+                ", timeStep=" + timeStep +
+                ", location=" + location +
+                '}';
+    }
 }

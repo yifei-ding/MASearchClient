@@ -21,10 +21,13 @@ public class HighLevelState {
     }
 
     public void addConstraint(Constraint constraint) {
+        System.err.println("[HighLevelState] Add constraint " + this.constraints.toString());
         this.constraints.add(constraint);
+        System.err.println("[HighLevelState] After adding constraint  " + this.constraints.toString());
+
     }
 
-    public Location[][] updateSolution() {
+    public Location[][] calculateSolution() {
         this.solution = LowLevelSolver.solveForAllAgents(this.constraints);
         return solution;
     }

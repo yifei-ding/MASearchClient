@@ -24,13 +24,14 @@ public class State {
     private HashMap<Location, Object> map = data.getStaticMap();
 
 
-    public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId) {
+    public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId, ArrayList<Constraint> constraints) {
         this.timeStep = timeStep;
         this.location = location;
         this.goalLocation = goalLocation;
         this.agentId = agentId;
         this.boxId = boxId;
         this.parent = null;
+        this.constraints = constraints;
         this.g = 0;
     }
 
@@ -42,11 +43,12 @@ public class State {
         this.agentId = parent.agentId;
         this.boxId = parent.boxId;
         this.parent = parent;
+        this.constraints = parent.constraints;
         this.g = parent.g +1;
 
         //TODO:debug
         //Apply action
-        data.setAgentLocation(agentId,location);
+        //data.setAgentLocation(agentId,location);
     }
 
     public boolean isGoalState() {
@@ -75,17 +77,6 @@ public class State {
         return plan;
     }
 
-    private Action translateLocationChange2Action(Location parentLocation, Location location) {
-        if (parentLocation.getUpNeighbour().equals(location))
-            return Action.MoveN;
-        else if (parentLocation.getDownNeighbour().equals(location))
-            return Action.MoveS;
-        else if (parentLocation.getLeftNeighbour().equals(location))
-            return Action.MoveW;
-        else if (parentLocation.getRightNeighbour().equals(location))
-            return Action.MoveE;
-        else return null;
-    }
 
     /**
     * @author Yifei
@@ -98,13 +89,28 @@ public class State {
         ArrayList<State> expandedStates = new ArrayList<>(16);
         //Action[] actions = new Action[]{Action.MoveE, Action.MoveN, Action.MoveS, Action.MoveW};
         ArrayList<Location> locations = this.location.getNeighbours();
+        locations.add(location);
         //TODO: need to get current timestep and check constraints
         for (Location location : locations) {
-            if (this.isApplicable(location) ) {
+            if (this.isApplicable(location) && !isConstraint(timeStep,location)) {
                 expandedStates.add(new State(this,location));
             }
         }
         return expandedStates;
+    }
+
+    private boolean isConstraint(int timeStep, Location location) {
+//        System.err.println("isConstraint");
+        for (Constraint constraint : this.constraints){
+            if (constraint.getAgentId() == this.agentId){
+                if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(location)){
+                            System.err.println("isConstraint");
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private boolean isApplicable(Location location) {

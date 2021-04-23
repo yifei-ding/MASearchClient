@@ -65,7 +65,7 @@ public class LowLevelSolver {
     {
         //Use graph search to find a solution
         System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString());
-        State initialState = new State(0, from, to, agentId, boxId);
+        State initialState = new State(0, from, to, agentId, boxId, constraints);
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
         frontier.add(initialState);
         HashSet<State> explored = new HashSet<>();
