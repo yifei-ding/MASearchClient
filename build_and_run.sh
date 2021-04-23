@@ -5,7 +5,13 @@
 javac searchClient/SearchClient.java
 javac searchClient/TaskHandler.java
 javac searchClient/Frontier.java
+
 javac searchClient/State.java
+javac searchClient/HighLevelState.java
+
+javac searchClient/HighLevelSolver.java
+javac searchClient/LowLevelSolver.java
+
 
 # Starting the server using the searchclient:
 # The searchclient uses the BFS strategy by default.

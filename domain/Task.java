@@ -89,7 +89,7 @@ public class Task {
                // "id=" + id + ", "
                 "boxId=" + boxId +
                 ", agentId=" + agentId +
-               // ", targetLocation=" + targetLocation +
+                ", targetLocation=" + targetLocation +
               //  ", priority=" + priority +
                // ", isCompleted=" + isCompleted +
                 "}"+'\n' ;

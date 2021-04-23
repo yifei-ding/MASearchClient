@@ -28,7 +28,7 @@ public class LowLevelSolver {
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority TODO: improve
-            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(1)); //get first task of the agent
+            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(0)); //get first task of the agent
             //2. Preprocess: check task type, whether it is with/without box
             to = task.getTargetLocation();
             if (task.getBoxId() == -1){ //task without box
@@ -65,7 +65,7 @@ public class LowLevelSolver {
     {
         //Use graph search to find a solution
         System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString());
-        State initialState = new State(0, from, to, agentId, boxId);
+        State initialState = new State(0, from, to, agentId, boxId, constraints);
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
         frontier.add(initialState);
         HashSet<State> explored = new HashSet<>();
