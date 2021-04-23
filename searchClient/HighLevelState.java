@@ -38,8 +38,10 @@ public class HighLevelState {
     }
 
     public void updateCost() {
-        System.err.println("[HighLevelState] Update Cost: " + this.solution.length);
-        //TODO: maybe change to total steps of all agents
-        this.cost = this.solution.length; //currently it is makespan
+        //cost = the sum of the steps of each agent
+        for (int i =0;i<this.solution.length;i++){
+            this.cost += this.solution[i].length;
+        }
+        System.err.println("[HighLevelState] Update Cost: " + this.cost);
     }
 }
