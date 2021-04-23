@@ -41,6 +41,7 @@ public class Location {
         return new Location(row, col+1);
     }
 
+
     /**
      * @return 4 neighbouring locations of a location in an ArrayList
      */

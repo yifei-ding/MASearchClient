@@ -36,6 +36,6 @@ public class Box {
                 ", name='" + name + '\'' +
                 ", color=" + color +
                 ", location=" + location.toString() +
-                '}';
+                '}' + '\n';
     }
 }
