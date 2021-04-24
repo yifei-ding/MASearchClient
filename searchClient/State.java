@@ -52,7 +52,12 @@ public class State {
     }
 
     public boolean isGoalState() {
-        return this.location.equals(this.goalLocation);
+        if (this.location.equals(this.goalLocation)){
+//            System.err.println("[State] goal state.g=" + this.g);
+            return true;
+        }
+        else return false;
+//        return this.location.equals(this.goalLocation);
     }
 
     public Location[] extractPlan() {
@@ -60,19 +65,16 @@ public class State {
         //IMPORTANT.When finding box, extract plan starting from the parent of goal state. (Not the goal state)
         // Because goal location is the box. We need the neighbouring location of the box.
         //Else use State state = this;
-        State state;
-//        if (this.boxId > -1)
+        //        if (this.boxId > -1)
 //            state = this.parent;
-//        else
-            state = this;
-
+        State state = this;
         int size = state.g;
         Location[] plan = new Location[size];
         while (state.parent != null){
-            //Action action = translateLocationChange2Action(state.parent.location, state.location);
             plan[state.g-1] = state.location;
             state = state.parent;
         }
+//        System.err.println("[State] plan.length=" + plan.length);
 
         return plan;
     }
@@ -104,7 +106,7 @@ public class State {
         for (Constraint constraint : this.constraints){
             if (constraint.getAgentId() == this.agentId){
                 if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(location)){
-                            System.err.println("isConstraint");
+//                            System.err.println("isConstraint");
                     return true;
                 }
             }

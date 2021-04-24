@@ -200,7 +200,7 @@ public class SearchClient
 
 
     public static void testLowLevel(InMemoryDataSource data) {
-        LowLevelSolver.solveForAllAgents(null);
+        LowLevelSolver.solveForAllAgents(new ArrayList<>());
 
     }
     public static void main(String[] args)
@@ -247,23 +247,70 @@ public class SearchClient
         {
             System.err.format("[SearchClient] Found solution of length %,d.\n", plan.length);
 
-            for (Action[] jointAction : plan)
-            {
-                System.out.print(jointAction[0].name);
-                for (int action = 1; action < jointAction.length; ++action)
-                {
-                    System.out.print("|");
-                    System.out.print(jointAction[action].name);
+            int max=0;
+            for(int i=0;i<plan.length; i++) { //i=timestep
+                if (plan[i].length>max)
+                    max = plan[i].length;
+            }
+            System.err.println("[SearchClient] Max plan length = "+ max);
+
+            for(int i=0;i<max; i++) { //i=timestep
+                for (int j=0; j<plan.length;j++) { //j=agent
+                    if ( i < plan[j].length){
+                        if (j==0)
+                            System.out.print(plan[j][i].name);
+                        else
+                        {
+                            System.out.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.out.print(plan[j][i].name);
+                        }
+                    }
+                    else {
+                        if (j==0)
+                            System.out.print("NoOp");
+                        else
+                        {
+                            System.out.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.out.print("NoOp");
+                        }
+                    }
+
                 }
                 System.out.println();
 
-                // We must read the server's response to not fill up the stdin buffer and block the server.
+            }
+
+
+            for(int i=0;i<max; i++) { //i=timestep
+                for (int j=0; j<plan.length;j++) { //j=agent
+                    if ( i < plan[j].length){
+                        if (j==0)
+                            System.err.print(plan[j][i].name);
+                        else
+                        {
+                            System.err.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.err.print(plan[j][i].name);
+                        }
+                    }
+                    else {
+                        if (j==0)
+                            System.err.print("NoOp");
+                        else
+                        {
+                            System.err.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.err.print("NoOp");
+                        }
+                    }
+
+                }
+                System.err.println();
+
+            }
+
+            // We must read the server's response to not fill up the stdin buffer and block the server.
                 serverMessages.readLine();
             }
         }
     }
 
 
-
-
-}
