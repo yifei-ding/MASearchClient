@@ -16,7 +16,7 @@ public class LowLevelSolver {
 
     public static Location[][] solveForAllAgents( ArrayList<Constraint> constraints)
     {
-        System.err.println("[LowLevelSolver]: solve for all agents");
+//        System.err.println("[LowLevelSolver]: solve for all agents");
 
         allAgents = data.getAllAgents();
         allBoxes = data.getAllBoxes();
@@ -43,7 +43,7 @@ public class LowLevelSolver {
                 from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
                 action = solve(constraints, from, to, agent.getId(), task.getBoxId());
                 plan[agent.getId()]= action;
-                System.err.println("[LowLevelSolver]: Box " + task.getBoxId()+ " " + Arrays.toString(action));
+//                System.err.println("[LowLevelSolver]: Box " + task.getBoxId()+ " " + Arrays.toString(action));
 
             }
 
@@ -64,9 +64,11 @@ public class LowLevelSolver {
     public static Location[] solve(ArrayList<Constraint> constraints, Location from, Location to, int agentId, int boxId)
     {
         //Use graph search to find a solution
-        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString());
+//        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString());
         State initialState = new State(0, from, to, agentId, boxId, constraints);
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
+//        Frontier frontier = new FrontierDFS();
+
         frontier.add(initialState);
         HashSet<State> explored = new HashSet<>();
         while (true) {
@@ -77,7 +79,7 @@ public class LowLevelSolver {
             State node = frontier.pop();
             //if n is a goal state then return solution
             if (node.isGoalState()) {
-                System.err.println("[LowLevelSolver] Found goal state " + node.toString());
+//                System.err.println("[LowLevelSolver] Found goal state " + node.toString());
                 return node.extractPlan();
             }
             else {
