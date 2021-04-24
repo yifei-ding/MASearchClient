@@ -12,6 +12,8 @@ public class HighLevelSolver {
     private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
     private HashMap<Location, Boolean> map;
     private static final int INFINITY = 2147483647;
+    private ArrayList<HighLevelState> tree = new ArrayList<>();
+
 
     public HighLevelSolver(InMemoryDataSource data) {
         this.data = data;
@@ -19,7 +21,6 @@ public class HighLevelSolver {
 
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
-        ArrayList<HighLevelState> tree = new ArrayList<>();
 
         HighLevelState initialState = new HighLevelState(new ArrayList<Constraint>());
         initialState.calculateSolution();
@@ -29,7 +30,8 @@ public class HighLevelSolver {
 
         while (!tree.isEmpty()){
             HighLevelState node = findBestNode(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
-            System.err.println("[-----Current constraints-----]: " + node.getConstraints().toString());
+            System.err.println("[----------Best Node----------]: " + node.toString());
+            System.err.println("[----------Current constraints----------]: " + node.getConstraints().size());
             if (!hasConflict(node) && !hasEdgeConflict(node)) {
                 Location[][] solution = node.getSolution();
                 Action[][] finalSolution = translate(solution);
@@ -41,107 +43,78 @@ public class HighLevelSolver {
                 // Remove current node from tree because it has conflicts.
                 tree.remove(node);
                 System.err.println("[Vertex conflict] " + conflict.toString());
-                Constraint newConstraint;
-                HighLevelState child;
-                for (int i=0; i<2; i++) {
-                    if (i == 0) {
-                        child = new HighLevelState(node.getConstraints());
+                for (int i = 0; i < 2; i++) {
+                    HighLevelState child = new HighLevelState(node.getConstraints());
+                    System.err.println("[New child]" + child.toString()); //TODO: 4/25 debug
+                    Constraint newConstraint;
+                    if (i==0)
                         newConstraint = new Constraint(conflict.getAgentId_1(), conflict.getTimestep(), conflict.getLocation1());
-                        System.err.println("[constraint 1] " + newConstraint.toString());
-                        child.addConstraint(newConstraint);
-                        child.calculateSolution();
-                        child.updateCost();
-                        if (child.getCost() > 0 && !tree.contains(child)) {
-                            System.err.println("[Add child 1] " + child.toString());
-                            tree.add(child);
-                        } else {
-                            child = new HighLevelState(node.getConstraints());
-
-                            newConstraint = new Constraint(conflict.getAgentId_2(), conflict.getTimestep(), conflict.getLocation2());
-                            System.err.println("[constraint 2] " + newConstraint.toString());
-                            child.addConstraint(newConstraint);
-                            child.calculateSolution();
-                            child.updateCost();
-                            if (child.getCost() > 0 && !tree.contains(child)) {
-                                System.err.println("[Add child 2] " + child.toString());
-                                tree.add(child);
-
-                            }
-
-
-                        }
-                    }
+                    else
+                        newConstraint = new Constraint(conflict.getAgentId_2(), conflict.getTimestep(), conflict.getLocation2());
+                    child.addConstraint(newConstraint);
+                    child.calculateSolution();
+                    child.updateCost();
+                    this.addToTree(child);
                 }
             }
             else if (hasEdgeConflict(node)){
-
                 Conflict conflict = getFirstEdgeConflict(node);
-                System.err.println("*********Edge Conflict**********" + conflict.toString()); //TODO: 4/23 debug getFirstConflict, need to return edge conflict as well.
+                System.err.println("[Edge conflict] " + conflict.toString());
                 // Remove current node from tree because it has conflicts.
                 tree.remove(node);
                 Constraint newConstraint;
                 Constraint newConstraint2;
                 if ((conflict.getAgentId_1() != -1) && (conflict.getAgentId_2() != -1)) {
-                    HighLevelState child;
                     for (int i = 0; i < 2; i++) {
+                        HighLevelState child = new HighLevelState(node.getConstraints());
                         if (i == 0) {
-                            child = new HighLevelState(node.getConstraints());
-
                             newConstraint = new Constraint(conflict.getAgentId_1(), conflict.getTimestep() - 1, conflict.getLocation1());
                             newConstraint2 = new Constraint(conflict.getAgentId_1(), conflict.getTimestep(), conflict.getLocation2());
-                            child.addConstraint(newConstraint);
-                            child.addConstraint(newConstraint2);
                         } else {
-                            child = new HighLevelState(node.getConstraints());
-
                             newConstraint = new Constraint(conflict.getAgentId_2(), conflict.getTimestep() - 1, conflict.getLocation2());
                             newConstraint2 = new Constraint(conflict.getAgentId_2(), conflict.getTimestep(), conflict.getLocation1());
-                            child.addConstraint(newConstraint);
-                            child.addConstraint(newConstraint2);
                         }
+                        child.addConstraint(newConstraint);
+                        child.addConstraint(newConstraint2);
                         child.calculateSolution();
                         child.updateCost();
-                        if (child.getCost() > 0 && !tree.contains(child)) {
-                            tree.add(child);
-
-                        }
+                        this.addToTree(child);
                     }
                 }
-
-                    else if ((conflict.getAgentId_1() == -1)){
+                else if ((conflict.getAgentId_1() == -1)){
                     HighLevelState child = new HighLevelState(node.getConstraints());
                     newConstraint = new Constraint(conflict.getAgentId_2(), conflict.getTimestep(), conflict.getLocation2());
                     child.addConstraint(newConstraint);
                     child.calculateSolution();
                     child.updateCost();
-                    if (child.getCost() > 0 && !tree.contains(child)) {
-                        tree.add(child);
-
-                        }
-
-                    }
-                    else if ((conflict.getAgentId_2() == -1)){
+                    this.addToTree(child);
+                }
+                else if ((conflict.getAgentId_2() == -1)){
                     HighLevelState child = new HighLevelState(node.getConstraints());
                     newConstraint = new Constraint(conflict.getAgentId_1(), conflict.getTimestep(), conflict.getLocation1());
                     child.addConstraint(newConstraint);
                     child.calculateSolution();
                     child.updateCost();
-                    if (child.getCost() > 0 && !tree.contains(child)) {
-                        tree.add(child);
-
-
-                        }
-
-                    }
-
-
-
+                    this.addToTree(child);
+                }
             }
         }
-
         return null;
     }
 
+    private void addToTree(HighLevelState child) {
+        System.err.println("[Check child] " + child.toString());
+
+        if (child.getCost()>0)
+            System.err.println("[Check child] cost>0");
+        if (!tree.contains(child))
+            System.err.println("[Check child] tree doesn't contain this child");
+
+        if (child.getCost() > 0 && !tree.contains(child)) {
+            System.err.println("[Add child]");
+            tree.add(child);
+        }
+    }
 
 
     private HighLevelState findBestNode(ArrayList<HighLevelState> tree) {
@@ -254,23 +227,19 @@ public class HighLevelSolver {
                 for (int k=0; k< minIndex; k++){
                     Location[] route1 = solution[i];
                     Location[] route2 = solution[j];
-
-                    if (route1[k].equals(route2[k+1]) && route1[k+1].equals(route2[k])) {
-                            System.err.println("--------------------------" + "edege conflict 1");
-                        return new Conflict(i, j, route1[k + 1], route2[k + 1], k);
-                        }
-                       else if (route1[k].equals(route2[k+1])){
-                            System.err.println("--------------------------" + "edege conflict 2");
-
-                            return new Conflict(-1, j, new Location(0,0), route2[k + 1], k+1);}
-                        else if (route1[k+1].equals(route2[k])){
-                            System.err.println("--------------------------" + "edege conflict 3");
-
+                    if (route1[k].equals(route2[k+1]) && route1[k+1].equals(route2[k])){
+                            System.err.println("Edge conflict type 1");
+                            return new Conflict(i, j, route1[k + 1], route2[k + 1], k);
+                    }
+                    else if (route1[k].equals(route2[k+1])){
+                        System.err.println("Edge conflict type 2");
+                        return new Conflict(-1, j, new Location(0,0), route2[k + 1], k+1);
+                    }
+                    else if (route1[k+1].equals(route2[k])){
+                        System.err.println("Edge conflict type 3");
                         return new Conflict(i, -1, route1[k + 1], new Location(0,0), k+1);
-                        }
+                    }
                 }
-
-
             }
         }
         return new Conflict(0,0,new Location(0,0),new Location(0,0),0);

@@ -30,7 +30,7 @@ public class HighLevelState {
     }
 
     public Location[][] calculateSolution() {
-        this.solution = LowLevelSolver.solveForAllAgents(this.constraints);
+        solution = LowLevelSolver.solveForAllAgents(this.constraints);
         return solution;
     }
 
@@ -45,7 +45,7 @@ public class HighLevelState {
     public void updateCost() {
         //cost = the sum of the steps of each agent
         for (int i =0;i<this.solution.length;i++){
-            this.cost += this.solution[i].length;
+            cost += this.solution[i].length;
         }
 //        System.err.println("[HighLevelState] Update Cost: " + this.cost);
     }
@@ -60,9 +60,7 @@ public class HighLevelState {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(constraints);
-        result = 31 * result + Arrays.hashCode(solution);
-        return result;
+        return Objects.hash(constraints);
     }
 
     @Override
@@ -71,4 +69,16 @@ public class HighLevelState {
                 "constraints=" + constraints +
                 '}';
     }
+
+    public static void main(String[] args) {
+        ArrayList<Constraint> constraints1 = new ArrayList<>();
+        constraints1.add(new Constraint(1,1,new Location(1,1)));
+        constraints1.add(new Constraint(2,2,new Location(2,2)));
+        ArrayList<Constraint> constraints2 = new ArrayList<>();
+        constraints2.add(new Constraint(2,2,new Location(2,2)));
+        constraints2.add(new Constraint(1,1,new Location(1,1)));
+        System.out.printf(""+constraints2.equals(constraints1));
+
+    }
+
 }
