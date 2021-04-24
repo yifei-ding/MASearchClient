@@ -1,5 +1,7 @@
 package domain;
 
+import java.util.Objects;
+
 public class Constraint {
     private int agentId;
     private int timeStep;
@@ -42,5 +44,18 @@ public class Constraint {
                 ", timeStep=" + timeStep +
                 ", location=" + location +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Constraint that = (Constraint) o;
+        return agentId == that.agentId && timeStep == that.timeStep && location.equals(that.location);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(agentId, timeStep, location);
     }
 }

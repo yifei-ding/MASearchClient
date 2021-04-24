@@ -5,6 +5,7 @@ import domain.Location;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class HighLevelState {
 
@@ -21,9 +22,10 @@ public class HighLevelState {
     }
 
     public void addConstraint(Constraint constraint) {
-        System.err.println("[HighLevelState] Add constraint " + this.constraints.toString());
-        this.constraints.add(constraint);
-        System.err.println("[HighLevelState] After adding constraint  " + this.constraints.toString());
+//        System.err.println("[HighLevelState] Add constraint " + this.constraints.toString());
+        if (!this.constraints.contains(constraint))
+            this.constraints.add(constraint);
+//        System.err.println("[HighLevelState] After adding constraint  " + this.constraints.toString());
 
     }
 
@@ -45,6 +47,28 @@ public class HighLevelState {
         for (int i =0;i<this.solution.length;i++){
             this.cost += this.solution[i].length;
         }
-        System.err.println("[HighLevelState] Update Cost: " + this.cost);
+//        System.err.println("[HighLevelState] Update Cost: " + this.cost);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HighLevelState that = (HighLevelState) o;
+        return Objects.equals(constraints, that.constraints);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(constraints);
+        result = 31 * result + Arrays.hashCode(solution);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "HighLevelState{" +
+                "constraints=" + constraints +
+                '}';
     }
 }

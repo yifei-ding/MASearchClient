@@ -12,6 +12,13 @@ javac searchClient/HighLevelState.java
 javac searchClient/HighLevelSolver.java
 javac searchClient/LowLevelSolver.java
 
+folder=../levels
+files=$(ls $folder)
+for file in $files
+do
+  java -jar ../server.jar -l ../levels/$file -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+
+done
 
 # Starting the server using the searchclient:
 # The searchclient uses the BFS strategy by default.
@@ -27,7 +34,7 @@ javac searchClient/LowLevelSolver.java
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
 
-java -jar ../server.jar -l ../levels/MAsimple2.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+java -jar ../server.jar -l ../levels/MAsimple2_1.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
 # java -jar ../server.jar -l ../levels/MAthomasAppartment_bluepurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
