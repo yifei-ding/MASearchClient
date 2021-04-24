@@ -1,11 +1,12 @@
 package domain;
 
 public class Agent {
-    private int id;
-    private Color color;
+    private final int id;
+    private final Color color;
     private Location location;
 
     public Agent(int id, Color color, Location location) {
+
         this.id = id;
         this.color = color;
         this.location = location;

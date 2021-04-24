@@ -3,26 +3,37 @@ package data;
 import domain.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class InMemoryDataSource {
     private static final InMemoryDataSource dataSource = new InMemoryDataSource();
+    private int row;
+    private int col;
+    private boolean[][] wallMap; //whether the location is a wall
+    private int[][] goalMap; //store id of goal on the map
+    private int[][] agentMap; //id of agent
+    private int[][] boxMap;//id of box
 
     private HashMap<Integer, Agent> allAgents;
     private HashMap<Integer, Box> allBoxes;
     private HashMap<Integer, Goal> allGoals;
+    private HashMap<Integer, Task> allTasks;
     //store 2D array for color-agent, name-box, name-goal to support query
-    private HashMap<Color, ArrayList<Agent>> allAgentsByColor;
-    private HashMap<String, ArrayList<Box>> allBoxesByName;
-    private HashMap<String, ArrayList<Goal>> allGoalsByName;
+    private HashMap<Color, ArrayList<Integer>> allAgentsByColor;
+    private HashMap<String, ArrayList<Integer>> allBoxesByName;
+    private HashMap<String, ArrayList<Integer>> allGoalsByName;
+
+    //store task list for agents
+    private HashMap<Integer, ArrayList<Integer>> allTasksByAgent;
 
     //store map
-    private HashMap<Location, Boolean> map;
+    private HashMap<Location, Object> staticMap; //goal+wall
+    private HashMap<Location, Object> dynamicMap; //agent+box
+
 
 
     public static InMemoryDataSource getInstance(){
-        System.err.println("InMemoryDataSource instance");
+        //System.err.println("[InMemoryDataSource] getInstance");
         return dataSource;
     }
 
@@ -30,22 +41,57 @@ public class InMemoryDataSource {
         allAgents = new HashMap<Integer, Agent>();
         allBoxes = new HashMap<Integer, Box>();
         allGoals = new HashMap<Integer, Goal>();
-        allAgentsByColor = new HashMap<Color, ArrayList<Agent>>();
-        allBoxesByName = new HashMap<String, ArrayList<Box>>();
-        allGoalsByName = new HashMap<String, ArrayList<Goal>>();
-        map = new HashMap<Location, Boolean>();
+        allTasks = new HashMap<Integer, Task>();
+        allAgentsByColor = new HashMap<Color, ArrayList<Integer>>();
+        allBoxesByName = new HashMap<String, ArrayList<Integer>>();
+        allGoalsByName = new HashMap<String, ArrayList<Integer>>();
+        staticMap = new HashMap<Location, Object>();
+        dynamicMap = new HashMap<Location, Object>();
+        allTasksByAgent = new HashMap<Integer, ArrayList<Integer>>();
 
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
+    public void setCol(int col) {
+        this.col = col;
     }
 
     public void addAgent(Agent agent){
         //when adding agent, add to both maps
         allAgents.put(agent.getId(),agent);
-        ArrayList<Agent> list = allAgentsByColor.get(agent.getColor());
+        ArrayList<Integer> list = allAgentsByColor.get(agent.getColor());
         if (list==null){
             list = new ArrayList<>();
         }
-        list.add(agent);
+        list.add(agent.getId());
         allAgentsByColor.put(agent.getColor(),list);
+    }
+
+    public void addTask(Task task){
+        allTasks.put(task.getId(),task);
+        int agentId = task.getAgentId();
+        //group tasks by agent id
+        ArrayList<Integer> list = allTasksByAgent.get(agentId);
+        if (list==null){
+            list = new ArrayList<>();
+        }
+        list.add(task.getId());
+        allTasksByAgent.put(task.getAgentId(),list);
+    }
+
+    public HashMap<Integer, Task> getAllTasks() {
+        return allTasks;
     }
 
     public Agent getAgent(int id){
@@ -53,41 +99,53 @@ public class InMemoryDataSource {
 
     }
 
+    public HashMap<Integer, Agent> getAllAgents() {
+        return allAgents;
+    }
+    public HashMap<Integer, Box> getAllBoxes() {
+        return allBoxes;
+    }
+
+
     /*
     * @Author Yifei
     * @Description Search agent by color, for goal-box-agent matching
     * @Date 17:14 2021/4/2
     * @Param [color]
-    * @return java.util.ArrayList<domain.Agent>
+    * @return AgentId list
      **/
-    public ArrayList<Agent> getAgentByColor(Color color){
+    public ArrayList<Integer> getAgentByColor(Color color){
         return allAgentsByColor.get(color);
     }
 
     public void addBox(Box box) {
         //when adding box, add to both maps
         allBoxes.put(box.getId(),box);
-        ArrayList<Box> list = allBoxesByName.get(box.getName());
+        ArrayList<Integer> list = allBoxesByName.get(box.getName());
         if (list==null){
             list = new ArrayList<>();
         }
-        list.add(box);
+        list.add(box.getId());
         allBoxesByName.put(box.getName(),list);
     }
 
     public void addGoal(Goal goal) {
         //when adding goal, add to both maps
         allGoals.put(goal.getId(), goal);
-        ArrayList<Goal> list = allGoalsByName.get(goal.getName());
+        ArrayList<Integer> list = allGoalsByName.get(goal.getName());
         if (list==null){
             list = new ArrayList<>();
         }
-        list.add(goal);
+        list.add(goal.getId());
         allGoalsByName.put(goal.getName(),list);
     }
 
-    public void setMap(Location location, Boolean isWall){
-        map.put(location,isWall);
+    public HashMap<Integer, Goal> getAllGoals(){
+        return allGoals;
+    }
+
+    public void setStaticMap(Location location, Object object){
+        staticMap.put(location,object);
     }
 
     @Override
@@ -103,9 +161,42 @@ public class InMemoryDataSource {
     }
 
 
-    public String toString2() {
-        return "InMemoryDataSource{" +
-                "map=" + map +
-                '}';
+    public ArrayList<Integer> getAllTasksByAgent(int agentId) {
+        Integer id =agentId;
+        return allTasksByAgent.get(id);
     }
+
+    public ArrayList<Integer> getBoxByName(String name) {
+       return allBoxesByName.get(name);
+    }
+
+    public HashMap<Location, Object> getStaticMap() {
+        return staticMap;
+    }
+
+    public void setDynamicMap(Location location, Object object) {
+        dynamicMap.put(location,object);
+    }
+    public HashMap<Location, Object> getDynamicMap() {
+        return dynamicMap;
+    }
+
+
+    /**
+     *  for state.java to update agent location in parent constructor
+     */
+    public void setAgentLocation(int agentId, Location location){
+        //update dynamic map
+        dynamicMap.remove(allAgents.get(agentId).getLocation());
+
+        //update agent map
+        Agent agent = allAgents.get(agentId);
+        agent.setLocation(location);
+        allAgents.put(agentId,agent);
+
+        dynamicMap.put(location,agent);
+
+    }
+
+
 }

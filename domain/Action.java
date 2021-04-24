@@ -2,6 +2,7 @@ package domain;
 
 public enum Action
 {
+
     /*
         List of possible actions. Each action has the following parameters, 
         taken in order from left to right:
@@ -80,5 +81,10 @@ public enum Action
         this.agentColDelta = acd; 
         this.boxRowDelta = brd; 
         this.boxColDelta = bcd;  
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

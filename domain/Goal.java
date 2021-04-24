@@ -2,8 +2,8 @@ package domain;
 
 
 public class Goal {
-    private int id;
-    private String name;
+    private final int id;
+    private final String name;
     private Location location;
 
     public Goal(int id, String name, Location location) {

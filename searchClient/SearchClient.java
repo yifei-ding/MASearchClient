@@ -1,19 +1,17 @@
-package service;
+package searchClient;
 
 import data.InMemoryDataSource;
 import domain.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class SearchClient
 {   private static String mapName;
     private static InMemoryDataSource data;
 
-    public static void parseLevel(BufferedReader serverMessages)
+    public static void readMap(BufferedReader serverMessages)
             throws IOException
     {
         // We can assume that the level file is conforming to specification, since the server verifies this.
@@ -24,7 +22,7 @@ public class SearchClient
         // Read Level name
         serverMessages.readLine(); // #levelname
         mapName = serverMessages.readLine(); // <name>
-        System.err.println("Read map: "+ mapName);
+        System.err.println("[SearchClient] Read map: "+ mapName);
 
         // Read colors
         serverMessages.readLine(); // #colors
@@ -120,9 +118,15 @@ public class SearchClient
         // End
         // line is currently "#end"
 
-        //return new State(agentRows, agentCols, agentColors, walls, boxes, boxColors, goals);
+        //store to all info on the map to ImMemoryDataSource
+//        boolean[][] staticMap = walls;
+//        int[][] dynamicMap = new int[numRows][numCols];
+        data.setCol(numCols);
+        data.setRow(numRows);
 
-        //store to data
+        /**
+         * Store agents
+         */
         int agentSize = agentRows.length;
         for (int i = 0; i < agentSize; i ++ )
         {
@@ -130,19 +134,24 @@ public class SearchClient
             Color color = agentColors[i];
             int agentRow = agentRows[i];
             int agentCol = agentCols[i];
-            data.addAgent(new Agent(id, color, new Location(agentRow,agentCol)));
+            Location location = new Location(agentRow,agentCol);
+            Agent agent = new Agent(id, color, location);
+            data.addAgent(agent);
+            data.setDynamicMap(location,agent);
         }
 
         int boxId=0;
         for (int boxRow = 0; boxRow < boxes.length; boxRow ++){
             for (int boxCol=0; boxCol < boxes[boxRow].length; boxCol++){
                 if (boxes[boxRow][boxCol] != 0){
-                    char box = boxes[boxRow][boxCol];
-                    String boxName = String.valueOf(box);
-                    Color color = boxColors[box - 65];
+                    char boxChar = boxes[boxRow][boxCol];
+                    String boxName = String.valueOf(boxChar);
+                    Color color = boxColors[boxChar - 65];
                     //add box color together with location
                     Location location = new Location(boxRow,boxCol);
-                    data.addBox(new Box(boxId, boxName, color, location));
+                    Box box = new Box(boxId, boxName, color, location);
+                    data.addBox(box);
+                    data.setDynamicMap(location,box);
                     boxId++;
                 }
 
@@ -154,12 +163,13 @@ public class SearchClient
             for (int goalCol=0; goalCol < goals[goalRow].length;goalCol++){
                 if (goals[goalRow][goalCol] > 0){
                     //System.err.println("In getGoalsMap: " + this.goals[row][col]);
-                    char goal = goals[goalRow][goalCol];
-                    String goalName = String.valueOf(goal);
+                    char goalChar = goals[goalRow][goalCol];
+                    String goalName = String.valueOf(goalChar);
 
                     Location location = new Location(goalRow,goalCol);
-
-                    data.addGoal(new Goal(goalId, goalName, location));
+                    Goal goal = new Goal(goalId, goalName, location);
+                    data.addGoal(goal);
+                    data.setStaticMap(location,goal);
                     goalId++;
                 }
 
@@ -169,7 +179,9 @@ public class SearchClient
         for (int i = 0; i < walls.length; i++){
             for (int j=0; j < walls[i].length;j++){
                     Location location = new Location(i,j);
-                    data.setMap(location, walls[i][j]);
+                    Wall wall = new Wall(location, walls[i][j]);
+                    if (data.getStaticMap().get(location) == null) //If the location is already stored as a goal, don't overwrite
+                        data.setStaticMap(location, wall);
 
             }
         }
@@ -179,36 +191,18 @@ public class SearchClient
 
 
     public Action[][] search()
-    {   AgentManager agentManager = new AgentManager(data);
+    {
+        HighLevelSolver highLevelSolver = new HighLevelSolver(data);
 
-        return agentManager.search();
+        return highLevelSolver.solve();
         //return null;
     }
-//    public static void writeLog(String mapName, String type, int planLength, String elapsedTime, String remark) throws IOException {
-//        File F=new File("log.txt");
-//        if(!F.exists()){
-//            F.createNewFile();
-//        }
-//        FileWriter fw=null;
-//        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        Date date = new Date(System.currentTimeMillis());
-//        System.out.println(formatter.format(date));
-//        String writeLog=formatter.format(date)+" - "+mapName+" - "+ type + " - "+planLength + " - " +  elapsedTime + " - " +remark;
-//        try {
-//
-//            fw=new FileWriter(F, true);
-//            System.err.println("Write log successfully");
-//            fw.write(writeLog+"\r\n");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }finally{
-//            if(fw!=null){
-//                fw.close();
-//            }
-//        }
-//
-//    }
 
+
+    public static void testLowLevel(InMemoryDataSource data) {
+        LowLevelSolver.solveForAllAgents(new ArrayList<>());
+
+    }
     public static void main(String[] args)
             throws IOException
     {
@@ -216,64 +210,107 @@ public class SearchClient
         // Send client name to server. Don't remove. TODO: change to group name
         System.out.println("SearchClient");
 
-        System.err.println("Hello!");
-        long startTime = System.nanoTime();
+        System.err.println("[SearchClient] Start");
+
         // Parse the level.
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.US_ASCII));
 
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
-        SearchClient.parseLevel(serverMessages);
+        SearchClient.readMap(serverMessages);
+
+        TaskHandler taskHandler = new TaskHandler(data);
+        taskHandler.assignTask3();
+//        SearchClient.testLowLevel(data);
+//        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
 
         // Search for a plan.
         Action[][] plan;
         try
         {
-            plan = searchClient.search();
+            plan = searchClient.search(); // todo: Is this mean we should return all actions at once?
         }
         catch (OutOfMemoryError ex)
         {
-            System.err.println("Maximum memory usage exceeded.");
+            System.err.println("[SearchClient] Maximum memory usage exceeded.");
             plan = null;
         }
 
         // Print plan to server.
         if (plan == null)
         {
-            System.err.println("Unable to solve level.");
-            double elapsedTime = (System.nanoTime() - startTime) / 1_000_000_000d;
-            DecimalFormat df = new DecimalFormat("#.000");
-            String elapsedTimeStr = df.format(elapsedTime);
-            //SearchClient.writeLog(mapName,"searchType",plan.length, elapsedTimeStr, "fail");
+            System.err.println("[SearchClient] Unable to solve level.");
             System.exit(0);
 
         }
         else
         {
-            System.err.format("Found solution of length %,d.\n", plan.length);
+            System.err.format("[SearchClient] Found solution of length %,d.\n", plan.length);
 
-            for (Action[] jointAction : plan)
-            {
-                System.out.print(jointAction[0].name);
-                for (int action = 1; action < jointAction.length; ++action)
-                {
-                    System.out.print("|");
-                    System.out.print(jointAction[action].name);
+            int max=0;
+            for(int i=0;i<plan.length; i++) { //i=timestep
+                if (plan[i].length>max)
+                    max = plan[i].length;
+            }
+            System.err.println("[SearchClient] Max plan length = "+ max);
+
+            for(int i=0;i<max; i++) { //i=timestep
+                for (int j=0; j<plan.length;j++) { //j=agent
+                    if ( i < plan[j].length){
+                        if (j==0)
+                            System.out.print(plan[j][i].name);
+                        else
+                        {
+                            System.out.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.out.print(plan[j][i].name);
+                        }
+                    }
+                    else {
+                        if (j==0)
+                            System.out.print("NoOp");
+                        else
+                        {
+                            System.out.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.out.print("NoOp");
+                        }
+                    }
+
                 }
                 System.out.println();
 
-                // We must read the server's response to not fill up the stdin buffer and block the server.
-                serverMessages.readLine();
+            }
+
+
+            for(int i=0;i<max; i++) { //i=timestep
+                for (int j=0; j<plan.length;j++) { //j=agent
+                    if ( i < plan[j].length){
+                        if (j==0)
+                            System.err.print(plan[j][i].name);
+                        else
+                        {
+                            System.err.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.err.print(plan[j][i].name);
+                        }
+                    }
+                    else {
+                        if (j==0)
+                            System.err.print("NoOp");
+                        else
+                        {
+                            System.err.print("|"); //when print to server, actions after the first action need a "|" in front
+                            System.err.print("NoOp");
+                        }
+                    }
+
+                }
+                System.err.println();
 
             }
-            double elapsedTime = (System.nanoTime() - startTime) / 1_000_000_000d;
-            DecimalFormat df = new DecimalFormat("0.000");
-            String elapsedTimeStr = df.format(elapsedTime);
-            //SearchClient.writeLog(mapName,"searchType",plan.length, elapsedTimeStr, "baseline");
+
+            // We must read the server's response to not fill up the stdin buffer and block the server.
+                serverMessages.readLine();
+            }
         }
     }
 
 
-
-
-}
