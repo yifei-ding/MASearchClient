@@ -9,12 +9,13 @@ import java.util.Objects;
 
 public class HighLevelState {
 
-    private ArrayList<Constraint> constraints;
+    private ArrayList<Constraint> constraints = new ArrayList<>();
     private Location[][] solution;
     private int cost;
 
     public HighLevelState(ArrayList<Constraint> constraints) {
-        this.constraints = constraints;
+//        this.constraints = constraints;
+        this.constraints.addAll(constraints);
     }
 
     public ArrayList<Constraint> getConstraints() {

@@ -22,7 +22,7 @@ public class HighLevelSolver {
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
 
-        HighLevelState initialState = new HighLevelState(new ArrayList<Constraint>());
+        HighLevelState initialState = new HighLevelState(new ArrayList<>());
         initialState.calculateSolution();
         initialState.updateCost();
 
@@ -31,7 +31,7 @@ public class HighLevelSolver {
         while (!tree.isEmpty()){
             HighLevelState node = findBestNode(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
             System.err.println("[----------Best Node----------]: " + node.toString());
-            System.err.println("[----------Current constraints----------]: " + node.getConstraints().size());
+            System.err.println("[----------Current constraints----------]: " + node.getConstraints());
             if (!hasConflict(node) && !hasEdgeConflict(node)) {
                 Location[][] solution = node.getSolution();
                 Action[][] finalSolution = translate(solution);
@@ -45,7 +45,8 @@ public class HighLevelSolver {
                 System.err.println("[Vertex conflict] " + conflict.toString());
                 for (int i = 0; i < 2; i++) {
                     HighLevelState child = new HighLevelState(node.getConstraints());
-                    System.err.println("[New child]" + child.toString()); //TODO: 4/25 debug
+                    System.err.println("[--------------------]: "+i +"th child" + node.getConstraints());
+                    System.err.println("[New child]" + child.toString()); //4/25 debug solved by create new ArrayList for each child
                     Constraint newConstraint;
                     if (i==0)
                         newConstraint = new Constraint(conflict.getAgentId_1(), conflict.getTimestep(), conflict.getLocation1());
@@ -137,7 +138,8 @@ public class HighLevelSolver {
 //            ArrayList<Location> locations = new ArrayList<>();
             HashMap<Location, Integer> locations = new HashMap<>();
             for (int j = 0; j < allPaths.length; j++) { //j = agent
-                Location location = allPaths[j][i];
+                Location location = allPaths[j][i]; //TODO: 4/25 debug Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 13 out of bounds for length 13
+
 //                Set<Integer> indexes = locations.get(location);
                 if (locations.get(location) == null) {
                     locations.put(location,j);
