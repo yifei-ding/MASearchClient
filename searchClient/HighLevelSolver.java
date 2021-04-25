@@ -29,9 +29,11 @@ public class HighLevelSolver {
         tree.add(initialState);
 
         while (!tree.isEmpty()){
-            HighLevelState node = findBestNode(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
-            System.err.println("[----------Best Node----------]: " + node.toString());
-            System.err.println("[----------Current constraints----------]: " + node.getConstraints());
+            HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
+//            System.err.println("[----------Best Node----------]: " + node.toString());
+            System.err.println("[------------------Current constraints--------------]: " + node.getConstraints().size());
+            System.err.println("[------------------Current tree--------------]: " + tree.size());
+
             if (!hasConflict(node) && !hasEdgeConflict(node)) {
                 Location[][] solution = node.getSolution();
                 Action[][] finalSolution = translate(solution);
@@ -45,8 +47,8 @@ public class HighLevelSolver {
                 System.err.println("[Vertex conflict] " + conflict.toString());
                 for (int i = 0; i < 2; i++) {
                     HighLevelState child = new HighLevelState(node.getConstraints());
-                    System.err.println("[--------------------]: "+i +"th child" + node.getConstraints());
-                    System.err.println("[New child]" + child.toString()); //4/25 debug solved by create new ArrayList for each child
+//                    System.err.println("[--------------------]: "+i +"th child" + node.getConstraints());
+//                    System.err.println("[New child]" + child.toString()); //4/25 debug solved by create new ArrayList for each child
                     Constraint newConstraint;
                     if (i==0)
                         newConstraint = new Constraint(conflict.getAgentId_1(), conflict.getTimestep(), conflict.getLocation1());
@@ -60,7 +62,7 @@ public class HighLevelSolver {
             }
             else if (hasEdgeConflict(node)){
                 Conflict conflict = getFirstEdgeConflict(node);
-                System.err.println("[Edge conflict] " + conflict.toString());
+//                System.err.println("[Edge conflict] " + conflict.toString());
                 // Remove current node from tree because it has conflicts.
                 tree.remove(node);
                 Constraint newConstraint;
@@ -104,12 +106,12 @@ public class HighLevelSolver {
     }
 
     private void addToTree(HighLevelState child) {
-        System.err.println("[Check child] " + child.toString());
+//        System.err.println("[Check child] " + child.toString());
 
-        if (child.getCost()>0)
-            System.err.println("[Check child] cost>0");
-        if (!tree.contains(child))
-            System.err.println("[Check child] tree doesn't contain this child");
+//        if (child.getCost()>0)
+//            System.err.println("[Check child] cost>0");
+//        if (!tree.contains(child))
+//            System.err.println("[Check child] tree doesn't contain this child");
 
         if (child.getCost() > 0 && !tree.contains(child)) {
             System.err.println("[Add child]");
@@ -118,7 +120,7 @@ public class HighLevelSolver {
     }
 
 
-    private HighLevelState findBestNode(ArrayList<HighLevelState> tree) {
+    private HighLevelState findBestNodeWithMinCost(ArrayList<HighLevelState> tree) {
         int min = INFINITY;
         HighLevelState bestNode = null;
         for (HighLevelState node: tree){
@@ -134,13 +136,15 @@ public class HighLevelSolver {
 
     private boolean hasConflict(HighLevelState state) {  // TODO: add boxes into the Pathes
         Location[][] allPaths = state.getSolution();
-        for (int i = 0; i < allPaths[0].length; i++) { //i = timestep
-//            ArrayList<Location> locations = new ArrayList<>();
+        int max = getMaxPathLength(allPaths);
+        Location location;
+        for (int i = 0; i < max; i++) { //i = timestep
             HashMap<Location, Integer> locations = new HashMap<>();
             for (int j = 0; j < allPaths.length; j++) { //j = agent
-                Location location = allPaths[j][i]; //TODO: 4/25 debug Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 13 out of bounds for length 13
-
-//                Set<Integer> indexes = locations.get(location);
+                if (i < allPaths[j].length)  //4/25 debug fix: because each agent has different length of solution, need to check length while getting an element in solution[][]
+                    location = allPaths[j][i];
+                else
+                    location = allPaths[j][allPaths[j].length-1];
                 if (locations.get(location) == null) {
                     locations.put(location,j);
                 } else {
@@ -150,16 +154,34 @@ public class HighLevelSolver {
         }
         return false;
     }
+    private int getMinPathLength(Location[][] solution){
+        int min = INFINITY;
+        for (int i = 0; i < solution.length; i++) {
+            if (solution[i].length < min)
+                min = solution[i].length;
+        }
+        return min;
+    }
+    private int getMaxPathLength(Location[][] solution){
+        int max = 0;
+        for (int i = 0; i < solution.length; i++) {
+            if (solution[i].length > max)
+                max = solution[i].length;
+        }
+        return max;
+    }
 
     private Conflict getFirstConflict(HighLevelState state) {
         Location[][] allPaths = state.getSolution();
-//        ArrayList<Constraint> constraints = new ArrayList<>();
-        for (int i = 0; i < allPaths[0].length; i++) { //i = timestep
-//            ArrayList<Location> locations = new ArrayList<>();
+        int max = getMaxPathLength(allPaths);
+        Location location;
+        for (int i = 0; i < max; i++) { //i = timestep
             HashMap<Location, Integer> locations = new HashMap<>();
             for (int j = 0; j < allPaths.length; j++) { //j = agent
-                Location location = allPaths[j][i];
-//                Set<Integer> indexes = locations.get(location);
+                if (i < allPaths[j].length)  //4/25 debug fix: because each agent has different length of solution, need to check length while getting an element in solution[][]
+                    location = allPaths[j][i];
+                else
+                    location = allPaths[j][allPaths[j].length-1];
                 if (locations.get(location) == null) {
                     locations.put(location,j);
                 } else {
@@ -168,10 +190,10 @@ public class HighLevelSolver {
                     Conflict conflict = new Conflict(agentId_1,agentId_2, location, location, i);
                     return conflict;
                 }
-
             }
         }
-        return null;
+        return new Conflict(0,0,new Location(0,0),new Location(0,0),0);
+
     }
 
 

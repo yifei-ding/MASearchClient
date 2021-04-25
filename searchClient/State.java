@@ -74,7 +74,7 @@ public class State {
             plan[state.g-1] = state.location;
             state = state.parent;
         }
-//        System.err.println("[State] plan.length=" + plan.length);
+        System.err.println("[State] plan.length=" + plan.length);
 
         return plan;
     }
