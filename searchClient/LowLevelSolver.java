@@ -36,7 +36,7 @@ public class LowLevelSolver {
                 action = solve(constraints, from, to, agent.getId(), -1);
                 //After single agent planning, add action list to plan[][]
                 plan[agent.getId()]= action;
-                System.err.println("[LowLevelSolver]: Agent " + agent.getId() + " " + Arrays.toString(action));
+//                System.err.println("[LowLevelSolver]: Agent " + agent.getId() + " " + Arrays.toString(action));
 
             }
             else { //task with box
