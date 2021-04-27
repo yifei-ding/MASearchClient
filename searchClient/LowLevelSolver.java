@@ -28,7 +28,12 @@ public class LowLevelSolver {
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority TODO: improve
-            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(0)); //get first task of the agent
+            ArrayList<Integer> tasks = data.getAllTasksByAgent(agent.getId());
+            System.err.println("line32: "+tasks);
+            if(tasks == null){//to avoid nullPointer
+                continue;
+            }
+            Task task = allTasks.get(tasks.get(0)); //get first task of the agent
             //2. Preprocess: check task type, whether it is with/without box
             to = task.getTargetLocation();
             if (task.getBoxId() == -1){ //task without box

@@ -45,8 +45,12 @@ public class HighLevelState {
 
     public void updateCost() {
         //cost = the sum of the steps of each agent
-        for (int i =0;i<this.solution.length;i++){
-            cost += this.solution[i].length;
+        if(solution!=null){
+            for (int i =0;i<this.solution.length;i++){
+                if(solution[i]!=null) { // TODO: why solution[i] maybe null
+                    cost += this.solution[i].length;
+                }
+            }
         }
 //        System.err.println("[HighLevelState] Update Cost: " + this.cost);
     }

@@ -44,16 +44,17 @@ public class HighLevelSolver {
                 Conflict conflict = getFirstConflict(node);
                 // Remove current node from tree because it has conflicts.
                 tree.remove(node);
-                System.err.println("[Vertex conflict] " + conflict.toString());
+//                System.err.println("[Vertex conflict] " + conflict.toString());
                 for (int i = 0; i < 2; i++) {
                     HighLevelState child = new HighLevelState(node.getConstraints());
 //                    System.err.println("[--------------------]: "+i +"th child" + node.getConstraints());
 //                    System.err.println("[New child]" + child.toString()); //4/25 debug solved by create new ArrayList for each child
                     Constraint newConstraint;
-                    if (i==0)
+                    if (i==0) {
                         newConstraint = new Constraint(conflict.getAgentId_1(), conflict.getTimestep(), conflict.getLocation1());
-                    else
+                    }else {
                         newConstraint = new Constraint(conflict.getAgentId_2(), conflict.getTimestep(), conflict.getLocation2());
+                    }
                     child.addConstraint(newConstraint);
                     child.calculateSolution();
                     child.updateCost();
@@ -141,6 +142,9 @@ public class HighLevelSolver {
         for (int i = 0; i < max; i++) { //i = timestep
             HashMap<Location, Integer> locations = new HashMap<>();
             for (int j = 0; j < allPaths.length; j++) { //j = agent
+                if(allPaths[j]==null){ // TODO: check the reason
+                    return false;
+                }
                 if (i < allPaths[j].length)  //4/25 debug fix: because each agent has different length of solution, need to check length while getting an element in solution[][]
                     location = allPaths[j][i];
                 else
@@ -164,7 +168,10 @@ public class HighLevelSolver {
     }
     private int getMaxPathLength(Location[][] solution){
         int max = 0;
-        for (int i = 0; i < solution.length; i++) {
+        for (int i = 0; i < solution.length; i++) {//TODO: Check why no solution
+            if(solution[i]==null){
+                continue;
+            }
             if (solution[i].length > max)
                 max = solution[i].length;
         }
@@ -178,6 +185,9 @@ public class HighLevelSolver {
         for (int i = 0; i < max; i++) { //i = timestep
             HashMap<Location, Integer> locations = new HashMap<>();
             for (int j = 0; j < allPaths.length; j++) { //j = agent
+                if(allPaths[j]==null){ // TODO:Check
+                    return null;
+                }
                 if (i < allPaths[j].length)  //4/25 debug fix: because each agent has different length of solution, need to check length while getting an element in solution[][]
                     location = allPaths[j][i];
                 else
