@@ -30,7 +30,7 @@ javac searchClient/LowLevelSolver.java
 
 # java -jar ../server.jar -l ../levels/MAsimple2_3.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
-java -jar ../server.jar -l ../levels/MAsimple2_2.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+# java -jar ../server.jar -l ../levels/MAsimple2_1.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
-# java -jar ../server.jar -l ../levels/MAthomasAppartment_bluepurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+java -jar ../server.jar -l ../levels/MAthomasAppartment_bluepurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 

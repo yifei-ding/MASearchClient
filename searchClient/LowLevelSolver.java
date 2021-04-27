@@ -25,47 +25,44 @@ public class LowLevelSolver {
         Location to;
         Location[][] plan = new Location[allAgents.size()][];
         Location[] action;
+        int boxId;
         //for each agent, do
         for (Agent agent : allAgents.values()) {
-            //1. get an uncompleted task of the agent with highest priority TODO: improve
-            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(0)); //get first task of the agent
+            //1. get an uncompleted task of the agent with highest priority
+            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(1)); //TODO: improve; currently just get first task of the agent
             //2. Preprocess: check task type, whether it is with/without box
             to = task.getTargetLocation();
             if (task.getBoxId() == -1){ //task without box
                 from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
-                action = solve(constraints, from, to, agent.getId(), -1);
-                //After single agent planning, add action list to plan[][]
-                plan[agent.getId()]= action;
-//                System.err.println("[LowLevelSolver]: Agent " + agent.getId() + " " + Arrays.toString(action));
-
+                boxId = -1;
             }
             else { //task with box
                 from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
-                action = solve(constraints, from, to, agent.getId(), task.getBoxId());
-                plan[agent.getId()]= action;
-//                System.err.println("[LowLevelSolver]: Box " + task.getBoxId()+ " " + Arrays.toString(action));
-
+                boxId = task.getBoxId();
             }
 
             //3. Preprocess: prepare map and constraints for LowLevelSolver.solve
-            //TODO: maybe there's need to re-design map data structure
+            //TODO: maybe there's need to filter constraints
+            //TODO: After getting all tasks in this round, treat all other non-moving agents and boxes as obstacles.
             //4. Call LowLevelSolver.solve
+            action = solve(constraints, from, to, agent.getId(), boxId, new Location(2,20));
+            plan[agent.getId()]= action; //TODO: for each timestep, return a pair of location instead of just one location for pushing/pulling the box
 
         }
         //print merged plan
-//        System.err.println("[LowLevelSolver]Merged plan:");
-//        for (int i=0; i<plan.length;i++)
-//            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
+        System.err.println("[LowLevelSolver]Merged plan:");
+        for (int i=0; i<plan.length;i++)
+            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
 
         return plan;
     }
 
 
-    public static Location[] solve(ArrayList<Constraint> constraints, Location from, Location to, int agentId, int boxId)
+    public static Location[] solve(ArrayList<Constraint> constraints, Location from, Location to, int agentId, int boxId, Location agentLocation)
     {
         //Use graph search to find a solution
-//        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString());
-        State initialState = new State(0, from, to, agentId, boxId, constraints);
+        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Loccation " + agentLocation.toString());
+        State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
 //        Frontier frontier = new FrontierDFS();
 
@@ -91,8 +88,10 @@ public class LowLevelSolver {
                 for (State m : children){
                     //if m is not in frontier and m in not in expandedNodes then
                     //add child m to frontier
-                    if (!frontier.contains(m) && !explored.contains(m))
+                    if (!frontier.contains(m) && !explored.contains(m)) {
+                        System.err.println("Add children " + m.toString());
                         frontier.add(m);
+                    }
                 }
             }
         }

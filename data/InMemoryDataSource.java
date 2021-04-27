@@ -199,4 +199,7 @@ public class InMemoryDataSource {
     }
 
 
+    public Task getTaskById(Integer taskId) {
+        return allTasks.get(taskId);
+    }
 }

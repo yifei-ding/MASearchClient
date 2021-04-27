@@ -69,7 +69,13 @@ public class TaskHandler {
 
     }
 
-
+    /**
+    * @author Yifei
+    * @description This method is for testing maps without box
+    * @date 2021/4/27
+    * @param []
+    * @return void
+     */
     public void assignTask3(){
         /**
          * @author Yifei
@@ -113,4 +119,22 @@ public class TaskHandler {
 
     }
 
+    public Task getFirstTask(int agentId){
+        /**
+        * @author Yifei
+        * @description Returns a task that is not completed and with highest priority
+        * @date 2021/4/27
+        * @param [agentId]
+        * @return domain.Task
+         */
+        Task task = null;
+        ArrayList<Integer> taskList = data.getAllTasksByAgent(agentId); //already in descending order
+        if (taskList.size() != 0){
+            for (Integer taskId:taskList){
+                if (!data.getTaskById(taskId).isCompleted()) //check is the task is completed
+                    task = data.getTaskById(taskId);
+            }
+        }
+        return task;
+    }
 }

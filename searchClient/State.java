@@ -1,10 +1,7 @@
 package searchClient;
 
 import data.InMemoryDataSource;
-import domain.Action;
-import domain.Constraint;
-import domain.Location;
-import domain.Wall;
+import domain.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,36 +16,52 @@ public class State {
     private int hash = 0;
     private int agentId;
     private int boxId;
+    private Location agentLocation;
     private ArrayList<Constraint> constraints;
     private InMemoryDataSource data = InMemoryDataSource.getInstance();
     private HashMap<Location, Object> map = data.getStaticMap();
 
 
-    public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId, ArrayList<Constraint> constraints) {
+    public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId, Location agentLocation, ArrayList<Constraint> constraints) {
         this.timeStep = timeStep;
         this.location = location;
         this.goalLocation = goalLocation;
         this.agentId = agentId;
         this.boxId = boxId;
+        this.agentLocation = agentLocation;
         this.parent = null;
         this.constraints = constraints;
         this.g = 0;
     }
 
-
+    //for without box
     public State(State parent, Location location) {
         this.timeStep = parent.timeStep+1;
         this.location = location;
         this.goalLocation = parent.goalLocation;
         this.agentId = parent.agentId;
         this.boxId = parent.boxId;
+        this.agentLocation = location;
         this.parent = parent;
         this.constraints = parent.constraints;
         this.g = parent.g +1;
 
-        //TODO:debug
-        //Apply action
+        //Apply action TODO:debug
+        //Maybe there's no need to update things to data.
         //data.setAgentLocation(agentId,location);
+    }
+
+    //for with box
+    public State(State parent, Location agentDestination, Location boxDestination) {
+        this.timeStep = parent.timeStep+1;
+        this.location = boxDestination;
+        this.goalLocation = parent.goalLocation;
+        this.agentId = parent.agentId;
+        this.boxId = parent.boxId;
+        this.agentLocation = agentDestination;
+        this.parent = parent;
+        this.constraints = parent.constraints;
+        this.g = parent.g +1;
     }
 
     public boolean isGoalState() {
@@ -90,15 +103,127 @@ public class State {
     public ArrayList<State> getExpandedStates() {
         ArrayList<State> expandedStates = new ArrayList<>(16);
         //Action[] actions = new Action[]{Action.MoveE, Action.MoveN, Action.MoveS, Action.MoveW};
-        ArrayList<Location> locations = this.location.getNeighbours();
-        locations.add(location);
-        //TODO: need to get current timestep and check constraints
-        for (Location location : locations) {
-            if (this.isApplicable(location) && !isConstraint(timeStep,location)) {
-                expandedStates.add(new State(this,location));
+        Location agentDestination;
+        Location boxDestination;
+        int i =0;
+
+        ArrayList<Location> locations = this.location.getNeighbours(); //equivalent to Move E, W, S, N
+        locations.add(location); //equivalent to NoOp
+        if (boxId == -1){
+            for (Location location : locations) {
+                if (this.isApplicable(location) && !isConstraint(timeStep+1,location)) { //TODO: why not timestep+1
+                    expandedStates.add(new State(this,location));
+                }
+            }
+        }
+        else{
+            //check all possible actions
+            for (Action action:Action.values()){
+                if (this.isApplicable(action)){
+
+                    agentDestination = new Location(this.agentLocation.getRow() + action.agentRowDelta, this.agentLocation.getCol() + action.agentColDelta);
+
+                    if (action.type == ActionType.Push || action.type == ActionType.Pull) {
+                        System.err.println("Applicable action: "+ action.name);
+                        boxDestination = new Location(this.location.getRow() + action.boxRowDelta, this.location.getCol() + action.boxColDelta);
+                    }
+
+                    else boxDestination = this.location;
+                    if (!isConstraint(timeStep+1,agentDestination,boxDestination)) {
+                        i++;
+                        System.err.println("i: " + i);
+                        if (i<20) {
+                            System.err.println("Agent next location: " + agentDestination.toString());
+                            System.err.println("Box next location: " + boxDestination.toString());
+                        }
+                        if (!agentDestination.equals(boxDestination))
+                            expandedStates.add(new State(this, agentDestination, boxDestination));
+                    }
+                }
             }
         }
         return expandedStates;
+    }
+
+    private boolean isConstraint(int timeStep, Location agentDestination, Location boxDestination) {
+        return false;
+    }
+
+    private boolean isApplicable(Action action) {
+        int agentRow;
+        int agentCol;
+        int boxRow;
+        int boxCol;
+        int destinationRow;
+        int destinationCol;
+        Location agentDestination;
+        Location boxDestination;
+        agentRow = this.agentLocation.getRow();
+        agentCol = this.agentLocation.getCol();
+        boxRow = this.location.getRow();
+        boxCol = this.location.getCol();
+
+        switch (action.type) {
+            case NoOp:
+                return true;
+            case Move:
+                destinationRow = agentRow + action.agentRowDelta;
+                destinationCol = agentCol + action.agentColDelta;
+                agentDestination = new Location(destinationRow,destinationCol);
+                return this.cellIsFree(agentDestination);
+
+            case Push:
+                destinationRow = agentRow + action.agentRowDelta;
+                destinationCol = agentCol + action.agentColDelta;
+                agentDestination = new Location(destinationRow,destinationCol);
+
+                //box location should equal to agent destination
+                if (this.location.equals(agentDestination)){
+//                    System.err.println("box location equal to agent destination");
+                    destinationRow = boxRow + action.boxRowDelta;
+                    destinationCol = boxCol + action.boxColDelta;
+                    boxDestination = new Location(destinationRow,destinationCol);
+                    //box destination is free
+                    if (this.cellIsFree(boxDestination)){
+                        return true;
+                    }
+                    else return false;
+                }
+                else return false;
+            case Pull:
+                destinationRow = boxRow + action.boxRowDelta;
+                destinationCol = boxCol + action.boxColDelta;
+                boxDestination = new Location(destinationRow,destinationCol);
+                //box destination should equal to agent location
+                if (this.agentLocation.equals(boxDestination)){
+//                    System.err.println("box destination equal to agent location");
+                    destinationRow = agentRow + action.agentRowDelta;
+                    destinationCol = agentCol + action.agentColDelta;
+                    agentDestination = new Location(destinationRow,destinationCol);
+                    //agent destination is free
+                    if (this.cellIsFree(agentDestination)){
+                        return true;
+                    }
+                    else return false;
+                }
+                else return false;
+        }
+        return false;
+    }
+
+    private boolean cellIsFree(Location location) {
+        Object obj = data.getStaticMap().get(location);
+        if (obj instanceof Wall) {
+            if (((Wall)obj).isWall())
+                return false;
+        }
+
+        //might also check whether there's a box at location?
+        obj = data.getDynamicMap().get(location);
+        if (obj instanceof Box) {
+            return false;
+        }
+        return true;
     }
 
     private boolean isConstraint(int timeStep, Location location) {
@@ -137,14 +262,23 @@ public class State {
         return goalLocation;
     }
 
+    public int getBoxId() {
+        return boxId;
+    }
+
+    public Location getAgentLocation() {
+        return agentLocation;
+    }
+
     @Override
     public String toString() {
         return "State{" +
-                "timeStep=" + timeStep +
+                 "timeStep=" + timeStep +
                 ", location=" + location +
-                ", goalLocation=" + goalLocation +
-                //", parent=" + parent +
-                ", agentId=" + agentId +
+                //", goalLocation=" + goalLocation +
+                //", agentId=" + agentId +
+                //", boxId=" + boxId +
+                ", agentLocation=" + agentLocation +
                 '}';
     }
 
@@ -153,11 +287,11 @@ public class State {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         State state = (State) o;
-        return timeStep == state.timeStep && agentId == state.agentId && location.equals(state.location) && goalLocation.equals(state.goalLocation) && Objects.equals(parent, state.parent) && Objects.equals(constraints, state.constraints);
+        return  location.equals(state.location) && agentLocation.equals(state.agentLocation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timeStep, location, goalLocation, parent, agentId, constraints);
+        return Objects.hash(timeStep, location, g, agentLocation);
     }
 }
