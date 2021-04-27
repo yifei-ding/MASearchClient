@@ -14,7 +14,7 @@ public class LowLevelSolver {
     private static HashMap<Integer, Task> allTasks;
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
-    public static Location[][] solveForAllAgents( ArrayList<Constraint> constraints)
+    public static Location[][] solveForAllAgents( HashSet<Constraint> constraints)
     {
 //        System.err.println("[LowLevelSolver]: solve for all agents");
 
@@ -29,7 +29,7 @@ public class LowLevelSolver {
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority
-            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(1)); //TODO: improve; currently just get first task of the agent
+            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(0)); //TODO: improve; currently just get first task of the agent
             //2. Preprocess: check task type, whether it is with/without box
             to = task.getTargetLocation();
             if (task.getBoxId() == -1){ //task without box
@@ -58,10 +58,10 @@ public class LowLevelSolver {
     }
 
 
-    public static Location[] solve(ArrayList<Constraint> constraints, Location from, Location to, int agentId, int boxId, Location agentLocation)
+    public static Location[] solve(HashSet<Constraint> constraints, Location from, Location to, int agentId, int boxId, Location agentLocation)
     {
         //Use graph search to find a solution
-        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Loccation " + agentLocation.toString());
+//        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Location " + agentLocation.toString());
         State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
 //        Frontier frontier = new FrontierDFS();
@@ -89,7 +89,6 @@ public class LowLevelSolver {
                     //if m is not in frontier and m in not in expandedNodes then
                     //add child m to frontier
                     if (!frontier.contains(m) && !explored.contains(m)) {
-                        System.err.println("Add children " + m.toString());
                         frontier.add(m);
                     }
                 }

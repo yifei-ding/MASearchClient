@@ -22,7 +22,7 @@ public class HighLevelSolver {
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
 
-        HighLevelState initialState = new HighLevelState(new ArrayList<>());
+        HighLevelState initialState = new HighLevelState(new HashSet<>());
         initialState.calculateSolution();
         initialState.updateCost();
 
@@ -187,6 +187,7 @@ public class HighLevelSolver {
                 } else {
                     int agentId_1 = j;
                     int agentId_2 = locations.get(location);
+                    System.err.println("Vertex conflict at timestep "+i );
                     Conflict conflict = new Conflict(agentId_1,agentId_2, location, location, i);
                     return conflict;
                 }
@@ -202,32 +203,18 @@ public class HighLevelSolver {
         //for each agent, get a list of its path
         for (int i=0; i<solution.length; i++){
             Location[] path = solution[i];
-            Action[] singleAgentSolution = new Action[path.length];
+            Action[] singleAgentSolution = new Action[path.length-1];
             for (int j=0; j< path.length -1; j++){
-                if (j==0){
-                    if (data.getAgent(i).getLocation().getUpNeighbour().equals(path[j]))
-                        singleAgentSolution[j] = Action.MoveN;
-                    else if (data.getAgent(i).getLocation().getDownNeighbour().equals(path[j]))
-                        singleAgentSolution[j] = Action.MoveS;
-                    else if (data.getAgent(i).getLocation().getLeftNeighbour().equals(path[j]))
-                        singleAgentSolution[j] = Action.MoveW;
-                    else if (data.getAgent(i).getLocation().getRightNeighbour().equals(path[j]))
-                        singleAgentSolution[j] = Action.MoveE;
-                    else if (data.getAgent(i).getLocation().equals(path[j]))
-                        singleAgentSolution[j] = Action.NoOp;
-                }
-
                 if (path[j].getUpNeighbour().equals(path[j + 1]))
-                    singleAgentSolution[j+1] = Action.MoveN;
+                    singleAgentSolution[j] = Action.MoveN;
                 else if (path[j].getDownNeighbour().equals(path[j + 1]))
-                    singleAgentSolution[j+1] = Action.MoveS;
+                    singleAgentSolution[j] = Action.MoveS;
                 else if (path[j].getLeftNeighbour().equals(path[j + 1]))
-                    singleAgentSolution[j+1] = Action.MoveW;
+                    singleAgentSolution[j] = Action.MoveW;
                 else if (path[j].getRightNeighbour().equals(path[j + 1]))
-                    singleAgentSolution[j+1] = Action.MoveE;
+                    singleAgentSolution[j] = Action.MoveE;
                 else if (path[j].equals(path[j + 1]))
-                    singleAgentSolution[j+1] = Action.NoOp;
-
+                    singleAgentSolution[j] = Action.NoOp;
             }
             finalSolution[i] = singleAgentSolution;
          }
@@ -252,15 +239,15 @@ public class HighLevelSolver {
                     Location[] route1 = solution[i];
                     Location[] route2 = solution[j];
                     if (route1[k].equals(route2[k+1]) && route1[k+1].equals(route2[k])){
-                            System.err.println("Edge conflict type 1");
-                            return new Conflict(i, j, route1[k + 1], route2[k + 1], k);
+                            System.err.println("Edge conflict type 1 at timestep " + k);
+                        return new Conflict(i, j, route1[k + 1], route2[k + 1], k);
                     }
                     else if (route1[k].equals(route2[k+1])){
-                        System.err.println("Edge conflict type 2");
+                        System.err.println("Edge conflict type 2 at timestep " + k);
                         return new Conflict(-1, j, new Location(0,0), route2[k + 1], k+1);
                     }
                     else if (route1[k+1].equals(route2[k])){
-                        System.err.println("Edge conflict type 3");
+                        System.err.println("Edge conflict type 3 at timestep " + k);
                         return new Conflict(i, -1, route1[k + 1], new Location(0,0), k+1);
                     }
                 }

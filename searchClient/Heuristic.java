@@ -20,11 +20,11 @@ public abstract class Heuristic
             if (s.getAgentLocation().getNeighbours().contains(s.getLocation())) // if agent is next to box
             {
 //                System.err.println("Agent is next to box");
-                return this.closedFormSolution(s.getLocation(), s.getGoalLocation()); //return box-goal distance 10,9
+                return this.closedFormSolution(s.getLocation(), s.getGoalLocation()); //return box-goal distance
             }
                 else {
 //                    System.err.println("Agent is not next to box");
-                    return this.closedFormSolution(s.getAgentLocation(), s.getLocation()); //else return agent-box distance 5,4,3,2,1
+                    return this.closedFormSolution(s.getAgentLocation(), s.getLocation()); //else return agent-box distance
                 }
                 }
 

@@ -5,20 +5,21 @@ import domain.Location;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class HighLevelState {
 
-    private ArrayList<Constraint> constraints = new ArrayList<>();
+    private HashSet<Constraint> constraints = new HashSet<>();
     private Location[][] solution;
     private int cost;
 
-    public HighLevelState(ArrayList<Constraint> constraints) {
+    public HighLevelState(HashSet<Constraint> constraints) {
 //        this.constraints = constraints;
         this.constraints.addAll(constraints);
     }
 
-    public ArrayList<Constraint> getConstraints() {
+    public HashSet<Constraint> getConstraints() {
         return constraints;
     }
 
@@ -56,7 +57,7 @@ public class HighLevelState {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HighLevelState that = (HighLevelState) o;
-        return Objects.equals(constraints, that.constraints);
+        return constraints.equals(that.constraints);
     }
 
     @Override
@@ -72,12 +73,14 @@ public class HighLevelState {
     }
 
     public static void main(String[] args) {
-        ArrayList<Constraint> constraints1 = new ArrayList<>();
+        HashSet<Constraint> constraints1 = new HashSet<>();
+        constraints1.add(new Constraint(3,1,new Location(1,1)));
         constraints1.add(new Constraint(1,1,new Location(1,1)));
         constraints1.add(new Constraint(2,2,new Location(2,2)));
-        ArrayList<Constraint> constraints2 = new ArrayList<>();
+        HashSet<Constraint> constraints2 = new HashSet<>();
         constraints2.add(new Constraint(2,2,new Location(2,2)));
         constraints2.add(new Constraint(1,1,new Location(1,1)));
+        constraints2.add(new Constraint(3,1,new Location(1,1)));
         System.out.printf(""+constraints2.equals(constraints1));
 
     }

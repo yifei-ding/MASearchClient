@@ -192,16 +192,16 @@ public class SearchClient
 
     public Action[][] search()
     {
-//        HighLevelSolver highLevelSolver = new HighLevelSolver(data);
-//
-//        return highLevelSolver.solve();
-        System.err.println("[SearchClient] Skip highlevel to test low level");
-        return null;
+        HighLevelSolver highLevelSolver = new HighLevelSolver(data);
+
+        return highLevelSolver.solve();
+//        System.err.println("[SearchClient] Skip highlevel to test low level");
+//        return null;
     }
 
 
     public static void testLowLevel(InMemoryDataSource data) {
-        LowLevelSolver.solveForAllAgents(new ArrayList<>());
+        LowLevelSolver.solveForAllAgents(new HashSet<>());
 
     }
     public static void main(String[] args)
@@ -221,7 +221,7 @@ public class SearchClient
         SearchClient.readMap(serverMessages);
 
         TaskHandler taskHandler = new TaskHandler(data);
-        taskHandler.assignTask();
+        taskHandler.assignTask3();
         SearchClient.testLowLevel(data);
 //        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
 

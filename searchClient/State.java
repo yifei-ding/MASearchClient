@@ -5,6 +5,7 @@ import domain.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class State {
@@ -17,12 +18,12 @@ public class State {
     private int agentId;
     private int boxId;
     private Location agentLocation;
-    private ArrayList<Constraint> constraints;
+    private HashSet<Constraint> constraints;
     private InMemoryDataSource data = InMemoryDataSource.getInstance();
     private HashMap<Location, Object> map = data.getStaticMap();
 
 
-    public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId, Location agentLocation, ArrayList<Constraint> constraints) {
+    public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId, Location agentLocation, HashSet<Constraint> constraints) {
         this.timeStep = timeStep;
         this.location = location;
         this.goalLocation = goalLocation;
@@ -80,14 +81,22 @@ public class State {
         //Else use State state = this;
         //        if (this.boxId > -1)
 //            state = this.parent;
-        State state = this;
-        int size = state.g;
-        Location[] plan = new Location[size];
-        while (state.parent != null){
-            plan[state.g-1] = state.location;
-            state = state.parent;
-        }
-        System.err.println("[State] plan.length=" + plan.length);
+
+//        if ( boxId== -1) {
+            State state = this;
+            int size = state.g+1;
+            Location[] plan = new Location[size];
+            while (state.parent != null) {
+                plan[state.g] = state.location;
+                state = state.parent;
+            }
+            plan[0] = state.location; //this is the initial location
+            System.err.println("[State] plan.length=" + plan.length);
+//        }
+//        else //TODO: return agent location and box location. Use a pair of location
+//        {
+//
+//        }
 
         return plan;
     }
@@ -105,13 +114,12 @@ public class State {
         //Action[] actions = new Action[]{Action.MoveE, Action.MoveN, Action.MoveS, Action.MoveW};
         Location agentDestination;
         Location boxDestination;
-        int i =0;
 
         ArrayList<Location> locations = this.location.getNeighbours(); //equivalent to Move E, W, S, N
         locations.add(location); //equivalent to NoOp
         if (boxId == -1){
             for (Location location : locations) {
-                if (this.isApplicable(location) && !isConstraint(timeStep+1,location)) { //TODO: why not timestep+1
+                if (this.isApplicable(location) && !isConstraint(timeStep+1,location)) { //fixed issue 4/27: low level also returns initial location, so that timestep is consistent
                     expandedStates.add(new State(this,location));
                 }
             }
@@ -130,14 +138,10 @@ public class State {
 
                     else boxDestination = this.location;
                     if (!isConstraint(timeStep+1,agentDestination,boxDestination)) {
-                        i++;
-                        System.err.println("i: " + i);
-                        if (i<20) {
                             System.err.println("Agent next location: " + agentDestination.toString());
                             System.err.println("Box next location: " + boxDestination.toString());
-                        }
-                        if (!agentDestination.equals(boxDestination))
-                            expandedStates.add(new State(this, agentDestination, boxDestination));
+                            if (!agentDestination.equals(boxDestination))
+                                expandedStates.add(new State(this, agentDestination, boxDestination));
                     }
                 }
             }
