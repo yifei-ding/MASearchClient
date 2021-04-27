@@ -4,10 +4,10 @@ Run **build_and_run.sh** to build and run the client
 ## Compiling the searchclient
 > javac searchClient/SearchClient.java
 > try also adding:
-javac searchClient/SearchClient.java
-javac searchClient/TaskHandler.java
-javac searchClient/Frontier.java
-javac searchClient/State.java
+> javac searchClient/SearchClient.java
+> javac searchClient/TaskHandler.java
+> javac searchClient/Frontier.java
+> javac searchClient/State.java
 
 
 ## Run a single level
