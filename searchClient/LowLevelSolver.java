@@ -45,7 +45,7 @@ public class LowLevelSolver {
             //TODO: maybe there's need to filter constraints
             //TODO: After getting all tasks in this round, treat all other non-moving agents and boxes as obstacles.
             //4. Call LowLevelSolver.solve
-            action = solve(constraints, from, to, agent.getId(), boxId, new Location(2,20));
+            action = solve(constraints, from, to, agent.getId(), boxId, agent.getLocation());
             plan[agent.getId()]= action; //TODO: for each timestep, return a pair of location instead of just one location for pushing/pulling the box
 
         }
