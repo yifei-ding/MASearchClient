@@ -31,7 +31,7 @@ public class HighLevelSolver {
         while (!tree.isEmpty()){
             HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
 //            System.err.println("[----------Best Node----------]: " + node.toString());
-            System.err.println("[------------------Current constraints--------------]: " + node.getConstraints().size());
+            System.err.println("[------------------Current constraints--------------]: " + node.getConstraints().toString());
             System.err.println("[------------------Current tree--------------]: " + tree.size());
 
             if (!hasConflict(node) && !hasEdgeConflict(node)) {
@@ -266,6 +266,7 @@ public class HighLevelSolver {
     }
     private boolean hasEdgeConflict(HighLevelState state){
         Location[][] solution = state.getSolution();
+
         for(int i =0;i<solution.length;i++){
             for(int j = i+1;j<solution.length;j++){
                 if(hasEdgeConflict(solution[i],solution[j])){

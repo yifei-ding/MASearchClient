@@ -37,6 +37,11 @@ public class HighLevelState {
     }
 
     public Location[][] getSolution() {
+        //print solution
+        System.err.println("[HighLevelState] Get solution:");
+        for (int i=0; i<solution.length;i++)
+            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
+
         return solution;
     }
 
