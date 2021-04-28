@@ -220,7 +220,7 @@ public class SearchClient
         SearchClient.readMap(serverMessages);
 
         TaskHandler taskHandler = new TaskHandler(data);
-        taskHandler.assignTask();
+        taskHandler.assignTask2();
 //        SearchClient.testLowLevel(data);
 //        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
 
