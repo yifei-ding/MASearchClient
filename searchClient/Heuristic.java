@@ -14,7 +14,20 @@ public abstract class Heuristic
 
     public int h(State s)
     {
-        return this.closedFormSolution(s.getLocation(),s.getGoalLocation());
+        if (s.getBoxId() == -1)
+            return this.closedFormSolution(s.getLocation(),s.getGoalLocation());
+        else {
+            if (s.getAgentLocation().getNeighbours().contains(s.getLocation())) // if agent is next to box
+            {
+//                System.err.println("Agent is next to box");
+                return this.closedFormSolution(s.getLocation(), s.getGoalLocation()); //return box-goal distance
+            }
+                else {
+//                    System.err.println("Agent is not next to box");
+                    return this.closedFormSolution(s.getAgentLocation(), s.getLocation()); //else return agent-box distance
+                }
+                }
+
     }
 
     private int closedFormSolution(Location location1, Location location2){
@@ -53,6 +66,9 @@ class HeuristicAStar
     @Override
     public int f(State s)
     {
+//        System.err.println("A* h value = " + this.h(s));
+//        System.err.println("A* f value = " + s.g()+this.h(s));
+
         return s.g() + this.h(s);
     }
 
@@ -98,6 +114,7 @@ class HeuristicGreedy
     @Override
     public int f(State s)
     {
+//        System.err.println("Greedy h value = " + this.h(s));
         return this.h(s);
     }
 
