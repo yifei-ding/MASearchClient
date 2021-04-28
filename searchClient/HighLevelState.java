@@ -2,6 +2,7 @@ package searchClient;
 
 import domain.Constraint;
 import domain.Location;
+import domain.LocationPair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +12,7 @@ import java.util.Objects;
 public class HighLevelState {
 
     private HashSet<Constraint> constraints = new HashSet<>();
-    private Location[][] solution;
+    private LocationPair[][] solution;
     private int cost;
 
     public HighLevelState(HashSet<Constraint> constraints) {
@@ -31,12 +32,12 @@ public class HighLevelState {
 
     }
 
-    public Location[][] calculateSolution() {
+    public LocationPair[][] calculateSolution() {
         solution = LowLevelSolver.solveForAllAgents(this.constraints);
         return solution;
     }
 
-    public Location[][] getSolution() {
+    public LocationPair[][] getSolution() {
         //print solution
         System.err.println("[HighLevelState] Get solution:");
         for (int i=0; i<solution.length;i++)

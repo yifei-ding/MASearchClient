@@ -73,7 +73,7 @@ public class TaskHandler {
     * @author Yifei
     * @description This method is for testing maps without box
     * @date 2021/4/27
-    * @param 
+    * @param
     * @return void
      */
     public void assignTask3(){

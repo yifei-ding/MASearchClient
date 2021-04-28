@@ -74,7 +74,7 @@ public class State {
 //        return this.location.equals(this.goalLocation);
     }
 
-    public Location[] extractPlan() {
+    public LocationPair[] extractPlan() {
 //        System.err.println("Agent location: " + data.getAgent(agentId).getLocation().toString());
         //IMPORTANT.When finding box, extract plan starting from the parent of goal state. (Not the goal state)
         // Because goal location is the box. We need the neighbouring location of the box.
@@ -82,23 +82,34 @@ public class State {
         //        if (this.boxId > -1)
 //            state = this.parent;
 
-//        if ( boxId== -1) {
+        if ( boxId== -1) {
             State state = this;
             int size = state.g+1;
-            Location[] plan = new Location[size];
+            LocationPair[] plan = new LocationPair[size];
             while (state.parent != null) {
-                plan[state.g] = state.location;
+                plan[state.g] = new LocationPair(state.location,null);
                 state = state.parent;
             }
-            plan[0] = state.location; //this is the initial location
+            plan[0] = new LocationPair(state.location,null);; //this is the initial location
             System.err.println("[State] plan.length=" + plan.length);
-//        }
-//        else //TODO: return agent location and box location. Use a pair of location
-//        {
-//
-//        }
+            return plan;
 
-        return plan;
+        }
+        else //TODO: return agent location and box location. Use a pair of location
+        {    State state = this;
+            int size = state.g+1;
+            LocationPair[] plan = new LocationPair[size];
+            while (state.parent != null) {
+                plan[state.g] = new LocationPair(state.agentLocation,state.location);
+                state = state.parent;
+            }
+            plan[0] = new LocationPair(state.agentLocation,state.location); //this is the initial location
+            System.err.println("[State] plan.length=" + plan.length);
+            return plan;
+
+
+        }
+
     }
 
 
@@ -250,6 +261,7 @@ public class State {
             if (((Wall)obj).isWall())
                 return false;
         }
+
         return true;
     }
 
