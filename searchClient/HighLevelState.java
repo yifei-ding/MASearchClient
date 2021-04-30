@@ -25,9 +25,10 @@ public class HighLevelState {
     }
 
     public void addConstraint(Constraint constraint) {
-//        System.err.println("[HighLevelState] Add constraint " + this.constraints.toString());
         if (!this.constraints.contains(constraint))
             this.constraints.add(constraint);
+        System.err.println("[HighLevelState] Add constraint " + constraint.toString());
+
 //        System.err.println("[HighLevelState] After adding constraint  " + this.constraints.toString());
 
     }
@@ -39,9 +40,9 @@ public class HighLevelState {
 
     public LocationPair[][] getSolution() {
         //print solution
-        System.err.println("[HighLevelState] Get solution:");
-        for (int i=0; i<solution.length;i++)
-            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
+//        System.err.println("[HighLevelState] Get solution:");
+//        for (int i=0; i<solution.length;i++)
+//            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
 
         return solution;
     }
@@ -78,17 +79,17 @@ public class HighLevelState {
                 '}';
     }
 
-    public static void main(String[] args) {
-        HashSet<Constraint> constraints1 = new HashSet<>();
-        constraints1.add(new Constraint(3,1,new Location(1,1)));
-        constraints1.add(new Constraint(1,1,new Location(1,1)));
-        constraints1.add(new Constraint(2,2,new Location(2,2)));
-        HashSet<Constraint> constraints2 = new HashSet<>();
-        constraints2.add(new Constraint(2,2,new Location(2,2)));
-        constraints2.add(new Constraint(1,1,new Location(1,1)));
-        constraints2.add(new Constraint(3,1,new Location(1,1)));
-        System.out.printf(""+constraints2.equals(constraints1));
-
-    }
+//    public static void main(String[] args) {
+//        HashSet<Constraint> constraints1 = new HashSet<>();
+//        constraints1.add(new Constraint(3,1,new Location(1,1)));
+//        constraints1.add(new Constraint(1,1,new Location(1,1)));
+//        constraints1.add(new Constraint(2,2,new Location(2,2)));
+//        HashSet<Constraint> constraints2 = new HashSet<>();
+//        constraints2.add(new Constraint(2,2,new Location(2,2)));
+//        constraints2.add(new Constraint(1,1,new Location(1,1)));
+//        constraints2.add(new Constraint(3,1,new Location(1,1)));
+//        System.out.printf(""+constraints2.equals(constraints1));
+//
+//    }
 
 }

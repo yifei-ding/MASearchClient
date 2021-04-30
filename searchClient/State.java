@@ -143,14 +143,14 @@ public class State {
                     agentDestination = new Location(this.agentLocation.getRow() + action.agentRowDelta, this.agentLocation.getCol() + action.agentColDelta);
 
                     if (action.type == ActionType.Push || action.type == ActionType.Pull) {
-                        System.err.println("Applicable action: "+ action.name);
+//                        System.err.println("Applicable action: "+ action.name);
                         boxDestination = new Location(this.location.getRow() + action.boxRowDelta, this.location.getCol() + action.boxColDelta);
                     }
 
                     else boxDestination = this.location;
                     if (!isConstraint(timeStep+1,agentDestination,boxDestination)) {
-                            System.err.println("Agent next location: " + agentDestination.toString());
-                            System.err.println("Box next location: " + boxDestination.toString());
+//                            System.err.println("Agent next location: " + agentDestination.toString());
+//                            System.err.println("Box next location: " + boxDestination.toString());
                             if (!agentDestination.equals(boxDestination))
                                 expandedStates.add(new State(this, agentDestination, boxDestination));
                     }
@@ -161,6 +161,26 @@ public class State {
     }
 
     private boolean isConstraint(int timeStep, Location agentDestination, Location boxDestination) {
+
+        for (Constraint constraint : this.constraints){
+            /**
+             * First case is Agent Constraint
+             */
+            if (constraint.getAgentId() == this.agentId && !constraint.isBoxConstraint()){
+                if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(agentDestination)){
+                    return true;
+                }
+            }
+            /**
+             * Second case is Box Constraint
+             */
+            else if (constraint.getAgentId() == this.agentId && constraint.isBoxConstraint()){
+                if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(boxDestination)){
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 

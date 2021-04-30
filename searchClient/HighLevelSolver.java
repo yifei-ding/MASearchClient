@@ -31,35 +31,23 @@ public class HighLevelSolver {
         while (!tree.isEmpty()){
             HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
 //            System.err.println("[----------Best Node----------]: " + node.toString());
-            System.err.println("[------------------Current constraints--------------]: " + node.getConstraints().toString());
-            System.err.println("[------------------Current tree--------------]: " + tree.size());
+            System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().toString());
+            System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
 
-            if (!hasConflict(node) && !hasEdgeConflict(node)) {
+            if (!hasVertexConflict(node) && !hasEdgeConflict(node)) {
                 LocationPair[][] solution = node.getSolution();
                 Action[][] finalSolution = translate(solution);
-                printSolution(finalSolution);
+                //printSolution(finalSolution);
                 return finalSolution;
             }
-//            else if (hasConflict(node)){
-//                Conflict conflict = getFirstConflict(node);
-//                // Remove current node from tree because it has conflicts.
-//                tree.remove(node);
-//                System.err.println("[Vertex conflict] " + conflict.toString());
-//                for (int i = 0; i < 2; i++) {
-//                    HighLevelState child = new HighLevelState(node.getConstraints());
-////                    System.err.println("[--------------------]: "+i +"th child" + node.getConstraints());
-////                    System.err.println("[New child]" + child.toString()); //4/25 debug solved by create new ArrayList for each child
-//                    Constraint newConstraint;
-//                    if (i==0)
-//                        newConstraint = new Constraint(conflict.getAgentId_1(), conflict.getTimestep(), conflict.getLocation1());
-//                    else
-//                        newConstraint = new Constraint(conflict.getAgentId_2(), conflict.getTimestep(), conflict.getLocation2());
-//                    child.addConstraint(newConstraint);
-//                    child.calculateSolution();
-//                    child.updateCost();
-//                    this.addToTree(child);
-//                }
-//            }
+            else if (hasVertexConflict(node)){
+                Conflict conflict = getFirstVertexConflict(node);
+                // Remove current node from tree because it has conflicts.
+                tree.remove(node);
+                System.err.println("[Vertex conflict] " + conflict.toString());
+                // expand the node
+                addChildrenOfVertexConflictToTree(node, conflict); // new on 4/30
+            }
 //            else if (hasEdgeConflict(node)){
 //                Conflict conflict = getFirstEdgeConflict(node);
 ////                System.err.println("[Edge conflict] " + conflict.toString());
@@ -105,19 +93,43 @@ public class HighLevelSolver {
         return null;
     }
 
-    private void addToTree(HighLevelState child) {
-//        System.err.println("[Check child] " + child.toString());
+    /**
+    * @author Yifei
+    * @description create 2 children; then for each child, use conflict to generate a constraint, add constraint, calculate solution, update cost, add child to tree.
+    * @date 2021/4/30
+    * @param node, conflict
+     * @return void
+     */
+    private void addChildrenOfVertexConflictToTree(HighLevelState node, Conflict conflict) {
+        for (int i = 0; i < 2; i++) {
+            HighLevelState child = new HighLevelState(node.getConstraints());
+            Constraint newConstraint;
+            if (i==0) {
+                /**
+                * The first constraint can either be for a box or for an agent
+                 */
+                if (conflict instanceof BoxBoxConflict)
+                    newConstraint = new Constraint(conflict.getId1(), true, conflict.getTimestep(), conflict.getLocation1());
+                else
+                    newConstraint = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
+            }
+            else {
+                /**
+                 * The second constraint can either be for a box or for an agent
+                 */
+                if (conflict instanceof AgentAgentConflict)
+                    newConstraint = new Constraint(conflict.getId2(), false, conflict.getTimestep(), conflict.getLocation2());
+                else
+                    newConstraint = new Constraint(conflict.getId2(), true, conflict.getTimestep(), conflict.getLocation2());
 
-//        if (child.getCost()>0)
-//            System.err.println("[Check child] cost>0");
-//        if (!tree.contains(child))
-//            System.err.println("[Check child] tree doesn't contain this child");
-
-        if (child.getCost() > 0 && !tree.contains(child)) {
-            System.err.println("[Add child]");
-            tree.add(child);
+            }
+            child.addConstraint(newConstraint);
+            child.calculateSolution();
+            child.updateCost();
+            addToTree(child);
         }
     }
+
 
 
     private HighLevelState findBestNodeWithMinCost(ArrayList<HighLevelState> tree) {
@@ -128,68 +140,125 @@ public class HighLevelSolver {
                 min = node.getCost();
                 bestNode = node;
             }
-
         }
         return bestNode;
     }
 
 
-    private boolean hasConflict(HighLevelState state) {  // TODO: add boxes into the Pathes
-        return false; //4/28 for skipping conflict
-//        LocationPair[][] allPaths = state.getSolution();
-//        int max = getMaxPathLength(allPaths);
-//        LocationPair location;
-//        for (int i = 0; i < max; i++) { //i = timestep
-//            HashMap<Location, Integer> locations = new HashMap<>();
-//            for (int j = 0; j < allPaths.length; j++) { //j = agent
-//                if (i < allPaths[j].length)  //4/25 debug fix: because each agent has different length of solution, need to check length while getting an element in solution[][]
-//                    location = allPaths[j][i];
-//                else
-//                    location = allPaths[j][allPaths[j].length-1];
-//                if (locations.get(location) == null) {
-//                    locations.put(location,j);
-//                } else {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
+    private boolean hasVertexConflict(HighLevelState state) {  // TODO: add boxes into the Pathes
+        LocationPair[][] solution = state.getSolution();
+        for(int i =0;i<solution.length;i++) { //i=agent 1
+            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+                LocationPair[] route1 = solution[i];
+                LocationPair[] route2 = solution[j];
+                //now we have one path each for agent1 and agent2
+                Conflict conflict = getFirstVertexConflict(i,j,route1,route2);
+                if (conflict != null) {
+//                    System.err.println("getFirstVertexConflict "+ conflict.toString());
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
+    private Conflict getFirstVertexConflict(HighLevelState state){
+        LocationPair[][] solution = state.getSolution();
+        for(int i =0;i<solution.length;i++) { //i=agent 1
+            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+                LocationPair[] route1 = solution[i];
+                LocationPair[] route2 = solution[j];
+                System.err.println("i= "+i + " j="+j);
+                //now we have one path each for agent1 and agent2
+                Conflict conflict = getFirstVertexConflict(i,j,route1,route2);
+                System.err.println("FirstVertexConflict: "+ conflict.toString());
+                System.err.println("Conflict type: "+ conflict.getClass().getName());
 
-//    private Conflict getFirstConflict(HighLevelState state) {
-//        LocationPair[][] allPaths = state.getSolution();
-//        int max = getMaxPathLength(allPaths);
-//        Location location;
-//        for (int i = 0; i < max; i++) { //i = timestep
-//            HashMap<Location, Integer> locations = new HashMap<>();
-//            for (int j = 0; j < allPaths.length; j++) { //j = agent
-//                if (i < allPaths[j].length)  //4/25 debug fix: because each agent has different length of solution, need to check length while getting an element in solution[][]
-//                    location = allPaths[j][i];
-//                else
-//                    location = allPaths[j][allPaths[j].length-1];
-//                if (locations.get(location) == null) {
-//                    locations.put(location,j);
-//                } else {
-//                    int agentId_1 = j;
-//                    int agentId_2 = locations.get(location);
-//                    System.err.println("Vertex conflict at timestep "+i );
-//                    Conflict conflict = new Conflict(agentId_1,agentId_2, location, location, i);
-//                    return conflict;
-//                }
-//            }
-//        }
-//        return new Conflict(0,0,new Location(0,0),new Location(0,0),0);
-//
-//    }
+                if (conflict != null)
+                    return conflict;
+            }
+        }
+        return null;
+    }
+
+    private Conflict getFirstVertexConflict(int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
+        int minIndex = Math.min(route1.length, route2.length);
+        Location agentLocation1;
+        Location agentLocation2;
+        Location boxLocation1;
+        Location boxLocation2;
+        for (int k=0; k< minIndex; k++){ //timestep
+            agentLocation1 = route1[k].getAgentLocation();
+            agentLocation2 = route2[k].getAgentLocation();
+            boxLocation1 = route1[k].getBoxLocation();
+            boxLocation2 = route2[k].getBoxLocation();
+//            System.err.println("Check conflict at timestep "+ k);
+            //vertex conflict could be 3 types of conflict: agent-agent conflict, agent-box conflict, box-box conflict
+            if (agentLocation1.equals(agentLocation2))
+                return new AgentAgentConflict(agentId1,agentId2,agentLocation1,agentLocation2,k);
+            //note: boxLocation can be null
+            if (boxLocation1 !=null) {
+                if (agentLocation1.equals(boxLocation2))
+                    return new AgentBoxConflict(agentId1, agentId2, agentLocation1, boxLocation2, k);
+                else if (agentLocation2.equals(boxLocation1))
+                    return new AgentBoxConflict(agentId2, agentId1, agentLocation2, boxLocation1, k);
+                else if (boxLocation1.equals(boxLocation2))
+                    return new BoxBoxConflict(agentId1, agentId2, boxLocation1, boxLocation2, k);
+            }
+          }
+         return null;
+    }
+
+    private Conflict getFirstConflict(HighLevelState state) {
+        LocationPair[][] allPaths = state.getSolution();
+        int max = getMaxPathLength(allPaths);
+        LocationPair locationPair;
+        Location agentLocation;
+        Location boxLocation;
+        for (int i = 0; i < max; i++) { //i = timestep
+            HashMap<Location, Integer> agentLocations = new HashMap<>();
+            HashMap<Location, Integer> boxLocations = new HashMap<>();
+
+            for (int j = 0; j < allPaths.length; j++) { //j = agent
+                if (i < allPaths[j].length)  //4/25 bug fixed: because each agent has different length of solution, need to check length while getting an element in solution[][]
+                {
+                    locationPair = allPaths[j][i];
+                } else {
+                    locationPair = allPaths[j][allPaths[j].length - 1];
+                }
+                agentLocation = locationPair.getAgentLocation();
+                boxLocation = locationPair.getBoxLocation();
+                if (agentLocations.get(agentLocation) == null && agentLocations.get(boxLocation) == null && boxLocations.get(agentLocation) == null && boxLocations.get(boxLocation) == null) {
+                    agentLocations.put(agentLocation, j);
+                    boxLocations.put(boxLocation, j);
+                }
+                else if (agentLocations.get(agentLocation) != null && boxLocations.get(agentLocation) == null ) { //agentLocation conflicts with other agent: agent agent conflict
+                    int agentId1 = j;
+                    int agentId2 = agentLocations.get(agentLocation);
+                    System.err.println("Vertex agent agent conflict at timestep " + i);
+                    Conflict conflict = new AgentAgentConflict(agentId1, agentId2, agentLocation, agentLocation, i);
+                    return conflict;
+                }
+                else if (boxLocations.get(agentLocation) != null && agentLocations.get(agentLocation) == null) { //agentLocation conflicts with other box:agent box conflict
+                    int agentId_1 = j;
+                    int agentId_2 = boxLocations.get(agentLocation);
+                    System.err.println("Vertex agent box conflict at timestep " + i);
+                    Conflict conflict = new AgentBoxConflict(agentId_1, agentId_2, agentLocation, agentLocation, i);
+                    return conflict;
+                }
+            }
+        }
+        return new AgentAgentConflict(0,0,new Location(0,0),new Location(0,0),0);
+
+    }
 //    private Conflict getFirstEdgeConflict(HighLevelState state) {
 //        LocationPair[][] solution = state.getSolution();
 //        for(int i =0;i<solution.length;i++){
 //            for(int j = i+1;j<solution.length;j++){
 //                int minIndex = Math.min(solution[i].length,solution[j].length) ;
 //                for (int k=0; k< minIndex; k++){
-//                    Location[] route1 = solution[i];
-//                    Location[] route2 = solution[j];
+//                    LocationPair[] route1 = solution[i];
+//                    LocationPair[] route2 = solution[j];
 //                    if (route1[k].equals(route2[k+1]) && route1[k+1].equals(route2[k])){
 //                        System.err.println("Edge conflict type 1 at timestep " + k);
 //                        return new Conflict(i, j, route1[k + 1], route2[k + 1], k);
@@ -232,7 +301,13 @@ public class HighLevelSolver {
 //        return false;
     }
 
-
+    /**
+    * @author Yifei
+    * @description translate location change of two consecutive timesteps to an action
+    * @date 2021/4/30
+    * @param solution
+    * @return Action[][]
+     */
     private Action[][] translate(LocationPair[][] solution) {
         Action[][] finalSolution = new Action[solution.length][];
         //for each agent, get a list of its path
@@ -324,6 +399,20 @@ public class HighLevelSolver {
          }
 
         return finalSolution;
+    }
+
+    private void addToTree(HighLevelState child) {
+//        System.err.println("[Check child] " + child.toString());
+
+//        if (child.getCost()>0)
+//            System.err.println("[Check child] cost>0");
+//        if (!tree.contains(child))
+//            System.err.println("[Check child] tree doesn't contain this child");
+
+        if (child.getCost() > 0 && !tree.contains(child)) {
+            System.err.println("[Add child]");
+            tree.add(child);
+        }
     }
 
     private int getMinPathLength(LocationPair[][] solution){
