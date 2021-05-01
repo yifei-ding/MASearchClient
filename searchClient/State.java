@@ -91,7 +91,7 @@ public class State {
                 state = state.parent;
             }
             plan[0] = new LocationPair(state.location,null);; //this is the initial location
-            System.err.println("[State] plan.length=" + plan.length);
+//            System.err.println("[State] plan.length=" + plan.length);
             return plan;
 
         }
@@ -104,7 +104,7 @@ public class State {
                 state = state.parent;
             }
             plan[0] = new LocationPair(state.agentLocation,state.location); //this is the initial location
-            System.err.println("[State] plan.length=" + plan.length);
+//            System.err.println("[State] plan.length=" + plan.length);
             return plan;
 
 
@@ -146,8 +146,8 @@ public class State {
 //                        System.err.println("Applicable action: "+ action.name);
                         boxDestination = new Location(this.location.getRow() + action.boxRowDelta, this.location.getCol() + action.boxColDelta);
                     }
-
                     else boxDestination = this.location;
+
                     if (!isConstraint(timeStep+1,agentDestination,boxDestination)) {
 //                            System.err.println("Agent next location: " + agentDestination.toString());
 //                            System.err.println("Box next location: " + boxDestination.toString());
@@ -168,6 +168,7 @@ public class State {
              */
             if (constraint.getAgentId() == this.agentId && !constraint.isBoxConstraint()){
                 if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(agentDestination)){
+                    System.err.println("Agent Constraint");
                     return true;
                 }
             }
@@ -176,6 +177,7 @@ public class State {
              */
             else if (constraint.getAgentId() == this.agentId && constraint.isBoxConstraint()){
                 if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(boxDestination)){
+                    System.err.println("Box Constraint");
                     return true;
                 }
             }
@@ -281,6 +283,12 @@ public class State {
             if (((Wall)obj).isWall())
                 return false;
         }
+
+        //TODO: debug
+//        obj = data.getDynamicMap().get(location);
+//        if (obj instanceof Box) {
+//            return false;
+//        }
 
         return true;
     }
