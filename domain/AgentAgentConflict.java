@@ -6,10 +6,7 @@ public class AgentAgentConflict extends Conflict {
 
     }
 
-    @Override
-    public String toString() {
-        return "AgentAgentConflict{}";
-    }
+
     //    public static void main(String[] args) {
 //    Conflict conflict1 = new AgentAgentConflict(1,2,new Location(1,1), new Location(2,2),3);
 //    Conflict conflict2 = new AgentBoxConflict(1,2,new Location(1,1), new Location(2,2),3);

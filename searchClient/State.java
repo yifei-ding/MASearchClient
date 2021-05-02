@@ -168,7 +168,7 @@ public class State {
              */
             if (constraint.getAgentId() == this.agentId && !constraint.isBoxConstraint()){
                 if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(agentDestination)){
-                    System.err.println("Agent Constraint");
+//                    System.err.println("Agent Constraint");
                     return true;
                 }
             }
@@ -177,7 +177,7 @@ public class State {
              */
             else if (constraint.getAgentId() == this.agentId && constraint.isBoxConstraint()){
                 if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(boxDestination)){
-                    System.err.println("Box Constraint");
+//                    System.err.println("Box Constraint");
                     return true;
                 }
             }

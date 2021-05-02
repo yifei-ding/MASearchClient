@@ -12,10 +12,10 @@ javac searchClient/HighLevelState.java
 javac searchClient/HighLevelSolver.java
 javac searchClient/LowLevelSolver.java
 
-folder=../levels
+folder=../complevels
 files=$(ls $folder)
 for file in $files
 do
-  java -jar ../server.jar -l ../levels/$file -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+  java -jar ../server.jar -l ../complevels/$file -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
 done

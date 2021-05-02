@@ -26,11 +26,13 @@ javac searchClient/LowLevelSolver.java
 # java -jar ../server.jar -l ../levels/SAtowersOfHoChiMinh03.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 # java -jar ../server.jar -l ../levels/SAtowersOfSaigon03.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
+# java -jar ../server.jar -l ../levels/MAExample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+# java -jar ../server.jar -l ../levels/MAchallenge.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
 
 # java -jar ../server.jar -l ../levels/SAmicromouseContest2011.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
-# java -jar ../server.jar -l ../levels/MAsimple2_2_testConflict_withBox2.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
+java -jar ../server.jar -l ../levels/MAsimple2_2_testConflict_withBox3.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 1
 
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
@@ -39,7 +41,7 @@ javac searchClient/LowLevelSolver.java
 # java -jar ../server.jar -l ../levels/MAsimple2_3.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
 # java -jar ../server.jar -l ../levels/MAsimple2_1_easy.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
-java -jar ../server.jar -l ../levels/MAsimple2_1_easy_medium.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+# java -jar ../server.jar -l ../levels/MAsimple2_1_easy_medium.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 # java -jar ../server.jar -l ../levels/MAsimple2_1_easy_small.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
 
