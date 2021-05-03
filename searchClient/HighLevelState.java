@@ -27,7 +27,7 @@ public class HighLevelState {
     public void addConstraint(Constraint constraint) {
         if (!this.constraints.contains(constraint))
             this.constraints.add(constraint);
-        System.err.println("[HighLevelState] Add constraint " + constraint.toString());
+//        System.err.println("[HighLevelState] Add constraint " + constraint.toString());
 
 //        System.err.println("[HighLevelState] After adding constraint  " + this.constraints.toString());
 

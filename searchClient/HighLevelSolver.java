@@ -31,7 +31,7 @@ public class HighLevelSolver {
         while (!tree.isEmpty()){
             HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
 //            System.err.println("[----------Best Node----------]: " + node.toString());
-            System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().toString());
+            System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().size());
             System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
 
             LocationPair[][] solution1 = node.getSolution();
@@ -41,30 +41,246 @@ public class HighLevelSolver {
 
             if (!hasEdgeConflict(node) && !hasVertexConflict(node) ) {
                 LocationPair[][] solution = node.getSolution();
-
                 Action[][] finalSolution = translate(solution);
                 //printSolution(finalSolution);
                 return finalSolution;
             }
-            else if (hasEdgeConflict(node)){
-                Conflict edgeConflict = getFirstEdgeConflict(node);
-                // Remove current node from tree because it has conflicts.
-                tree.remove(node);
-                //System.err.println("[Edge conflict] " + edgeConflict.toString());
-                addChildrenOfEdgeConflictToTree(node, edgeConflict); // new on 5/1
+            else
+                dealWithFirstConflict(node);
 
-            }
-            else if (hasVertexConflict(node)){
-                Conflict vertexConflict = getFirstVertexConflict(node);
-                // Remove current node from tree because it has conflicts.
-                tree.remove(node);
-                //System.err.println("[Vertex conflict] " + vertexConflict.toString());
-                // expand the node
-                addChildrenOfVertexConflictToTree(node, vertexConflict); // new on 4/30
-            }
+//            else if (hasVertexConflict(node)){
+//                Conflict vertexConflict = getFirstVertexConflict(node);
+//                // Remove current node from tree because it has conflicts.
+//                tree.remove(node);
+//                //System.err.println("[Vertex conflict] " + vertexConflict.toString());
+//                // expand the node
+//                addChildrenOfVertexConflictToTree(node, vertexConflict); // new on 4/30
+//            }
+//            else if (hasEdgeConflict(node)){
+//                Conflict edgeConflict = getFirstEdgeConflict(node);
+//                // Remove current node from tree because it has conflicts.
+//                tree.remove(node);
+//                //System.err.println("[Edge conflict] " + edgeConflict.toString());
+//                addChildrenOfEdgeConflictToTree(node, edgeConflict); // new on 5/1
+//
+//            }
+
 
         }
         return null;
+    }
+
+    public void dealWithFirstConflict(HighLevelState state){
+        LocationPair[][] solution = state.getSolution();
+        for(int i =0;i<solution.length;i++) { //i=agent 1
+            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+                LocationPair[] route1 = solution[i];
+                LocationPair[] route2 = solution[j];
+                //now we have one path each for agent1 and agent2
+                dealWithFirstConflict(state, i,j,route1,route2);
+//                if (conflict != null) {
+//                    System.err.println("First conflict: "+ conflict.toString());
+//                    System.err.println("Conflict type: "+ conflict.getClass().getName());
+//                    return conflict;
+//                }
+            }
+        }
+
+    }
+
+    private void dealWithFirstConflict(HighLevelState state, int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
+        int minIndex = Math.min(route1.length, route2.length)-1;
+        Location agentCurrentLocation1;
+        Location agentCurrentLocation2;
+        Location agentNextLocation1;
+        Location agentNextLocation2;
+        Location boxCurrentLocation1;
+        Location boxCurrentLocation2;
+        Location boxNextLocation1;
+        Location boxNextLocation2;
+        Conflict conflict;
+        for (int k=0; k< minIndex; k++){ //timestep
+            agentCurrentLocation1 = route1[k].getAgentLocation();
+            agentCurrentLocation2 = route2[k].getAgentLocation();
+            agentNextLocation1 = route1[k+1].getAgentLocation();
+            agentNextLocation2 = route2[k+1].getAgentLocation();
+            boxCurrentLocation1 = route1[k].getBoxLocation();
+            boxCurrentLocation2 = route2[k].getBoxLocation();
+            boxNextLocation1 = route1[k+1].getBoxLocation();
+            boxNextLocation2 = route2[k+1].getBoxLocation();
+
+            /**
+            * Part1: vertex conflict
+             */
+            //vertex conflict could be 3 types of conflict: agent-agent conflict, agent-box conflict, box-box conflict
+            if (agentCurrentLocation1.equals(agentCurrentLocation2)) {
+
+                conflict = new AgentAgentConflict(agentId1, agentId2, agentCurrentLocation1, agentCurrentLocation2, k);
+                System.err.println("Find Vertex AA conflict: " + conflict.toString());
+                addChildrenOfVertexConflictToTree(state,conflict);
+                break;
+//                return conflict;
+            }
+            //note: boxLocation can be null
+            if (boxCurrentLocation1 !=null) {
+                if (agentCurrentLocation1.equals(boxCurrentLocation2)) {
+                    conflict = new AgentBoxConflict(agentId1, agentId2, agentCurrentLocation1, boxCurrentLocation2, k);
+                    System.err.println("Find Vertex AB conflict 1: " + conflict.toString());
+
+                    addChildrenOfVertexConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (agentCurrentLocation2.equals(boxCurrentLocation1)) {
+                    conflict = new AgentBoxConflict(agentId2, agentId1, agentCurrentLocation2, boxCurrentLocation1, k);
+                    System.err.println("Find Vertex AB conflict 2: " + conflict.toString());
+
+                    addChildrenOfVertexConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (boxCurrentLocation1.equals(boxCurrentLocation2)) {
+                    conflict = new BoxBoxConflict(agentId1, agentId2, boxCurrentLocation1, boxCurrentLocation2, k);
+                    System.err.println("Find Vertex BB conflict : " + conflict.toString());
+
+                    addChildrenOfVertexConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+            }
+            /**
+             * Part2: edge conflict
+             */
+
+            /**
+             * First case: AgentAgent Conflict of Edge conflict:
+             * 1. two agents switch location (mutual edge conflict)
+             * 2 & 3 one tries to go to the other's current location (single edge conflict)
+             */
+            if (agentCurrentLocation1.equals(agentNextLocation2) && agentCurrentLocation2.equals(agentNextLocation1)) {
+                conflict = new AgentAgentConflict(agentId1, agentId2, agentNextLocation1, agentNextLocation2, k + 1);
+                System.err.println("Find Mutual Edge AA conflict : " + conflict.toString());
+
+                addChildrenOfEdgeConflictToTree(state,conflict);
+                break;
+//                return conflict;
+            }
+            else if (agentCurrentLocation1.equals(agentNextLocation2)) {
+                conflict = new AgentAgentConflict(-1, agentId2, new Location(-1, -1), agentNextLocation2, k + 1);
+                System.err.println("Find Single Edge AA conflict 1: " + conflict.toString());
+
+                addChildrenOfEdgeConflictToTree(state,conflict);
+                break;
+//                return conflict;
+            }
+            else if (agentCurrentLocation2.equals(agentNextLocation1)) {
+                conflict =  new AgentAgentConflict(agentId1, -1, agentNextLocation1, new Location(-1, -1), k + 1);
+                System.err.println("Find Single Edge AA conflict 2: " + conflict.toString());
+
+                addChildrenOfEdgeConflictToTree(state,conflict);
+                break;
+//                return conflict;
+            }
+            /**
+             * Second case: BoxBox Conflict of Edge conflict:
+             * 1. two boxes switch location (mutual edge conflict)
+             * 2 & 3 one tries to go to the other's current location (single edge conflict)
+             * note: both boxLocations cannot be null
+             */
+            if (boxCurrentLocation1 !=null && boxCurrentLocation2 != null) {
+                if (boxCurrentLocation1.equals(boxNextLocation2) && boxCurrentLocation2.equals(boxNextLocation1)) {
+                    conflict = new BoxBoxConflict(agentId1, agentId2, boxNextLocation1, boxNextLocation2, k + 1);
+                    System.err.println("Find Mutual Edge BB conflict : " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (boxCurrentLocation1.equals(boxNextLocation2)) {
+                    conflict = new BoxBoxConflict(-1, agentId2, new Location(-1, -1), boxNextLocation2, k + 1);
+                    System.err.println("Find Single Edge BB conflict 1: " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (boxCurrentLocation2.equals(boxNextLocation1)) {
+                    conflict = new BoxBoxConflict(agentId1, -1, boxNextLocation1, new Location(-1, -1), k + 1);
+                    System.err.println("Find Single Edge BB conflict 2: " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+            }
+
+            /**
+             * Third case: AgentBox Conflict of Edge conflict:
+             * 1. Agent1 and Agent2’s box switch location (mutual edge conflict)
+             * 2 & 3 one tries to go to the other's current location (single edge conflict)
+             * note: Agent2's boxLocation cannot be null
+             */
+            if (boxCurrentLocation2 != null) {
+                if (agentCurrentLocation1.equals(boxNextLocation2) && boxCurrentLocation2.equals(agentNextLocation1)) {
+                    conflict = new AgentBoxConflict(agentId1, agentId2, agentNextLocation1, boxNextLocation2, k + 1);
+                    System.err.println("Find Mutual Edge AB conflict1 : " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (agentCurrentLocation1.equals(boxNextLocation2)) {
+                    conflict = new AgentBoxConflict(-1, agentId2, new Location(-1, -1), boxNextLocation2, k + 1);
+                    System.err.println("Find Single Edge AB conflict1_1 : " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (boxCurrentLocation2.equals(agentNextLocation1)) {
+                    conflict = new AgentBoxConflict(agentId1, -1, agentNextLocation1, new Location(-1, -1), k + 1);
+                    System.err.println("Find Single Edge AB conflict1_2 : " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+            }
+            /**
+             * Fourth case: AgentBox Conflict of Edge conflict:
+             * 1. Agent2 and Agent1’s box switch location (mutual edge conflict)
+             * 2 & 3 one tries to go to the other's current location (single edge conflict)
+             * note: Agent1's boxLocation cannot be null
+             */
+            if (boxCurrentLocation1 != null) {
+                if (agentCurrentLocation2.equals(boxNextLocation1) && boxCurrentLocation1.equals(agentNextLocation2)) {
+                    conflict = new AgentBoxConflict(agentId1, agentId2, agentNextLocation2, boxNextLocation1, k + 1);
+                    System.err.println("Find Mutual Edge AB conflict2 : " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (agentCurrentLocation2.equals(boxNextLocation1)) { // 5/3 debug: fix sequence
+                    conflict = new AgentBoxConflict(-1,agentId1, new Location(-1, -1), boxNextLocation1,  k + 1);
+                    System.err.println("Find Single Edge AB conflict2_1 : " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+                else if (boxCurrentLocation1.equals(agentNextLocation2)) { // 5/3 debug: fix sequence
+                    conflict = new AgentBoxConflict( agentId2, -1, agentNextLocation2, new Location(-1, -1), k + 1);
+                    System.err.println("Find Single Edge AB conflict2_2 : " + conflict.toString());
+
+                    addChildrenOfEdgeConflictToTree(state,conflict);
+                    break;
+//                    return conflict;
+                }
+            }
+        }
+
+//        return null;
     }
 
     /**
@@ -76,6 +292,8 @@ public class HighLevelSolver {
      * @return void
      */
     private void addChildrenOfEdgeConflictToTree(HighLevelState node, Conflict conflict) {
+        tree.remove(node);
+
         Constraint newConstraint;
         Constraint newConstraint2;
         /**
@@ -138,11 +356,11 @@ public class HighLevelSolver {
          */
 
         else if ((conflict.getId2() == -1)){
-                    HighLevelState child = new HighLevelState(node.getConstraints());
-            if (conflict instanceof AgentAgentConflict)
-                newConstraint = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
-            else
+            HighLevelState child = new HighLevelState(node.getConstraints());
+            if (conflict instanceof BoxBoxConflict) // 5/3 debug
                 newConstraint = new Constraint(conflict.getId1(), true, conflict.getTimestep(), conflict.getLocation1());
+            else
+                newConstraint = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
 
             child.addConstraint(newConstraint);
             child.calculateSolution();
@@ -160,6 +378,7 @@ public class HighLevelSolver {
      * @return void
      */
     private void addChildrenOfVertexConflictToTree(HighLevelState node, Conflict conflict) {
+        tree.remove(node);
         for (int i = 0; i < 2; i++) {
             HighLevelState child = new HighLevelState(node.getConstraints());
             Constraint newConstraint;

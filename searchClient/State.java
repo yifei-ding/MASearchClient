@@ -91,7 +91,7 @@ public class State {
                 state = state.parent;
             }
             plan[0] = new LocationPair(state.location,null);; //this is the initial location
-//            System.err.println("[State] plan.length=" + plan.length);
+            System.err.println("[State] plan.length=" + plan.length);
             return plan;
 
         }
@@ -104,7 +104,7 @@ public class State {
                 state = state.parent;
             }
             plan[0] = new LocationPair(state.agentLocation,state.location); //this is the initial location
-//            System.err.println("[State] plan.length=" + plan.length);
+            System.err.println("[State] plan.length=" + plan.length);
             return plan;
 
 

@@ -32,7 +32,7 @@ javac searchClient/LowLevelSolver.java
 
 # java -jar ../server.jar -l ../levels/SAmicromouseContest2011.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
-java -jar ../server.jar -l ../levels/MAsimple2_2_testConflict_withBox3.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 1
+java -jar ../server.jar -l ../levels/MAsimple2_2_testConflict_withBox3.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 60
 
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
