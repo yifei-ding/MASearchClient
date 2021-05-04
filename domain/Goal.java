@@ -5,11 +5,16 @@ public class Goal {
     private final int id;
     private final String name;
     private Location location;
+    private int perviousGoalId;
+    private boolean isCompleted;
 
-    public Goal(int id, String name, Location location) {
+    public Goal(int id, String name, Location location,int perviousGoalId,boolean isCompleted) {
         this.id = id;
         this.name = name;
         this.location = location;
+        this.perviousGoalId = perviousGoalId;
+        this.isCompleted = isCompleted;
+
     }
 
     public int getId() {
@@ -24,6 +29,11 @@ public class Goal {
     }
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public void setCompleted (){
+
+       this.isCompleted = true;
     }
 
     @Override

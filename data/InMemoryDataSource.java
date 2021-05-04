@@ -158,24 +158,25 @@ public class InMemoryDataSource {
         wallMap.put(location, wall);
     }
 
-    public HashMap<Location, Integer> getDegreeMap(){
-        System.err.println("Wallmap: " + wallMap.toString() );
-        for (Map.Entry<Location,Wall> entry:wallMap.entrySet()){
+    public HashMap<Location, Integer> getDegreeMap() {
+        System.err.println("Wallmap: " + wallMap.toString());
+        for (Map.Entry<Location, Wall> entry : wallMap.entrySet()) {
             Location location = entry.getKey();
             Wall wall = entry.getValue();
-            int k=0;
-            if (!wall.isWall()){ //if the current location is not wall, count its degree
+            int k = 0;
+            if (!wall.isWall()) { //if the current location is not wall, count its degree
                 ArrayList<Location> neighbours = location.getNeighbours();
-                for (Location neighbour: neighbours){
-                    if (wallMap.containsKey(neighbour)  && !wallMap.get(neighbour).isWall())
+                for (Location neighbour : neighbours) {
+                    if (wallMap.containsKey(neighbour) && !wallMap.get(neighbour).isWall())
                         k++;
                 }
-                staticdegreeMap.put(location,k);
+                staticdegreeMap.put(location, k);
             }
 
         }
         return staticdegreeMap;
     }
+
     @Override
     public String toString() {
         return "InMemoryDataSource{" +
@@ -231,32 +232,32 @@ public class InMemoryDataSource {
     public Task getTaskById(Integer taskId) {
         return allTasks.get(taskId);
     }
-
-
-
-    public HashMap<Location, Integer> getDegreeMap(boolean[][] wallMap) {
-
-    for (int i = 1; i <= wallMap.length; i++) {
-        for (int j = 1; j <= wallMap[i].length; i++) {
-            Location location = new Location(i, j);
-            int k = 0;
-            if (wallMap[i - 1][j]) {
-                k = k + 1;
-            }
-            if (wallMap[i + 1][j]) {
-                k = k + 1;
-            }
-            if (wallMap[i][j - 1]) {
-                k = k + 1;
-            }
-            if (wallMap[i][j + 1]) {
-                k = k + 1;
-            }
-            staticdegreeMap.put(location, k);
-
-        }
-    }
-    return staticdegreeMap;
 }
-}
+
+
+//    public HashMap<Location, Integer> getDegreeMap(boolean[][] wallMap) {
+//
+//    for (int i = 1; i <= wallMap.length; i++) {
+//        for (int j = 1; j <= wallMap[i].length; i++) {
+//            Location location = new Location(i, j);
+//            int k = 0;
+//            if (wallMap[i - 1][j]) {
+//                k = k + 1;
+//            }
+//            if (wallMap[i + 1][j]) {
+//                k = k + 1;
+//            }
+//            if (wallMap[i][j - 1]) {
+//                k = k + 1;
+//            }
+//            if (wallMap[i][j + 1]) {
+//                k = k + 1;
+//            }
+//            staticdegreeMap.put(location, k);
+//
+//        }
+//    }
+//    return staticdegreeMap;
+//}
+//}
 
