@@ -180,7 +180,8 @@ public class SearchClient
             for (int j=0; j < walls[i].length;j++){
                     Location location = new Location(i,j);
                     Wall wall = new Wall(location, walls[i][j]);
-                    if (data.getStaticMap().get(location) == null) //If the location is already stored as a goal, don't overwrite
+                    data.setWallMap(location,wall);
+                if (data.getStaticMap().get(location) == null) //If the location is already stored as a goal, don't overwrite
                         data.setStaticMap(location, wall);
 
             }
@@ -192,11 +193,11 @@ public class SearchClient
 
     public Action[][] search()
     {
-        HighLevelSolver highLevelSolver = new HighLevelSolver(data);
-
-        return highLevelSolver.solve();
-//        System.err.println("[SearchClient] Skip highlevel to test low level");
-//        return null;
+//        HighLevelSolver highLevelSolver = new HighLevelSolver(data);
+//
+//        return highLevelSolver.solve();
+        System.err.println("[SearchClient] Skip highlevel to test low level");
+        return null;
     }
 
 
@@ -219,10 +220,11 @@ public class SearchClient
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
         SearchClient.readMap(serverMessages);
+        System.err.println("Degree map: " + data.getDegreeMap());
 
         TaskHandler taskHandler = new TaskHandler(data);
         taskHandler.assignTask2();
-        SearchClient.testLowLevel(data);
+//        SearchClient.testLowLevel(data);
 //        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
 
         // Search for a plan.

@@ -14,7 +14,7 @@ public class LowLevelSolver {
     private static HashMap<Integer, Task> allTasks;
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
-    public static Location[][] solveForAllAgents( HashSet<Constraint> constraints)
+    public static LocationPair[][] solveForAllAgents( HashSet<Constraint> constraints)
     {
 //        System.err.println("[LowLevelSolver]: solve for all agents");
 
@@ -23,13 +23,13 @@ public class LowLevelSolver {
         allTasks = data.getAllTasks();
         Location from;
         Location to;
-        Location[][] plan = new Location[allAgents.size()][];
-        Location[] action;
+        LocationPair[][] plan = new LocationPair[allAgents.size()][];
+        LocationPair[] action;
         int boxId;
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority
-            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(0)); //TODO: improve; currently just get first task of the agent
+            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(1)); //TODO: improve; currently just get first task of the agent
             //2. Preprocess: check task type, whether it is with/without box
             to = task.getTargetLocation();
             if (task.getBoxId() == -1){ //task without box
@@ -58,7 +58,7 @@ public class LowLevelSolver {
     }
 
 
-    public static Location[] solve(HashSet<Constraint> constraints, Location from, Location to, int agentId, int boxId, Location agentLocation)
+    public static LocationPair[] solve(HashSet<Constraint> constraints, Location from, Location to, int agentId, int boxId, Location agentLocation)
     {
         //Use graph search to find a solution
 //        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Location " + agentLocation.toString());
@@ -71,7 +71,7 @@ public class LowLevelSolver {
         while (true) {
             //if frontier is null return false
             if (frontier.isEmpty())
-                return new Location[]{};
+                return new LocationPair[]{};
             //choose a node n from frontier (and remove)
             State node = frontier.pop();
             //if n is a goal state then return solution

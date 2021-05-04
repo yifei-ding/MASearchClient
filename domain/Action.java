@@ -15,7 +15,7 @@ public enum Action
         5. boxRowDelta: the vertical displacement of the box (-1,0,+1)
         6. boxColDelta: the horisontal discplacement of the box (-1,0,+1) 
         Note: Origo (0,0) is in the upper left corner. So +1 in the vertical direction is down (S) 
-        and +1 in the horisontal direction is right (E).
+        and +1 in the horizontal direction is right (E).
     */
     NoOp("NoOp", ActionType.NoOp, 0, 0, 0, 0),
 
@@ -51,9 +51,9 @@ public enum Action
     PullEE("Pull(E,E)", ActionType.Pull, 0, 1, 0,1 ),
     //PullEW("Pull(E,W)", ActionType.Pull, 0, 1, 0,-1 ),
 
-    //PullWS("Pull(W,S)", ActionType.Pull, 0, -1, 1,0 ),
+    PullWS("Pull(W,S)", ActionType.Pull, 0, -1, 1,0 ),
     PullWN("Pull(W,N)", ActionType.Pull, 0, -1, -1,0 ),
-    PullWE("Pull(W,E)", ActionType.Pull, 0, -1, 0,1 ),
+    //PullWE("Pull(W,E)", ActionType.Pull, 0, -1, 0,1 ),
     PullWW("Pull(W,W)", ActionType.Pull, 0, -1, 0,-1 ),
 
     PullSS("Pull(S,S)", ActionType.Pull, 1, 0, 1,0 ),

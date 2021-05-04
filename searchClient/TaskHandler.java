@@ -5,6 +5,7 @@ import domain.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class TaskHandler {
     private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
@@ -15,12 +16,46 @@ public class TaskHandler {
 
     private HashMap<Location, Object> staticMap = new HashMap<Location, Object>();
     private HashMap<Location, Object> dynamicMap = new HashMap<Location, Object>();
+    private HashMap<Location, Integer> StaticdegreeMap = new HashMap<Location, Integer>();
+    private HashMap<Integer,ArrayList<Location>> corrider = new HashMap<Integer,ArrayList<Location>>();
+
+
+
     private HashMap<Location, Integer> costMap = new HashMap<Location,Integer>();
     private static final int INFINITY = 2147483647;
     private static final int PRIORITY_SCALING_PARAM = 10;
     public TaskHandler(InMemoryDataSource data) {
         this.data = data;
     }
+
+
+    public String getMapType() { //return which value??
+        HashMap<Location, Integer> StaticdegreeMap = data.getDegreeMap();
+        Iterator<Location> iterator = StaticdegreeMap.keySet().iterator();
+        while (iterator.hasNext()){
+            Location key = iterator.next();
+            int degreenum = StaticdegreeMap.get(key);
+            if( degreenum == 2){
+                int i = key.getRow();
+                int j = key.getCol();
+                Location locationup = new Location(i,j+1); //嵌套循环然后返回走廊的location list？？
+                Location locationdown = new Location(i,j+1);
+                Location locationleft = new Location(i-1,j);
+                Location locationright = new Location(i + 1,j);
+                if(StaticdegreeMap.get(locationup) == 2 || StaticdegreeMap.get(locationdown) == 2 || StaticdegreeMap.get(locationleft) == 2 ||StaticdegreeMap.get(locationright) == 2){
+                    return "corridoroccur"; }
+
+                //check adjcent
+                }
+            else if (degreenum == 3){
+                return "deadendoccur";
+            }
+            else{
+            }
+        }
+        return  "normalmap";
+    }
+
 
     public void assignTask(){
         /**
@@ -73,7 +108,7 @@ public class TaskHandler {
     * @author Yifei
     * @description This method is for testing maps without box
     * @date 2021/4/27
-    * @param 
+    * @param
     * @return void
      */
     public void assignTask3(){

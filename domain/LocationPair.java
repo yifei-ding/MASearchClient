@@ -42,9 +42,9 @@ public class LocationPair {
 
     @Override
     public String toString() {
-        return "LocationPair{" +
-                "agentLocation=" + agentLocation +
-                ", boxLocation=" + boxLocation +
+        return "{" +
+                "" + agentLocation +
+                ", " + boxLocation +
                 '}';
     }
 }
