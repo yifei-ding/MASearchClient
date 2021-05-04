@@ -1,5 +1,6 @@
 package domain;
 
+//represents a cell on the map
 public class Wall {
     private Location location;
     private boolean isWall;
