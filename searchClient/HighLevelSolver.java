@@ -254,7 +254,7 @@ public class HighLevelSolver {
              */
             if (boxCurrentLocation1 != null) {
                 if (agentCurrentLocation2.equals(boxNextLocation1) && boxCurrentLocation1.equals(agentNextLocation2)) {
-                    conflict = new AgentBoxConflict(agentId1, agentId2, agentNextLocation2, boxNextLocation1, k + 1);
+                    conflict = new AgentBoxConflict(agentId2, agentId1, agentNextLocation2, boxNextLocation1, k + 1); // 5/3 bug fix: switch agentId
                     System.err.println("Find Mutual Edge AB conflict2 : " + conflict.toString());
 
                     addChildrenOfEdgeConflictToTree(state,conflict);
