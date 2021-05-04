@@ -4,12 +4,13 @@ import domain.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class InMemoryDataSource {
     private static final InMemoryDataSource dataSource = new InMemoryDataSource();
     private int row;
     private int col;
-    private boolean[][] wallMap; //whether the location is a wall
     private int[][] goalMap; //store id of goal on the map
     private int[][] agentMap; //id of agent
     private int[][] boxMap;//id of box
@@ -28,6 +29,8 @@ public class InMemoryDataSource {
 
     //store map
     private HashMap<Location, Object> staticMap; //goal+wall
+    private HashMap<Location, Wall> wallMap; //single wall map
+
     private HashMap<Location, Object> dynamicMap; //agent+box
     private HashMap<Location, Integer> staticdegreeMap; // location+degree four direction arraylist?
 
@@ -48,6 +51,8 @@ public class InMemoryDataSource {
         staticMap = new HashMap<Location, Object>();
         dynamicMap = new HashMap<Location, Object>();
         allTasksByAgent = new HashMap<Integer, ArrayList<Integer>>();
+        wallMap = new HashMap<Location, Wall>();
+        staticdegreeMap = new HashMap<Location, Integer>();
 
     }
 
@@ -149,6 +154,28 @@ public class InMemoryDataSource {
         staticMap.put(location, object);
     }
 
+    public void setWallMap(Location location, Wall wall) {
+        wallMap.put(location, wall);
+    }
+
+    public HashMap<Location, Integer> getDegreeMap(){
+        System.err.println("Wallmap: " + wallMap.toString() );
+        for (Map.Entry<Location,Wall> entry:wallMap.entrySet()){
+            Location location = entry.getKey();
+            Wall wall = entry.getValue();
+            int k=0;
+            if (!wall.isWall()){ //if the current location is not wall, count its degree
+                ArrayList<Location> neighbours = location.getNeighbours();
+                for (Location neighbour: neighbours){
+                    if (wallMap.containsKey(neighbour)  && !wallMap.get(neighbour).isWall())
+                        k++;
+                }
+                staticdegreeMap.put(location,k);
+            }
+
+        }
+        return staticdegreeMap;
+    }
     @Override
     public String toString() {
         return "InMemoryDataSource{" +
@@ -209,26 +236,27 @@ public class InMemoryDataSource {
 
     public HashMap<Location, Integer> getDegreeMap(boolean[][] wallMap) {
 
-        for (int i = 1; i <= wallMap.length; i++) {
-            for (int j = 1; j <= wallMap[i].length; i++) {
-                Location location = new Location(i, j);
-                int k = 0;
-                if (wallMap[i - 1][j]) {
-                    k = k + 1;
-                }
-                if (wallMap[i + 1][j]) {
-                    k = k + 1;
-                }
-                if (wallMap[i][j - 1]) {
-                    k = k + 1;
-                }
-                if (wallMap[i][j + 1]) {
-                    k = k + 1;
-                }
-                staticdegreeMap.put(location, k);
-
+    for (int i = 1; i <= wallMap.length; i++) {
+        for (int j = 1; j <= wallMap[i].length; i++) {
+            Location location = new Location(i, j);
+            int k = 0;
+            if (wallMap[i - 1][j]) {
+                k = k + 1;
             }
+            if (wallMap[i + 1][j]) {
+                k = k + 1;
+            }
+            if (wallMap[i][j - 1]) {
+                k = k + 1;
+            }
+            if (wallMap[i][j + 1]) {
+                k = k + 1;
+            }
+            staticdegreeMap.put(location, k);
+
         }
-        return staticdegreeMap;
     }
+    return staticdegreeMap;
 }
+}
+

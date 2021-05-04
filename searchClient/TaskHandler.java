@@ -29,8 +29,8 @@ public class TaskHandler {
     }
 
 
-    public String getMapType(HashMap<Location, Integer> StaticdegreeMap) { //return which value??
-
+    public String getMapType() { //return which value??
+        HashMap<Location, Integer> StaticdegreeMap = data.getDegreeMap();
         Iterator<Location> iterator = StaticdegreeMap.keySet().iterator();
         while (iterator.hasNext()){
             Location key = iterator.next();
