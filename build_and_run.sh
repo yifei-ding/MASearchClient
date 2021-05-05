@@ -12,6 +12,8 @@ javac searchClient/HighLevelState.java
 javac searchClient/HighLevelSolver.java
 javac searchClient/LowLevelSolver.java
 
+javac data/InMemoryDataSource.java
+
 
 
 # Starting the server using the searchclient:
