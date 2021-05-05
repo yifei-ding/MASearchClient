@@ -257,8 +257,6 @@ public class InMemoryDataSource {
     public Task getTaskById(Integer taskId) {
         return allTasks.get(taskId);
     }
-}
-
 
 
     public HashMap<Location, Integer> getDegreeMap(boolean[][] wallMap) {
