@@ -103,6 +103,9 @@ public class InMemoryDataSource {
         return allAgents.get(id);
 
     }
+    public Box getBox(int id) {
+        return allBoxes.get(id);
+    }
 
     public HashMap<Integer, Agent> getAllAgents() {
         return allAgents;
@@ -158,9 +161,9 @@ public class InMemoryDataSource {
         wallMap.put(location, wall);
     }
 
-    public HashMap<Location, Integer> getDegreeMap() {
-        System.err.println("Wallmap: " + wallMap.toString());
-        for (Map.Entry<Location, Wall> entry : wallMap.entrySet()) {
+
+    public HashMap<Location, Integer> getDegreeMap(){
+        for (Map.Entry<Location,Wall> entry:wallMap.entrySet()){
             Location location = entry.getKey();
             Wall wall = entry.getValue();
             int k = 0;
@@ -213,10 +216,10 @@ public class InMemoryDataSource {
 
 
     /**
-     * for state.java to update agent location in parent constructor
+     * to update agent location after a task is completed
      */
     public void setAgentLocation(int agentId, Location location) {
-        //update dynamic map
+        //remove current agent in dynamic map
         dynamicMap.remove(allAgents.get(agentId).getLocation());
 
         //update agent map
@@ -224,7 +227,29 @@ public class InMemoryDataSource {
         agent.setLocation(location);
         allAgents.put(agentId, agent);
 
+        //add new agent to dynamic map
         dynamicMap.put(location, agent);
+
+    }
+    /**
+     * to update box location after a task is completed
+     */
+    public void setBoxLocation(int boxId, Location location) {
+        //remove current box in dynamic map
+        dynamicMap.remove(allBoxes.get(boxId).getLocation());
+
+        //update box map
+        Box box = allBoxes.get(boxId);
+        box.setLocation(location);
+        allBoxes.put(boxId, box);
+
+        //add new box to dynamic map
+        dynamicMap.put(location, box);
+    }
+    public void setTaskAsComplete(int taskId) {
+        Task task = allTasks.get(taskId);
+        task.setCompleted(true);
+        allTasks.put(taskId,task);
 
     }
 
@@ -235,29 +260,44 @@ public class InMemoryDataSource {
 }
 
 
-//    public HashMap<Location, Integer> getDegreeMap(boolean[][] wallMap) {
-//
-//    for (int i = 1; i <= wallMap.length; i++) {
-//        for (int j = 1; j <= wallMap[i].length; i++) {
-//            Location location = new Location(i, j);
-//            int k = 0;
-//            if (wallMap[i - 1][j]) {
-//                k = k + 1;
-//            }
-//            if (wallMap[i + 1][j]) {
-//                k = k + 1;
-//            }
-//            if (wallMap[i][j - 1]) {
-//                k = k + 1;
-//            }
-//            if (wallMap[i][j + 1]) {
-//                k = k + 1;
-//            }
-//            staticdegreeMap.put(location, k);
-//
-//        }
-//    }
-//    return staticdegreeMap;
-//}
-//}
+
+    public HashMap<Location, Integer> getDegreeMap(boolean[][] wallMap) {
+
+    for (int i = 1; i <= wallMap.length; i++) {
+        for (int j = 1; j <= wallMap[i].length; i++) {
+            Location location = new Location(i, j);
+            int k = 0;
+            if (wallMap[i - 1][j]) {
+                k = k + 1;
+            }
+            if (wallMap[i + 1][j]) {
+                k = k + 1;
+            }
+            if (wallMap[i][j - 1]) {
+                k = k + 1;
+            }
+            if (wallMap[i][j + 1]) {
+                k = k + 1;
+            }
+            staticdegreeMap.put(location, k);
+
+        }
+    }
+    return staticdegreeMap;
+}
+
+    public int countRemainingTask() {
+        int count=0;
+        for (Task task:allTasks.values()){
+            if (task.isCompleted()==true){
+                count++;
+            }
+        }
+        return allTasks.size()-count;
+    }
+
+
+
+}
+
 

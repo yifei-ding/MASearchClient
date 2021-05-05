@@ -8,8 +8,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class TaskHandler {
+    private static final TaskHandler taskHandler = new TaskHandler();
+
     private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
-    private InMemoryDataSource data;
     private HashMap<Integer, Goal> allGoals = new HashMap<Integer, Goal>();
     private HashMap<Integer, Agent> allAgents = new HashMap<Integer, Agent>();
     private HashMap<Integer, Box> allBoxes = new HashMap<Integer, Box>();
@@ -17,15 +18,20 @@ public class TaskHandler {
     private HashMap<Location, Object> staticMap = new HashMap<Location, Object>();
     private HashMap<Location, Object> dynamicMap = new HashMap<Location, Object>();
     private HashMap<Location, Integer> StaticdegreeMap = new HashMap<Location, Integer>();
-    private HashMap<Integer,ArrayList<Location>> corrider = new HashMap<Integer,ArrayList<Location>>();
+    private HashMap<Integer,ArrayList<Location>> corridor = new HashMap<Integer,ArrayList<Location>>();
+    private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
 
 
     private HashMap<Location, Integer> costMap = new HashMap<Location,Integer>();
     private static final int INFINITY = 2147483647;
     private static final int PRIORITY_SCALING_PARAM = 10;
-    public TaskHandler(InMemoryDataSource data) {
-        this.data = data;
+    private TaskHandler() {
+
+    }
+    public static TaskHandler getInstance() {
+
+        return taskHandler;
     }
 
 
@@ -52,7 +58,7 @@ public class TaskHandler {
                 if(StaticdegreeMap.get(locationup) == 2 || StaticdegreeMap.get(locationdown) == 2 || StaticdegreeMap.get(locationleft) == 2 ||StaticdegreeMap.get(locationright) == 2){
                     return "corridoroccur"; }
 
-                //check adjcent
+                //check adjacent
                 }
             else if (degreenum == 3){
                 return "deadendoccur";
@@ -189,7 +195,7 @@ public class TaskHandler {
             // TODO: box-goal matching
             else { // if there is any box
 //                Box box = allBoxes.get(boxList.get(0)); //TODO: only one box? improve goal-box matching. Remove box after pairing
-                int min_distance = -1; // match the cloest box
+                int min_distance = -1; // match the nearest box
                 Box matchedBox = null; //
                 ArrayList<Integer>  matchAgentIds= new ArrayList<>();
                 for (int boxId : boxList){
@@ -234,13 +240,13 @@ public class TaskHandler {
                 //task1 is to find box. Task1 has higher priority than task2.
 //                priority = goalCount*PRIORITY_SCALING_PARAM;
                 priority = (min_distance + min_distance2)*10; // agent-box-goal sum distance x10
-                Task task1 = new Task(taskId,matchedAgent.getId(),matchedBox.getLocation(),priority);
+               //Task task1 = new Task(taskId,matchedAgent.getId(),matchedBox.getLocation(),priority); // 5/5 skip task1
                 taskId++;
                 //task2 is to push/pull box to goal.
                 //TODO: When planning task2, need to check if agent is beside the box. Otherwise create a new task of task1 to let agent find box.
                 Task task2 = new Task(taskId,matchedAgent.getId(),matchedBox.getId(), goal.getLocation(),priority-1);
                 taskId++;
-                data.addTask(task1);
+                //data.addTask(task1);
                 data.addTask(task2);
 //                goalCount--;
             }
@@ -250,22 +256,31 @@ public class TaskHandler {
         System.err.println("[TaskHandler] Initial tasks: "+data.getAllTasks().toString());
     }
 
-    public Task getFirstTask(int agentId){
+    public Task pop(int agentId){
         /**
         * @author Yifei
-        * @description Returns a task of the given agentId that is not completed and with highest priority
+        * @description Pop a task of the given agentId that is not completed and with highest priority
         * @date 2021/4/27
         * @param [agentId]
-        * @return domain.Task
+        * @return Task
          */
         Task task = null;
         ArrayList<Integer> taskList = data.getAllTasksByAgent(agentId); //already in descending order
-        if (taskList.size() != 0){
+        if (taskList != null){
             for (Integer taskId:taskList){
                 if (!data.getTaskById(taskId).isCompleted()) //check whether the task is completed
                     task = data.getTaskById(taskId);
             }
         }
         return task;
+    }
+
+    public void completeTask(int agentId) {
+      Task task = pop(agentId);
+      if (task != null){
+          //update task status to complete
+          data.setTaskAsComplete(task.getId());
+      }
+
     }
 }
