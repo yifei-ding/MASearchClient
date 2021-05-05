@@ -2,40 +2,48 @@ package searchClient;
 
 import domain.Constraint;
 import domain.Location;
+import domain.LocationPair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class HighLevelState {
 
-    private ArrayList<Constraint> constraints = new ArrayList<>();
-    private Location[][] solution;
+    private HashSet<Constraint> constraints = new HashSet<>();
+    private LocationPair[][] solution;
     private int cost;
 
-    public HighLevelState(ArrayList<Constraint> constraints) {
+    public HighLevelState(HashSet<Constraint> constraints) {
 //        this.constraints = constraints;
         this.constraints.addAll(constraints);
     }
 
-    public ArrayList<Constraint> getConstraints() {
+    public HashSet<Constraint> getConstraints() {
         return constraints;
     }
 
     public void addConstraint(Constraint constraint) {
-//        System.err.println("[HighLevelState] Add constraint " + this.constraints.toString());
         if (!this.constraints.contains(constraint))
             this.constraints.add(constraint);
+//        System.err.println("[HighLevelState] Add constraint " + constraint.toString());
+
 //        System.err.println("[HighLevelState] After adding constraint  " + this.constraints.toString());
 
     }
 
-    public Location[][] calculateSolution() {
+    public LocationPair[][] calculateSolution() {
         solution = LowLevelSolver.solveForAllAgents(this.constraints);
         return solution;
     }
 
-    public Location[][] getSolution() {
+    public LocationPair[][] getSolution() {
+        //print solution
+//        System.err.println("[HighLevelState] Get solution:");
+//        for (int i=0; i<solution.length;i++)
+//            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
+
         return solution;
     }
 
@@ -60,7 +68,7 @@ public class HighLevelState {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HighLevelState that = (HighLevelState) o;
-        return Objects.equals(constraints, that.constraints);
+        return constraints.equals(that.constraints);
     }
 
     @Override
@@ -75,15 +83,17 @@ public class HighLevelState {
                 '}';
     }
 
-    public static void main(String[] args) {
-        ArrayList<Constraint> constraints1 = new ArrayList<>();
-        constraints1.add(new Constraint(1,1,new Location(1,1)));
-        constraints1.add(new Constraint(2,2,new Location(2,2)));
-        ArrayList<Constraint> constraints2 = new ArrayList<>();
-        constraints2.add(new Constraint(2,2,new Location(2,2)));
-        constraints2.add(new Constraint(1,1,new Location(1,1)));
-        System.out.printf(""+constraints2.equals(constraints1));
-
-    }
+//    public static void main(String[] args) {
+//        HashSet<Constraint> constraints1 = new HashSet<>();
+//        constraints1.add(new Constraint(3,1,new Location(1,1)));
+//        constraints1.add(new Constraint(1,1,new Location(1,1)));
+//        constraints1.add(new Constraint(2,2,new Location(2,2)));
+//        HashSet<Constraint> constraints2 = new HashSet<>();
+//        constraints2.add(new Constraint(2,2,new Location(2,2)));
+//        constraints2.add(new Constraint(1,1,new Location(1,1)));
+//        constraints2.add(new Constraint(3,1,new Location(1,1)));
+//        System.out.printf(""+constraints2.equals(constraints1));
+//
+//    }
 
 }
