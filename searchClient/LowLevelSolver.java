@@ -26,33 +26,40 @@ public class LowLevelSolver {
         LocationPair[][] plan = new LocationPair[allAgents.size()][];
         LocationPair[] action;
         int boxId;
+        TaskHandler taskHandler = TaskHandler.getInstance();
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority
-            Task task = allTasks.get(data.getAllTasksByAgent(agent.getId()).get(1)); //TODO: improve; currently just get first task of the agent
-            //2. Preprocess: check task type, whether it is with/without box
-            to = task.getTargetLocation();
-            if (task.getBoxId() == -1){ //task without box
-                from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
-                boxId = -1;
-            }
-            else { //task with box
-                from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
-                boxId = task.getBoxId();
-            }
+            Task task = taskHandler.pop(agent.getId());
+            if (task != null) {
+                //2. Preprocess: check task type, whether it is with/without box
+                to = task.getTargetLocation();
+                if (task.getBoxId() == -1) { //task without box
+                    from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
+                    boxId = -1;
+                } else { //task with box
+                    from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
+                    boxId = task.getBoxId();
+                }
 
-            //3. Preprocess: prepare map and constraints for LowLevelSolver.solve
-            //TODO: maybe there's need to filter constraints
-            //TODO: After getting all tasks in this round, treat all other non-moving agents and boxes as obstacles.
-            //4. Call LowLevelSolver.solve
-            action = solve(constraints, from, to, agent.getId(), boxId, agent.getLocation());
-            plan[agent.getId()]= action; //TODO: for each timestep, return a pair of location instead of just one location for pushing/pulling the box
+                //3. Preprocess: prepare map and constraints for LowLevelSolver.solve
+                //TODO: maybe there's need to filter constraints
+                //TODO: After getting all tasks in this round, treat all other non-moving agents and boxes as obstacles.
+                //4. Call LowLevelSolver.solve
+                action = solve(constraints, from, to, agent.getId(), boxId, agent.getLocation());
+                plan[agent.getId()] = action;
+            }
+            else{ //agent has no task, then don't move
+                action = new LocationPair[1];
+                action[0] = new LocationPair(agent.getLocation(),null);
+                plan[agent.getId()] = action;
+            }
 
         }
         //print merged plan
-        System.err.println("[LowLevelSolver]Merged plan:");
-        for (int i=0; i<plan.length;i++)
-            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
+//        System.err.println("[LowLevelSolver]Merged plan:");
+//        for (int i=0; i<plan.length;i++)
+//            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
 
         return plan;
     }

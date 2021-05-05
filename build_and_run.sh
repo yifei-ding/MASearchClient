@@ -29,11 +29,13 @@ javac searchClient/LowLevelSolver.java
 # java -jar ../server.jar -l ../levels/MAExample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 # java -jar ../server.jar -l ../levels/MAchallenge.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
-java -jar ../server.jar -l ../levels/MAsimple2_2_testConflict_withBox4.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+# java -jar ../server.jar -l ../levels/MAsimple2_2_testConflict_withBox4.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 # java -jar ../server.jar -l ../MAGroupName.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 # java -jar ../server.jar -l ../levels/SAmicromouseContest2011.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
+
+java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 
 

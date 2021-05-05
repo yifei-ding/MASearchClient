@@ -285,10 +285,10 @@ public class State {
         }
 
         //TODO: debug
-//        obj = data.getDynamicMap().get(location);
-//        if (obj instanceof Box) {
-//            return false;
-//        }
+        obj = data.getDynamicMap().get(location);
+        if (obj instanceof Box) {
+            return false;
+        }
 
         return true;
     }

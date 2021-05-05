@@ -12,8 +12,9 @@ public class HighLevelSolver {
     private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
     private HashMap<Location, Boolean> map;
     private static final int INFINITY = 2147483647;
+    private static final int w = 20; //replan every w steps
     private ArrayList<HighLevelState> tree = new ArrayList<>();
-
+    private TaskHandler taskHandler = TaskHandler.getInstance();
 
     public HighLevelSolver(InMemoryDataSource data) {
         this.data = data;
@@ -21,53 +22,99 @@ public class HighLevelSolver {
 
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
+        Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
 
-        HighLevelState initialState = new HighLevelState(new HashSet<>());
-        initialState.calculateSolution();
-        initialState.updateCost();
-
-        tree.add(initialState);
-
-        while (!tree.isEmpty()){
-            HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
-//            System.err.println("[----------Best Node----------]: " + node.toString());
-            System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().size());
-            System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
-
-            LocationPair[][] solution1 = node.getSolution();
-            System.err.println("[HighLevelSolver] Get solution of current node:");
-            for (int i=0; i<solution1.length;i++)
-                System.err.println("Agent "+i+" : " + Arrays.toString(solution1[i]));
-
-            if (!hasEdgeConflict(node) && !hasVertexConflict(node) ) {
-                LocationPair[][] solution = node.getSolution();
-                Action[][] finalSolution = translate(solution);
-                //printSolution(finalSolution);
-                return finalSolution;
+        while (data.countRemainingTask()>0) {
+            tree = new ArrayList<>();
+            HighLevelState initialState = new HighLevelState(new HashSet<>());
+            initialState.calculateSolution();
+            initialState.updateCost();
+            tree.add(initialState);
+            while (!tree.isEmpty()) {
+                HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
+                System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().size());
+                System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
+                if (!hasEdgeConflict(node) && !hasVertexConflict(node)) {
+                    LocationPair[][] currentSolution = node.getSolution(); //current solution is the solution of each agent in a round of tasks
+                    updateLocation(currentSolution); //given each agent's solution, get the last element, and update agent/box location in data accordingly
+                    updateTask(currentSolution); //set the task as completed
+                    Action[][] action = translate(currentSolution); //translate
+                    action = addPadding(action); //add NoOp to the end of short solutions if each solution is of different length TODO: can switch to RHCR
+                    finalSolution = concatenateSolution(finalSolution, action); //append current solution to final solution
+                    break;
+                } else
+                    dealWithFirstConflict(node);
             }
+        }
+        //printSolution(finalSolution);
+        return finalSolution;
+
+    }
+
+    private Action[][] addPadding(Action[][] action) {
+        int max = getMaxLength(action);
+        Action[][] result = new Action[action.length][max];
+        for (int i = 0; i < action.length; i++) {
+            for (int j = 0; j < max; j++) {
+                if (j<action[i].length)
+                    result[i][j] = action[i][j];
+                else
+                    result[i][j] = Action.NoOp;
+            }
+        }
+        return result;
+    }
+
+    private int getMaxLength(Action[][] action){
+        int max = 0;
+        for (int i = 0; i < action.length; i++) {
+            if (action[i].length > max)
+                max = action[i].length;
+        }
+        return max;
+    }
+
+
+
+
+    private Action[][] concatenateSolution(Action[][] finalSolution, Action[][] currentSolution) {
+        Action[][] result = new Action[data.getAllAgents().size()][];
+        for (int i = 0; i < finalSolution.length; i++) {
+            if (finalSolution[i] != null){
+            Action[] previous = finalSolution[i];
+            Action[] current = currentSolution[i];
+
+            Action[] combinedAction = new Action[finalSolution[i].length + currentSolution[i].length];
+            System.arraycopy(previous,0,combinedAction,0,previous.length);
+            System.arraycopy(current,0,combinedAction,previous.length,current.length);
+            result[i] = combinedAction;}
             else
-                dealWithFirstConflict(node);
-
-//            else if (hasVertexConflict(node)){
-//                Conflict vertexConflict = getFirstVertexConflict(node);
-//                // Remove current node from tree because it has conflicts.
-//                tree.remove(node);
-//                //System.err.println("[Vertex conflict] " + vertexConflict.toString());
-//                // expand the node
-//                addChildrenOfVertexConflictToTree(node, vertexConflict); // new on 4/30
-//            }
-//            else if (hasEdgeConflict(node)){
-//                Conflict edgeConflict = getFirstEdgeConflict(node);
-//                // Remove current node from tree because it has conflicts.
-//                tree.remove(node);
-//                //System.err.println("[Edge conflict] " + edgeConflict.toString());
-//                addChildrenOfEdgeConflictToTree(node, edgeConflict); // new on 5/1
-//
-//            }
-
+                result[i] = currentSolution[i];
 
         }
-        return null;
+        return result;
+    }
+
+    private void updateTask(LocationPair[][] currentSolution) {
+        for (int i = 0; i < currentSolution.length; i++) { //i=agentId
+            taskHandler.completeTask(i);
+        }
+    }
+
+    private void updateLocation(LocationPair[][] currentSolution) {
+        for (int i = 0; i < currentSolution.length; i++) { //i=agentId
+            int lastIndex = currentSolution[i].length-1;
+            Location agentLocation = currentSolution[i][lastIndex].getAgentLocation(); //get latest agent location
+            Location boxLocation = currentSolution[i][lastIndex].getBoxLocation(); //get latest box location
+            data.setAgentLocation(i,agentLocation); //update agent location in data
+            Task task = taskHandler.pop(i);
+            if (task != null) {
+            int boxId = task.getBoxId(); //get boxId
+                if (boxLocation!=null){
+                    data.setBoxLocation(boxId,boxLocation);
+                }
+            }
+        }
     }
 
     public void dealWithFirstConflict(HighLevelState state){
@@ -160,7 +207,6 @@ public class HighLevelSolver {
             if (agentCurrentLocation1.equals(agentNextLocation2) && agentCurrentLocation2.equals(agentNextLocation1)) {
                 conflict = new AgentAgentConflict(agentId1, agentId2, agentNextLocation1, agentNextLocation2, k + 1);
                 System.err.println("Find Mutual Edge AA conflict : " + conflict.toString());
-
                 addChildrenOfEdgeConflictToTree(state,conflict);
                 break;
 //                return conflict;
@@ -886,7 +932,6 @@ public class HighLevelSolver {
          * @author Yifei
          * @description old method, not in use
          * @date 2021/5/1
-         * @param state
          * @return conflict
          */
 //    private Conflict getFirstEdgeConflict(HighLevelState state) {
@@ -914,22 +959,22 @@ public class HighLevelSolver {
 //        }
 //        return new Conflict(0,0,new Location(0,0),new Location(0,0),0);
 //    }
-//        private int getMinPathLength(LocationPair[][] solution){
-//            int min = INFINITY;
-//            for (int i = 0; i < solution.length; i++) {
-//                if (solution[i].length < min)
-//                    min = solution[i].length;
-//            }
-//            return min;
-//        }
-//    private int getMaxPathLength(LocationPair[][] solution){
-//        int max = 0;
-//        for (int i = 0; i < solution.length; i++) {
-//            if (solution[i].length > max)
-//                max = solution[i].length;
-//        }
-//        return max;
-//    }
+        private int getMinPathLength(LocationPair[][] solution){
+            int min = INFINITY;
+            for (int i = 0; i < solution.length; i++) {
+                if (solution[i].length < min)
+                    min = solution[i].length;
+            }
+            return min;
+        }
+    private int getMaxPathLength(LocationPair[][] solution){
+        int max = 0;
+        for (int i = 0; i < solution.length; i++) {
+            if (solution[i].length > max)
+                max = solution[i].length;
+        }
+        return max;
+    }
 
 
 
