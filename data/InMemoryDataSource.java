@@ -161,23 +161,25 @@ public class InMemoryDataSource {
         wallMap.put(location, wall);
     }
 
+
     public HashMap<Location, Integer> getDegreeMap(){
         for (Map.Entry<Location,Wall> entry:wallMap.entrySet()){
             Location location = entry.getKey();
             Wall wall = entry.getValue();
-            int k=0;
-            if (!wall.isWall()){ //if the current location is not wall, count its degree
+            int k = 0;
+            if (!wall.isWall()) { //if the current location is not wall, count its degree
                 ArrayList<Location> neighbours = location.getNeighbours();
-                for (Location neighbour: neighbours){
-                    if (wallMap.containsKey(neighbour)  && !wallMap.get(neighbour).isWall())
+                for (Location neighbour : neighbours) {
+                    if (wallMap.containsKey(neighbour) && !wallMap.get(neighbour).isWall())
                         k++;
                 }
-                staticdegreeMap.put(location,k);
+                staticdegreeMap.put(location, k);
             }
 
         }
         return staticdegreeMap;
     }
+
     @Override
     public String toString() {
         return "InMemoryDataSource{" +
@@ -255,6 +257,7 @@ public class InMemoryDataSource {
     public Task getTaskById(Integer taskId) {
         return allTasks.get(taskId);
     }
+}
 
 
 
@@ -296,4 +299,5 @@ public class InMemoryDataSource {
 
 
 }
+
 
