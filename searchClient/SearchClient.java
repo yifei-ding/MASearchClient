@@ -227,6 +227,7 @@ public class SearchClient {
                 }
             } while (StaticdegreeMap.get(currentLocation) != 3);
         }
+        // TODO: for degree2 goals
     }
 
 
