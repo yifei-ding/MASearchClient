@@ -174,12 +174,12 @@ public class SearchClient {
     }
 
 
-    public void setGoalOrder() {
+    public static void setGoalOrder() {
         ArrayList<Goal> degree1Goals = new ArrayList<Goal>();
         ArrayList<Goal> degree2Goals = new ArrayList<Goal>();
 
         HashMap<Location, Integer> StaticdegreeMap = data.getDegreeMap();
-        allGoals = data.getAllGoals();
+        HashMap<Integer, Goal> allGoals = data.getAllGoals();
         Iterator<Integer> iterator = allGoals.keySet().iterator();
         while (iterator.hasNext()) {
             int goalId = iterator.next();
@@ -194,14 +194,13 @@ public class SearchClient {
             }
 
         }
-        for (Goal goal : degree1Goals) {
+        for (Goal goal : degree1Goals) {// for solving the goal in the bottom
             HashSet<Location> exploredPath = new HashSet<Location>();
-            ArrayList<Location> fourDirections = new ArrayList<Location>();
             exploredPath.add(goal.getLocation());
             Location currentLocation = goal.getLocation();
+            int previousGoalId = goal.getId(); // initially goalId
             do {
-
-
+                ArrayList<Location> fourDirections = new ArrayList<Location>(); // to explore the 4 neighbors
                 int i = currentLocation.getRow();
                 int j = currentLocation.getCol();
                 Location locationUp = new Location(i, j + 1);
@@ -214,23 +213,24 @@ public class SearchClient {
                 fourDirections.add(locationRight);
                 for (Location location : fourDirections) {
                     if (StaticdegreeMap.get(location) != null) {
-                        if (StaticdegreeMap.get(location) == 2 && !exploredPath.contains(location)) {
-                            currentLocation = location;
+                        if (StaticdegreeMap.get(location) == 2 && !exploredPath.contains(location)) {// that means this is the next cell
+                            currentLocation = location; //update location
                             exploredPath.add(currentLocation);
-                            //TODO: set pervious goal ID
-
+                            //set pervious goal ID
+                            if (allGoals.get(location) != null) {//use the cell location to check if there has goal.
+                                Goal newGoal = allGoals.get(location);
+                                newGoal.setPerviousGoalId(previousGoalId);//set previous goal
+                                previousGoalId = newGoal.getId(); //update the goal Id
+                            }
                         }
-
                     }
                 }
-            } while (StaticdegreeMap.get(currentLocation) == 3);
+            } while (StaticdegreeMap.get(currentLocation) != 3);
         }
     }
 
 
-
-    public Action[][] search()
-    {
+    public Action[][] search() {
         HighLevelSolver highLevelSolver = new HighLevelSolver(data);
 
         return highLevelSolver.solve();
@@ -259,6 +259,7 @@ public class SearchClient {
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
         SearchClient.readMap(serverMessages);
+        SearchClient.setGoalOrder();
         TaskHandler taskHandler = TaskHandler.getInstance();
         taskHandler.assignTask2();
         SearchClient.testLowLevel(data);

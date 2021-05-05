@@ -5,8 +5,23 @@ public class Goal {
     private final int id;
     private final String name;
     private Location location;
+
+
     private int perviousGoalId;
     private boolean isCompleted;
+
+    public int getPerviousGoalId() {
+        return perviousGoalId;
+    }
+
+    public void setPerviousGoalId(int perviousGoalId) {
+        this.perviousGoalId = perviousGoalId;
+    }
+
+    public boolean isCompleted() {
+        return isCompleted;
+    }
+
 
     public Goal(int id, String name, Location location,int perviousGoalId,boolean isCompleted) {
         this.id = id;
