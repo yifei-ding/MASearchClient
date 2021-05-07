@@ -70,109 +70,22 @@ public class TaskHandler {
     }
 
 
-    public void assignTask(){
-        /**
-         * @author Yifei
-         * @description Baseline version of assigning tasks: for each goal, find the same name box; then for each box, find
-         * same color agent. Assume there's no duplicate name boxes and goals. After the match, create 2 tasks for each
-         * goal. And add task to InMemoryDataSource.
-         * @date 15:34 2021/4/5
-         * @param
-         * @return void
-         */
-
-        System.err.println("[TaskHandler]: Assigning tasks");
-
-        allGoals = data.getAllGoals();
-        allAgents = data.getAllAgents();
-        allBoxes = data.getAllBoxes();
-        int taskId = 0;
-        int goalCount = allGoals.size(); //for setting priority
-        int priority = 0;
-        for (Goal goal : allGoals.values()){
-            //for each goal, find a same name box. Currently use the first matching box.
-            ArrayList<Integer> boxList = data.getBoxByName(goal.getName());
-
-            Box box = allBoxes.get(boxList.get(0)); //TODO: improve goal-box matching. Remove box after pairing
-
-            //then for the box, find a same color agent. Currently use the first matching agent.
-            ArrayList<Integer> agentList = data.getAgentByColor(box.getColor());
-            Agent agent = allAgents.get(agentList.get(0));//TODO: improve box-agent matching
-
-            //for each goal, create 2 tasks. Tasks of the first goal has highest priority.
-            //task1 is to find box. Task1 has higher priority than task2.
-            priority = goalCount*PRIORITY_SCALING_PARAM;
-            Task task1 = new Task(taskId,agent.getId(),box.getLocation(),priority);
-            taskId++;
-            //task2 is to push/pull box to goal.
-            //TODO: When planning task2, need to check if agent is beside the box. Otherwise create a new task of task1 to let agent find box.
-            Task task2 = new Task(taskId,agent.getId(),box.getId(), goal.getLocation(),priority-1);
-            taskId++;
-            data.addTask(task1);
-            data.addTask(task2);
-            goalCount--;
-
-        }
-        System.err.println("[TaskHandler] Initial tasks: "+data.getAllTasks().toString());
-
-    }
 
     /**
-    * @author Yifei
-    * @description This method is for testing maps without box
+    * @author Xiangao Liu
+    * @description assign Tasks
     * @date 2021/4/27
     * @param
     * @return void
      */
-    public void assignTask3(){
-        /**
-         * @author Yifei
-         * @description Baseline version of assigning tasks: for each goal, find the same name box; then for each box, find
-         * same color agent. Assume there's no duplicate name boxes and goals. After the match, create 2 tasks for each
-         * goal. And add task to InMemoryDataSource.
-         * @date 15:34 2021/4/5
-         * @param
-         * @return void
-         */
 
-        System.err.println("[TaskHandler]: Assigning tasks");
-
-        allGoals = data.getAllGoals();
-        allAgents = data.getAllAgents();
-        allBoxes = data.getAllBoxes();
-        int taskId = 0;
-        int goalCount = allGoals.size(); //for setting priority
-        int priority = 0;
-        Box box;
-        for (Goal goal : allGoals.values()){
-            box = null;
-
-
-            Agent agent = data.getAgent(goal.getId());
-
-            //for each goal, create 2 tasks. Tasks of the first goal has highest priority.
-            //task1 is to find box. Task1 has higher priority than task2.
-            priority = goalCount*PRIORITY_SCALING_PARAM;
-            Task task1 = new Task(taskId,agent.getId(),goal.getLocation(),priority);
-            taskId++;
-            //task2 is to push/pull box to goal.
-            //TODO: When planning task2, need to check if agent is beside the box. Otherwise create a new task of task1 to let agent find box.
-            taskId++;
-            data.addTask(task1);
-
-            goalCount--;
-
-        }
-        System.err.println("[TaskHandler] Initial tasks: "+data.getAllTasks().toString());
-
-    }
 
     private int getManhattanDistance(Location location1, Location location2){
         return Math.abs(location1.getCol()- location2.getCol())
                 + Math.abs(location1.getRow())- location2.getRow();
     };
 
-    public void assignTask2(){
+    public void assignTask(){
         allGoals = data.getAllGoals();
         allAgents = data.getAllAgents();
         allBoxes = data.getAllBoxes();

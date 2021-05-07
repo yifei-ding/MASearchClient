@@ -56,7 +56,9 @@ public class Goal {
         return "Goal{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", location=" + location.toString() +
+                ", location=" + location +
+                ", perviousGoalId=" + perviousGoalId +
+                ", isCompleted=" + isCompleted +
                 '}';
     }
 }
