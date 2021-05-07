@@ -37,8 +37,9 @@ javac data/InMemoryDataSource.java
 
 # java -jar ../server.jar -l ../levels/SAmicromouseContest2011.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
-java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+#java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
+java -jar ../server.jar -l ../testlevels/SAtowersOfHoChiMinh03.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
