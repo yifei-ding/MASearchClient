@@ -7,7 +7,7 @@ public class Task {
     private Location targetLocation;
     private int priority;
     private boolean isCompleted;
-
+    private Location startLocation; // used for checking the box/agent is still at the orginal location or not.
     /**
     * @author Yifei
     * @description Construct a task with boxId means the agent need to push/pull the box to goal.
@@ -20,7 +20,7 @@ public class Task {
         this.targetLocation = targetLocation;
         this.priority = priority;
         this.isCompleted = false;
-    }
+    } // in task, if there are boxId, do a whole process from find the box then move the box. ?
     /**
      * @author Yifei
      * @description Construct a task without boxId means the agent is moving by itself. boxId = -1 denotes without box.
@@ -33,6 +33,14 @@ public class Task {
         this.targetLocation = targetLocation;
         this.priority = priority;
         this.isCompleted = false;
+    }
+
+    public Location getStartLocation() {
+        return startLocation;
+    }
+
+    public void setStartLocation(Location startLocation) {
+        this.startLocation = startLocation;
     }
 
     public int getId() {
