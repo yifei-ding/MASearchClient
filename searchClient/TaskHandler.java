@@ -268,7 +268,7 @@ public class TaskHandler {
         ArrayList<Integer> taskList = data.getAllTasksByAgent(agentId); //already in descending order
         if (taskList != null){
             for (Integer taskId:taskList){
-                if (!data.getTaskById(taskId).isCompleted()) //check whether the task is completed
+                if (!data.getTaskById(taskId).isCompleted()) //check whether the task is completed TODO:check whether precondition tasks are completed
                     task = data.getTaskById(taskId);
             }
         }

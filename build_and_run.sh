@@ -37,16 +37,17 @@ javac data/InMemoryDataSource.java
 
 # java -jar ../server.jar -l ../levels/SAmicromouseContest2011.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
-java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+# java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
+# java -jar ../server.jar -l ../levels/SAsoko1_16_unsovlable.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
 
-# java -jar ../server.jar -l ../levels/MAsimple2_3.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+java -jar ../server.jar -l ../levels/MAsimple2_3.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
-# java -jar ../server.jar -l ../levels/MAsimple2_1_easy.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+java -jar ../server.jar -l ../levels/MAsimple2_1_easy.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 # java -jar ../server.jar -l ../levels/MAsimple2_1_easy_medium.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 # java -jar ../server.jar -l ../levels/MAsimple2_1_easy_small.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 

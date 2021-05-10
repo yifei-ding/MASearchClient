@@ -317,12 +317,10 @@ public class State {
     @Override
     public String toString() {
         return "State{" +
-                 "timeStep=" + timeStep +
-                ", location=" + location +
-                //", goalLocation=" + goalLocation +
-                //", agentId=" + agentId +
-                //", boxId=" + boxId +
+                "timeStep=" + timeStep +
+                ", boxLocation=" + location +
                 ", agentLocation=" + agentLocation +
+//                ", constraints=" + constraints +
                 '}';
     }
 
@@ -331,11 +329,11 @@ public class State {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         State state = (State) o;
-        return  location.equals(state.location) && agentLocation.equals(state.agentLocation);
+        return timeStep == state.timeStep && Objects.equals(location, state.location) && Objects.equals(agentLocation, state.agentLocation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timeStep, location, g, agentLocation);
+        return Objects.hash(timeStep, location, agentLocation);
     }
 }
