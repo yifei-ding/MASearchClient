@@ -160,8 +160,50 @@ public class State {
         return expandedStates;
     }
 
-    private boolean isConstraint(int timeStep, Location agentDestination, Location boxDestination) {
+    public ArrayList<State> getStaticExpandedStates() { // only static map
+        ArrayList<State> expandedStates = new ArrayList<>(16);
+        //Action[] actions = new Action[]{Action.MoveE, Action.MoveN, Action.MoveS, Action.MoveW};
+        Location agentDestination;
+        Location boxDestination;
 
+        ArrayList<Location> locations = this.location.getNeighbours(); //equivalent to Move E, W, S, N
+        locations.add(location); //equivalent to NoOp
+        if (boxId == -1){
+            for (Location location : locations) {
+                if (this.isStaticApplicable(location) && !isConstraint(timeStep+1,location)) { //fixed issue 4/27: low level also returns initial location, so that timestep is consistent
+                    expandedStates.add(new State(this,location));
+                }
+            }
+        }
+        else{
+            //check all possible actions
+            for (Action action:Action.values()){
+                if (this.isApplicable(action)){
+
+                    agentDestination = new Location(this.agentLocation.getRow() + action.agentRowDelta, this.agentLocation.getCol() + action.agentColDelta);
+
+                    if (action.type == ActionType.Push || action.type == ActionType.Pull) {
+//                        System.err.println("Applicable action: "+ action.name);
+                        boxDestination = new Location(this.location.getRow() + action.boxRowDelta, this.location.getCol() + action.boxColDelta);
+                    }
+                    else boxDestination = this.location;
+
+                    if (!isConstraint(timeStep+1,agentDestination,boxDestination)) {
+//                            System.err.println("Agent next location: " + agentDestination.toString());
+//                            System.err.println("Box next location: " + boxDestination.toString());
+                        if (!agentDestination.equals(boxDestination))
+                            expandedStates.add(new State(this, agentDestination, boxDestination));
+                    }
+                }
+            }
+        }
+        return expandedStates;
+    }
+
+    private boolean isConstraint(int timeStep, Location agentDestination, Location boxDestination) {
+        if(this.constraints == null){
+            return false;
+        }
         for (Constraint constraint : this.constraints){
             /**
              * First case is Agent Constraint
@@ -290,6 +332,14 @@ public class State {
             return false;
         }
 
+        return true;
+    }
+    private boolean isStaticApplicable(Location location) {// for only static map
+        Object obj = map.get(location);
+        if (obj instanceof Wall) {
+            if (((Wall)obj).isWall())
+                return false;
+        }
         return true;
     }
 
