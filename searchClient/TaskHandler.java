@@ -18,23 +18,68 @@ public class TaskHandler {
     private HashMap<Location, Object> staticMap = new HashMap<Location, Object>();
     private HashMap<Location, Object> dynamicMap = new HashMap<Location, Object>();
     private HashMap<Location, Integer> StaticdegreeMap = new HashMap<Location, Integer>();
-    private HashMap<Integer,ArrayList<Location>> corridor = new HashMap<Integer,ArrayList<Location>>();
+    private HashMap<Integer, ArrayList<Location>> corridor = new HashMap<Integer, ArrayList<Location>>();
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
+    private HashMap<Integer, ArrayList<Location>> subMap = new HashMap<Integer, ArrayList<Location>>();
 
 
-
-    private HashMap<Location, Integer> costMap = new HashMap<Location,Integer>();
+    private HashMap<Location, Integer> costMap = new HashMap<Location, Integer>();
     private static final int INFINITY = 2147483647;
     private static final int PRIORITY_SCALING_PARAM = 10;
+
     private TaskHandler() {
 
     }
+
     public static TaskHandler getInstance() {
 
         return taskHandler;
     }
 
+    public HashMap<Integer, ArrayList<Location>> getSubMap() {
+        HashMap<Location, Wall> wallMap = data.getWallMap();
+        int num = 0;
+        ArrayList<Location> explored = new ArrayList<>();
+        ArrayList<Location> unExplored = new ArrayList<>();
+        ArrayList<Location> frontier = new ArrayList<>();
+        Iterator<Location> iterator = wallMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            unExplored.add(iterator.next());
+        }
 
+        while (!unExplored.isEmpty()) {
+            for (int i = 0; i < unExplored.size(); i++) {
+//                Location currentlocation = unExplored.get(i);
+                if (wallMap.get(unExplored.get(i)).isWall()) {
+                    unExplored.remove(i);
+                }
+                else {
+                    Location currentlocation = unExplored.get(i);
+                    frontier.add(currentlocation);
+                    unExplored.remove(currentlocation);
+                    do {
+
+                        ArrayList<Location> neighbours = currentlocation.getNeighbours();
+                        for (int j = 0; j < neighbours.size(); j++) {
+                            Location walllocation = neighbours.get(j);
+                            if (!wallMap.get(walllocation).isWall() && unExplored.contains(walllocation)) {
+                                frontier.add(walllocation);
+                            }
+                            neighbours.clear();
+                            frontier.remove(currentlocation);
+                            explored.add(currentlocation);
+                            currentlocation = frontier.get((int) (Math.random() * frontier.size()));
+                        }
+                    }while (frontier.isEmpty());
+                subMap.put(num,explored);
+                num++;
+                explored.clear();
+                frontier.clear();
+                }
+            }
+        }
+        return subMap;
+    }
 
 
 
@@ -92,18 +137,46 @@ public class TaskHandler {
         int taskId = 0;
 //        int goalCount = allGoals.size(); //for setting priority
         int priority = 0;
+        int subNum = 1;
         for (Goal goal : allGoals.values()){
+            Location goallocation = goal.getLocation();
+            //get the number of submap which goal belong to
+            Iterator<Integer> iterator = subMap.keySet().iterator();
+            while (iterator.hasNext()){
+                Integer key = iterator.next();
+                ArrayList<Location> locations = subMap.get(key);
+                if(locations.contains(goallocation)){
+                    subNum = key;
+                }
+            }
             //for each goal, find a same name box. Currently use the first matching box.
             ArrayList<Integer> boxList = data.getBoxByName(goal.getName());
+            //if boxes in boxlist not at the submap same to goal,remove it from boxlist
+            for(int i = 0; i < boxList.size(); i++){
+                int boxId = boxList.get(i);
+                Location boxLocation = allBoxes.get(boxId).getLocation();
+                if(!subMap.get(subNum).contains(boxLocation)){
+                    boxList.remove(i);
+                }
+            }
             if(boxList == null){// No box match, so goal match agent by name ? or + color?
                 //agent to goal without box
                 int goalName = Integer.parseInt(goal.getName());
-                Agent agent = allAgents.get(goalName); // according to goalName match agent
-                priority = getManhattanDistance(agent.getLocation(),goal.getLocation())*10;
-                priority = priority+10000;//considering normally the agent need done box tasks
-                Task task = new Task(taskId,agent.getId(),goal.getLocation(),priority);
-                taskId++;
-                data.addTask(task);
+                Agent agent = allAgents.get(goalName);// according to goalName match agent
+                Location agentlocation = agent.getLocation();
+                if(!subMap.get(subNum).contains(agentlocation)){
+
+                    System.err.println("This map is not solvable!");
+                    //conditions: box problem, but all box removed
+
+                }else {
+
+                    priority = getManhattanDistance(agent.getLocation(), goal.getLocation()) * 10;
+                    priority = priority + 10000;//considering normally the agent need done box tasks
+                    Task task = new Task(taskId, agent.getId(), goal.getLocation(), priority);
+                    taskId++;
+                    data.addTask(task);
+                }
             }
             // TODO: box-goal matching
             else { // if there is any box
@@ -133,19 +206,23 @@ public class TaskHandler {
                 int min_score = -1;
                 int min_distance2 = -1;
                 Agent matchedAgent = null;
-                for(int agentId : matchAgentIds){
-                    Agent agent = allAgents.get(agentId);
-                    ArrayList<Integer> tasks = data.getAllTasksByAgent(agentId);
-                    int task_score = 0;
-                    if(tasks != null){
-                        task_score = tasks.size()*10;
-                    }
-                    int distance = getManhattanDistance(agent.getLocation(), matchedBox.getLocation());
-                    int score = distance + task_score;
-                    if (min_score == -1 || score<min_score){
-                        min_score = score;
-                        min_distance2 = distance;
-                        matchedAgent = agent;
+                for(int agentId : matchAgentIds) {
+                    if (!subMap.get(subNum).contains(allAgents.get(agentId))) {
+                        System.err.println("This agent is not applicable!");
+                    } else {
+                        Agent agent = allAgents.get(agentId);
+                        ArrayList<Integer> tasks = data.getAllTasksByAgent(agentId);
+                        int task_score = 0;
+                        if (tasks != null) {
+                            task_score = tasks.size() * 10;
+                        }
+                        int distance = getManhattanDistance(agent.getLocation(), matchedBox.getLocation());
+                        int score = distance + task_score;
+                        if (min_score == -1 || score < min_score) {
+                            min_score = score;
+                            min_distance2 = distance;
+                            matchedAgent = agent;
+                        }
                     }
                 }
 
