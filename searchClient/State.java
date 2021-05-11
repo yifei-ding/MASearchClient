@@ -20,6 +20,7 @@ public class State {
     private Location agentLocation;
     private HashSet<Constraint> constraints;
     private InMemoryDataSource data = InMemoryDataSource.getInstance();
+    private HashMap<Location,Boolean> obstacleMap = data.getObstacleMap();
     private HashMap<Location, Object> map = data.getStaticMap();
 
 
@@ -291,18 +292,24 @@ public class State {
     }
 
     private boolean cellIsFree(Location location) {
-        Object obj = data.getStaticMap().get(location);
-        if (obj instanceof Wall) {
-            if (((Wall)obj).isWall())
-                return false;
+//        Object obj = data.getStaticMap().get(location);
+//        if (obj instanceof Wall) {
+//            if (((Wall)obj).isWall())
+//                return false;
+//        }
+//
+//        //might also check whether there's a box at location?
+//        obj = data.getDynamicMap().get(location);
+//        if (obj instanceof Box) {
+//            return false;
+//        }
+//        return true;
+        if (obstacleMap.containsKey(location)){
+            if (!obstacleMap.get(location))
+                return true;
+            else return false;
         }
-
-        //might also check whether there's a box at location?
-        obj = data.getDynamicMap().get(location);
-        if (obj instanceof Box) {
-            return false;
-        }
-        return true;
+        else return false;
     }
 
     private boolean isConstraint(int timeStep, Location location) {
@@ -320,19 +327,23 @@ public class State {
     }
 
     private boolean isApplicable(Location location) {
-        Object obj = map.get(location);
-        if (obj instanceof Wall) {
-            if (((Wall)obj).isWall())
-                return false;
+//        Object obj = map.get(location);
+//        if (obj instanceof Wall) {
+//            if (((Wall)obj).isWall())
+//                return false;
+//        }
+//
+//        //TODO: debug
+//        obj = data.getDynamicMap().get(location);
+//        if (obj instanceof Box) {
+//            return false;
+//        }
+        if (obstacleMap.containsKey(location)){
+            if (!obstacleMap.get(location))
+                return true;
+            else return false;
         }
-
-        //TODO: debug
-        obj = data.getDynamicMap().get(location);
-        if (obj instanceof Box) {
-            return false;
-        }
-
-        return true;
+        else return false;
     }
     private boolean isStaticApplicable(Location location) {// for only static map
         Object obj = map.get(location);

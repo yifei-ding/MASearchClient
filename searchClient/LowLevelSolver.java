@@ -3,11 +3,10 @@ package searchClient;
 import data.InMemoryDataSource;
 import domain.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class LowLevelSolver {
     private static HashMap<Integer, Agent> allAgents;
@@ -28,40 +27,54 @@ public class LowLevelSolver {
         LocationPair[] action;
         int boxId;
         TaskHandler taskHandler = TaskHandler.getInstance();
+        data.initializeObstacleMap(); //treat all walls, agents and boxes as obstacles.
+        ArrayList<Task> taskList = new ArrayList<>();
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority
             Task task = taskHandler.pop(agent.getId());
             if (task != null) {
-                //2. Preprocess: check task type, whether it is with/without box
-                to = task.getTargetLocation();
-                if (task.getBoxId() == -1) { //task without box
-                    from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
-                    boxId = -1;
-                } else { //task with box
-                    from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
-                    boxId = task.getBoxId();
-                }
-
-                //3. Preprocess: prepare map and constraints for LowLevelSolver.solve
-                //TODO: maybe there's need to filter constraints
-                //TODO: After getting all tasks in this round, treat all other non-moving agents and boxes as obstacles.
-                //4. Call LowLevelSolver.solve
-                if (solvable(task)){
-                    action = solve(constraints, from, to, agent.getId(), boxId, agent.getLocation());
-                    plan[agent.getId()] = action;
-                }
-                else{ //TODO: 5/10 new methods to be implemented
-                    taskHandler.taskHelper(task); //add new task
-                return LowLevelSolver.solveForAllAgents(constraints); //replan
-                }
+                taskList.add(task);
             }
             else{ //agent has no task, then don't move
                 action = new LocationPair[1];
                 action[0] = new LocationPair(agent.getLocation(),null);
                 plan[agent.getId()] = action;
             }
-
+        }
+        for (Task task:taskList){
+            //2. After getting all tasks in this round, treat agents and boxes who has a task as non-obstacle.
+            Agent agent = data.getAgent(task.getAgentId());
+            data.setObstacleMap(agent.getLocation(),false);
+            if (task.getBoxId() != -1){
+                Box box = data.getBox(task.getBoxId());
+                data.setObstacleMap(box.getLocation(),false);
+            }
+        }
+//        System.err.println("[LowLevelSovler] Created new obstacle map: " + data.getObstacleMap().toString());
+        for (Task task:taskList){
+            //3. Preprocess: check task type, whether it is with/without box
+            to = task.getTargetLocation();
+            if (task.getBoxId() == -1) { //task without box
+                from = allAgents.get(task.getAgentId()).getLocation(); //starting position is agent location
+                boxId = -1;
+            } else { //task with box
+                from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
+                boxId = task.getBoxId();
+            }
+            //TODO: maybe there's need to filter constraints
+            //4. Call LowLevelSolver.solve
+            if (solvable(task)){
+                System.err.println("[LowLevelSolver]Solvable");
+                int agentId = task.getAgentId();
+                action = solve(constraints, from, to, task.getAgentId(), boxId, data.getAgent(agentId).getLocation());
+                plan[agentId] = action;
+            }
+            else{
+                System.err.println("[LowLevelSolver]Not solvable");
+                taskHandler.taskHelper(task); //call helper to generate new tasks to help remove obstacles
+                return LowLevelSolver.solveForAllAgents(constraints); //replan
+            }
         }
         //print merged plan
 //        System.err.println("[LowLevelSolver]Merged plan:");
@@ -72,10 +85,54 @@ public class LowLevelSolver {
     }
 
     private static boolean solvable(Task task) {
-        //TODO: to identify whether the task is solvable
-        return true;
+        Location from;
+        Location goalLocation = task.getTargetLocation();
+        Location agentInitialLocation = allAgents.get(task.getAgentId()).getLocation();
+        //TODO: to identify whether the task is solvable (regardless of the constraints)
+        //do a low level search, with no constraints
+        if (task.getBoxId() == -1) { //task without box
+            return IsConnected(agentInitialLocation,goalLocation);
+        } else { //task with box
+            Location boxInitialLocation = allBoxes.get(task.getBoxId()).getLocation();
+            if (IsConnected(boxInitialLocation,goalLocation)){
+                return IsConnected(agentInitialLocation,boxInitialLocation);
+            }
+            else return false;
+        }
     }
 
+    private static boolean IsConnected(Location from, Location to) {
+        HashMap<Location, Boolean> obstacleMap = data.getObstacleMap();
+        ArrayList<Location> explored = new ArrayList<>();
+        ArrayList<Location> frontier = new ArrayList<>();
+        Location initial = from;
+        Location goal = to;
+        frontier.add(initial);
+        while (!frontier.isEmpty()){
+            Location node = frontier.get(0);
+            frontier.remove(0);
+//            System.err.println("Frontier.size: " + frontier.size());
+            explored.add(node);
+            if (node.equals(goal)) {
+                return true;
+            }
+            else{
+                ArrayList<Location> neighbours = node.getNeighbours();
+                for (Location neighbour:neighbours){
+                    if (obstacleMap.containsKey(neighbour)){
+                        if (!obstacleMap.get(neighbour)) {
+                            if (!frontier.contains(neighbour) && !explored.contains(neighbour)){
+                                frontier.add(neighbour);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        System.err.println("Not connected");
+    return false;
+    }
 
     public static LocationPair[] solve(HashSet<Constraint> constraints, Location from, Location to, int agentId, int boxId, Location agentLocation)
     {
@@ -123,7 +180,7 @@ public class LowLevelSolver {
 
     }
 
-    public static LocationPair[]staticSolve(Location from, Location to, int agentId, int boxId, Location agentLocation)
+    public static LocationPair[] staticSolve(Location from, Location to, int agentId, int boxId, Location agentLocation)
     {
         //Use graph search to find a solution
 //        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Location " + agentLocation.toString());
