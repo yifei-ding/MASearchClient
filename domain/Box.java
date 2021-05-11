@@ -32,7 +32,7 @@ public class Box {
     @Override
     public String toString() {
         return "Box{" +
-                "id=" + id +
+               // "id=" + id +
                 ", name='" + name + '\'' +
                 ", color=" + color +
                 ", location=" + location.toString() +

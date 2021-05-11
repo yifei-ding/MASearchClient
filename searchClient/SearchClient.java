@@ -248,7 +248,7 @@ public class SearchClient {
 
         return highLevelSolver.solve();
 //        System.err.println("[SearchClient] Skip highlevel to test low level");
-//        return null;
+//    return null;
 
     }
 
@@ -272,17 +272,21 @@ public class SearchClient {
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
         SearchClient.readMap(serverMessages);
-        SearchClient.setGoalOrder(); // Assign the goals order
-//        System.err.println("[272 Goals] "+data.getAllGoals().toString());
+        System.err.println("read map completed");
+//        SearchClient.setGoalOrder(); // Assign the goals order
+        // TODO: fix setgoalorder
+        //System.err.println("[272 Goals] "+data.getAllGoals().toString());
         TaskHandler taskHandler = TaskHandler.getInstance();
+        //System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
         taskHandler.assignTask();
-        SearchClient.testLowLevel(data);
-//        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
+//        SearchClient.testLowLevel(data);
+
+
 
         // Search for a plan.
         Action[][] plan;
         try {
-            plan = searchClient.search(); // todo: Is this mean we should return all actions at once?
+            plan = searchClient.search(); //
         } catch (OutOfMemoryError ex) {
             System.err.println("[SearchClient] Maximum memory usage exceeded.");
             plan = null;

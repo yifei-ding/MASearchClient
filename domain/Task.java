@@ -1,5 +1,7 @@
 package domain;
 
+import data.InMemoryDataSource;
+
 public class Task {
     private int id;
     private int boxId;
@@ -7,6 +9,8 @@ public class Task {
     private Location targetLocation;
     private int priority;
     private boolean isCompleted;
+    private static InMemoryDataSource data = InMemoryDataSource.getInstance();
+
 
     /**
     * @author Yifei
@@ -85,14 +89,25 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
-               // "id=" + id + ", "
-                "boxId=" + boxId +
-                ", agentId=" + agentId +
-                ", targetLocation=" + targetLocation +
-              //  ", priority=" + priority +
-               // ", isCompleted=" + isCompleted +
-                "}"+'\n' ;
+        if (boxId != -1) {
+            return "Task{" +
+                    // "id=" + id + ", "
+                    "box=" + data.getBox(boxId).toString() +
+                    ", agent=" + data.getAgent(agentId).toString() +
+                    ", targetLocation=" + targetLocation +
+                    //  ", priority=" + priority +
+                    // ", isCompleted=" + isCompleted +
+                    "}" + '\n';
+        }
+        else
+            return "Task{" +
+                    // "id=" + id + ", "
+                    "no box" +
+                    ", agent=" + data.getAgent(agentId).toString() +
+                    ", targetLocation=" + targetLocation +
+                    //  ", priority=" + priority +
+                    // ", isCompleted=" + isCompleted +
+                    "}" + '\n';
     }
 }
 
