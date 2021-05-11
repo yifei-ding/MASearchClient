@@ -51,12 +51,10 @@ public class LowLevelSolver {
                     action = solve(constraints, from, to, agent.getId(), boxId, agent.getLocation());
                     plan[agent.getId()] = action;
                 }
-//                else{ //TODO: 5/10 new methods to be implemented
-//                    LocationPair[] staticMapSolution = staticSolve(from, to, agent.getId(), boxId, agent.getLocation());
-//                    if (staticMapSolution != null)
-//                        taskHandler.addSubTask(task,staticMapSolution); //add new task
-//                    return LowLevelSolver.solveForAllAgents(constraints); //replan
-//                }
+                else{ //TODO: 5/10 new methods to be implemented
+                    taskHandler.taskHelper(task); //add new task
+                return LowLevelSolver.solveForAllAgents(constraints); //replan
+                }
             }
             else{ //agent has no task, then don't move
                 action = new LocationPair[1];
