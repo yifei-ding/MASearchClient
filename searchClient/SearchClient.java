@@ -200,6 +200,7 @@ public class SearchClient {
         if (degree1Locations.size()!=0){
             for (Location cellLocation : degree1Locations) {// for solving the goal in the bottom
                 HashSet<Location> exploredPath = new HashSet<Location>();
+                int exploredCellNumber = 0;
                 Location currentLocation = cellLocation;
                 int previousGoalId = -1;
                 if(goals.get(cellLocation)!=null){ // if there is a goal in the degree ==1 cell
@@ -218,6 +219,7 @@ public class SearchClient {
                     fourDirections.add(locationDown);
                     fourDirections.add(locationLeft);
                     fourDirections.add(locationRight);
+                    exploredCellNumber++;
                     // choose the next cell
                     for (Location location : fourDirections) {
                         if (staticdegreeMap.get(location) != null) {
@@ -235,7 +237,7 @@ public class SearchClient {
                             }
                         }
                     }
-                } while (staticdegreeMap.get(currentLocation) < 3);
+                } while (staticdegreeMap.get(currentLocation) < 3 && exploredPath.size()>=exploredCellNumber);
             }
         }
         // TODO: assign goal sequence for corrdior
@@ -273,7 +275,7 @@ public class SearchClient {
         data = InMemoryDataSource.getInstance();
         SearchClient.readMap(serverMessages);
         System.err.println("read map completed");
-//        SearchClient.setGoalOrder(); // Assign the goals order
+        SearchClient.setGoalOrder(); // Assign the goals order
         // TODO: fix setgoalorder
         //System.err.println("[272 Goals] "+data.getAllGoals().toString());
         TaskHandler taskHandler = TaskHandler.getInstance();

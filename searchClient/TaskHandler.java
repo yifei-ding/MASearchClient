@@ -150,13 +150,12 @@ public class TaskHandler {
         allAgents = data.getAllAgents();
         allBoxes = data.getAllBoxes();
         int taskId = 0;
-//        int goalCount = allGoals.size(); //for setting priority
         int priority = 0;
-        int subNum = 1;
+        int subNum = 0;
         subMap = getSubMap();
-//        System.err.println("145"+subMap.toString());
+//        System.err.println(subMap.toString());
+        HashSet<Integer> matchedBoxes = new HashSet<>();
         for (Goal goal : allGoals.values()){
-//            System.err.println("goal"+goal.toString());
             Location goallocation = goal.getLocation();
             //get the number of submap which goal belong to
             Iterator<Integer> iterator = subMap.keySet().iterator();
@@ -169,6 +168,7 @@ public class TaskHandler {
             }
             //for each goal, find a same name box. Currently use the first matching box.
             ArrayList<Integer> boxList = data.getBoxByName(goal.getName());
+
             //if boxes in boxlist not at the submap same to goal,remove it from boxlist
 
             if(boxList == null){// No box match, so goal match agent by name ? or + color?
@@ -206,6 +206,9 @@ public class TaskHandler {
                 Box matchedBox = null; //
                 ArrayList<Integer>  matchAgentIds= new ArrayList<>();
                 for (int boxId : boxList){
+                    if(matchedBoxes.contains(boxId)){
+                        continue;
+                    }
                     Box box = allBoxes.get(boxId);
                     ArrayList<Integer> agentList = data.getAgentByColor(box.getColor());
                     if(agentList == null){
@@ -218,10 +221,11 @@ public class TaskHandler {
                         matchAgentIds = agentList;
                     }
                     //TODO: check if min_distance is correct
-
                 }
 
-//                boxList.remove(matchedBox.getId());//if find matchbox,remove it from boxlist TODO: bug fix
+
+             //   boxList.remove(matchedBox.getId());//if find matchbox,remove it from boxlist TODO: bug fix
+
 
                 if (matchedBox == null){
                     System.err.println("This map is not solvable!");
@@ -234,7 +238,7 @@ public class TaskHandler {
                 Agent matchedAgent = null;
                 for(int agentId : matchAgentIds) {
                     if (!subMap.get(subNum).contains(allAgents.get(agentId).getLocation())) {
-                        System.err.println("This agent is not applicable!"+ agentId);
+                        System.err.println("This agent is not applicable!"+ agentId+" : "+goal.getName());
                     } else {
                         Agent agent = allAgents.get(agentId);
                         ArrayList<Integer> tasks = data.getAllTasksByAgent(agentId);
@@ -260,10 +264,14 @@ public class TaskHandler {
                 taskId++;
                 //task2 is to push/pull box to goal.
                 //TODO: When planning task2, need to check if agent is beside the box. Otherwise create a new task of task1 to let agent find box.
-                Task task2 = new Task(taskId,matchedAgent.getId(),matchedBox.getId(), goal.getLocation(),priority-1);
-                taskId++;
-                //data.addTask(task1);
-                data.addTask(task2);
+//                System.err.println("267"+ matchedAgent.getId());
+                if(matchedAgent!=null){
+                    Task task2 = new Task(taskId,matchedAgent.getId(),matchedBox.getId(), goal.getLocation(),priority-1);
+                    matchedBoxes.add(matchedBox.getId()); // add matched box into restriction
+                    taskId++;
+                    //data.addTask(task1);
+                    data.addTask(task2);
+                }
 //                goalCount--;
             }
         }

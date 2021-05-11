@@ -50,6 +50,7 @@ javac data/InMemoryDataSource.java
 
 
 
+
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
 
