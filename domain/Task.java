@@ -1,5 +1,8 @@
 package domain;
 
+
+import data.InMemoryDataSource;
+
 public class Task {
     private int id;
     private int boxId;
@@ -7,7 +10,10 @@ public class Task {
     private Location targetLocation;
     private int priority;
     private boolean isCompleted;
+    private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
+
+    private Location startLocation; // used for checking the box/agent is still at the orginal location or not.
     /**
     * @author Yifei
     * @description Construct a task with boxId means the agent need to push/pull the box to goal.
@@ -33,6 +39,14 @@ public class Task {
         this.targetLocation = targetLocation;
         this.priority = priority;
         this.isCompleted = false;
+    }
+
+    public Location getStartLocation() {
+        return startLocation;
+    }
+
+    public void setStartLocation(Location startLocation) {
+        this.startLocation = startLocation;
     }
 
     public int getId() {
@@ -85,14 +99,25 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
-               // "id=" + id + ", "
-                "boxId=" + boxId +
-                ", agentId=" + agentId +
-                ", targetLocation=" + targetLocation +
-              //  ", priority=" + priority +
-               // ", isCompleted=" + isCompleted +
-                "}"+'\n' ;
+        if (boxId != -1) {
+            return "Task{" +
+                    // "id=" + id + ", "
+                    "box=" + data.getBox(boxId).toString() +
+                    ", agent=" + data.getAgent(agentId).toString() +
+                    ", targetLocation=" + targetLocation +
+                    //  ", priority=" + priority +
+                    // ", isCompleted=" + isCompleted +
+                    "}" + '\n';
+        }
+        else
+            return "Task{" +
+                    // "id=" + id + ", "
+                    "no box" +
+                    ", agent=" + data.getAgent(agentId).toString() +
+                    ", targetLocation=" + targetLocation +
+                    //  ", priority=" + priority +
+                    // ", isCompleted=" + isCompleted +
+                    "}" + '\n';
     }
 }
 

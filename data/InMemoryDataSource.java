@@ -110,11 +110,13 @@ public class InMemoryDataSource {
     public HashMap<Integer, Agent> getAllAgents() {
         return allAgents;
     }
-
     public HashMap<Integer, Box> getAllBoxes() {
         return allBoxes;
     }
 
+    public HashMap<Location, Integer> getStaticdegreeMap() {
+        return staticdegreeMap;
+    }
 
     /*
      * @Author Yifei
@@ -179,6 +181,14 @@ public class InMemoryDataSource {
         }
         return staticdegreeMap;
     }
+
+    public HashMap<Location, Wall> getWallMap(){
+
+        return wallMap;
+
+
+    }
+
 
     @Override
     public String toString() {

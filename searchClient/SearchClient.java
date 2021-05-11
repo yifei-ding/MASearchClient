@@ -11,7 +11,6 @@ public class SearchClient {
     private static String mapName;
     private static InMemoryDataSource data;
     private HashMap<Integer, Goal> allGoals = new HashMap<Integer, Goal>();
-
     public static void readMap(BufferedReader serverMessages)
             throws IOException {
         // We can assume that the level file is conforming to specification, since the server verifies this.
@@ -169,73 +168,87 @@ public class SearchClient {
 
             }
         }
-
+        //read degree map here
+        data.getDegreeMap();
 
     }
 
 
-    public void setGoalOrder() {
-        ArrayList<Goal> degree1Goals = new ArrayList<Goal>();
-        ArrayList<Goal> degree2Goals = new ArrayList<Goal>();
-
-        HashMap<Location, Integer> StaticdegreeMap = data.getDegreeMap();
-        allGoals = data.getAllGoals();
+    public static void setGoalOrder() {
+        ArrayList<Location> degree1Locations = new ArrayList<Location>();
+        ArrayList<Location> degree2Locations = new ArrayList<Location>();
+        HashMap<Location, Goal> goals = new HashMap<>();
+        HashMap<Location, Integer> staticdegreeMap = data.getStaticdegreeMap();
+        HashMap<Integer, Goal> allGoals = data.getAllGoals();
         Iterator<Integer> iterator = allGoals.keySet().iterator();
         while (iterator.hasNext()) {
             int goalId = iterator.next();
             Goal goal = allGoals.get(goalId);
             Location location = goal.getLocation();
-            int degreenum = StaticdegreeMap.get(location);
-            if (degreenum == 1) {
-                degree1Goals.add(goal);
-            } else if (degreenum == 2) {
-                degree2Goals.add(goal);
-
+            goals.put(location,goal);
+        }
+        Iterator<Location> iterator2 = staticdegreeMap.keySet().iterator();
+        while (iterator2.hasNext()) { // extract locations whose degree ==1 and 2
+            Location location = iterator2.next();
+            int degreeNum = staticdegreeMap.get(location);
+            if (degreeNum == 1){
+                degree1Locations.add(location);
+            }else if (degreeNum == 2){
+                degree2Locations.add(location);
             }
-
         }
-        for (Goal goal : degree1Goals) {
-            HashSet<Location> exploredPath = new HashSet<Location>();
-            ArrayList<Location> fourDirections = new ArrayList<Location>();
-            exploredPath.add(goal.getLocation());
-            Location currentLocation = goal.getLocation();
-            do {
-
-
-                int i = currentLocation.getRow();
-                int j = currentLocation.getCol();
-                Location locationUp = new Location(i, j + 1);
-                Location locationDown = new Location(i, j - 1);
-                Location locationLeft = new Location(i - 1, j);
-                Location locationRight = new Location(i + 1, j);
-                fourDirections.add(locationUp);
-                fourDirections.add(locationDown);
-                fourDirections.add(locationLeft);
-                fourDirections.add(locationRight);
-                for (Location location : fourDirections) {
-                    if (StaticdegreeMap.get(location) != null) {
-                        if (StaticdegreeMap.get(location) == 2 && !exploredPath.contains(location)) {
-                            currentLocation = location;
-                            exploredPath.add(currentLocation);
-                            //TODO: set pervious goal ID
-
+        if (degree1Locations.size()!=0){
+            for (Location cellLocation : degree1Locations) {// for solving the goal in the bottom
+                HashSet<Location> exploredPath = new HashSet<Location>();
+                Location currentLocation = cellLocation;
+                int previousGoalId = -1;
+                if(goals.get(cellLocation)!=null){ // if there is a goal in the degree ==1 cell
+                    previousGoalId = goals.get(cellLocation).getId();
+                } // initially goalId
+                //explore the path
+                do {
+                    ArrayList<Location> fourDirections = new ArrayList<Location>(); // to explore the 4 neighbors
+                    int i = currentLocation.getRow();
+                    int j = currentLocation.getCol();
+                    Location locationUp = new Location(i, j + 1);
+                    Location locationDown = new Location(i, j - 1);
+                    Location locationLeft = new Location(i - 1, j);
+                    Location locationRight = new Location(i + 1, j);
+                    fourDirections.add(locationUp);
+                    fourDirections.add(locationDown);
+                    fourDirections.add(locationLeft);
+                    fourDirections.add(locationRight);
+                    // choose the next cell
+                    for (Location location : fourDirections) {
+                        if (staticdegreeMap.get(location) != null) {
+                            if (staticdegreeMap.get(location) > 1 && !exploredPath.contains(location)) {// that means this is the next cell
+                                currentLocation = location; //update location
+                                exploredPath.add(currentLocation);
+                                //set pervious goal ID
+                                if (goals.get(location) !=null) {//use the cell location to check if there has goal.
+                                    //find the goal in that location
+                                    Goal newGoal = goals.get(location);
+                                    newGoal.setPerviousGoalId(previousGoalId);//set previous goal
+                                    allGoals.put(newGoal.getId(),newGoal);
+                                    previousGoalId = newGoal.getId(); //update the goal Id
+                                }
+                            }
                         }
-
                     }
-                }
-            } while (StaticdegreeMap.get(currentLocation) == 3);
+                } while (staticdegreeMap.get(currentLocation) < 3);
+            }
         }
+        // TODO: assign goal sequence for corrdior
+
     }
 
 
-
-    public Action[][] search()
-    {
+    public Action[][] search() {
         HighLevelSolver highLevelSolver = new HighLevelSolver(data);
 
         return highLevelSolver.solve();
 //        System.err.println("[SearchClient] Skip highlevel to test low level");
-//        return null;
+//    return null;
 
     }
 
@@ -259,15 +272,21 @@ public class SearchClient {
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
         SearchClient.readMap(serverMessages);
+        System.err.println("read map completed");
+//        SearchClient.setGoalOrder(); // Assign the goals order
+        // TODO: fix setgoalorder
+        //System.err.println("[272 Goals] "+data.getAllGoals().toString());
         TaskHandler taskHandler = TaskHandler.getInstance();
-        taskHandler.assignTask2();
-        SearchClient.testLowLevel(data);
-//        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
+        //System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
+        taskHandler.assignTask();
+//        SearchClient.testLowLevel(data);
+
+
 
         // Search for a plan.
         Action[][] plan;
         try {
-            plan = searchClient.search(); // todo: Is this mean we should return all actions at once?
+            plan = searchClient.search(); //
         } catch (OutOfMemoryError ex) {
             System.err.println("[SearchClient] Maximum memory usage exceeded.");
             plan = null;

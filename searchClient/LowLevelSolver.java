@@ -123,7 +123,45 @@ public class LowLevelSolver {
 
     }
 
+    public static LocationPair[]staticSolve(Location from, Location to, int agentId, int boxId, Location agentLocation)
+    {
+        //Use graph search to find a solution
+//        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Location " + agentLocation.toString());
+        HashSet<Constraint> constraints = null;
+        State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
+        Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
+//        Frontier frontier = new FrontierDFS();
 
+        frontier.add(initialState);
+        HashSet<State> explored = new HashSet<>();
+        while (true) {
+            //if frontier is null return false
+            if (frontier.isEmpty())
+                return new LocationPair[]{};
+            //choose a node n from frontier (and remove)
+            State node = frontier.pop();
+            //if n is a goal state then return solution
+            if (node.isGoalState()) {
+//                System.err.println("[LowLevelSolver] Found goal state " + node.toString());
+                return node.extractPlan();
+            }
+            else {
+                //add n to expandedNodes
+                explored.add(node);
+                //get children of n
+                ArrayList<State> children = node.getStaticExpandedStates();
+                //for each child m of n // we expand n
+                for (State m : children){
+                    //if m is not in frontier and m in not in expandedNodes then
+                    //add child m to frontier
+                    if (!frontier.contains(m) && !explored.contains(m)) {
+                        frontier.add(m);
+                    }
+                }
+            }
+        }
+
+    }
 
 
 }
