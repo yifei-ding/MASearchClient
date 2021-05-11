@@ -102,11 +102,6 @@ public class TaskHandler {
 
 
 
-
-
-
-
-
     public String getMapType() { //return which value??
         HashMap<Location, Integer> StaticdegreeMap = data.getDegreeMap();
         Iterator<Location> iterator = StaticdegreeMap.keySet().iterator();
@@ -228,6 +223,10 @@ public class TaskHandler {
                     //TODO: check if min_distance is correct
                 }
 
+
+             //   boxList.remove(matchedBox.getId());//if find matchbox,remove it from boxlist TODO: bug fix
+
+
                 if (matchedBox == null){
                     System.err.println("This map is not solvable!");
                     continue;
@@ -284,6 +283,7 @@ public class TaskHandler {
     // if the task is move the box/agent to the goal, just use the box.location.
     // if it's a sub  task for move box/agent out of the path, use the orginal location, so we can check the task is still valid or not.
     public void taskHelper(Task task){
+        System.err.println("[TaskHandler] Call Task Helper");
         // find the path in static map
         HashMap<Location, Integer> staticdegreeMap = data.getStaticdegreeMap();
         HashMap<Location, Object> dynamicMap = data.getDynamicMap();
@@ -406,7 +406,7 @@ public class TaskHandler {
         ArrayList<Integer> taskList = data.getAllTasksByAgent(agentId); //already in descending order
         if (taskList != null){
             for (Integer taskId:taskList){
-                if (!data.getTaskById(taskId).isCompleted()) //check whether the task is completed
+                if (!data.getTaskById(taskId).isCompleted()) //check whether the task is completed TODO:check whether precondition tasks are completed
                     task = data.getTaskById(taskId);
             }
         }

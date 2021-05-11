@@ -21,9 +21,9 @@ javac data/InMemoryDataSource.java
 # for observing different maps
 
 
- java -jar ../server.jar -l ../levels/MAAIMAS.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600  
+ # java -jar ../server.jar -l ../levels/MAAIMAS.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600  
 
-#java -jar ../server.jar -l ../levels/SAsoko3_04.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 -o "../logs/example.log"
+# java -jar ../server.jar -l ../levels/SAsoko3_04.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 -o "../logs/example.log"
 
 # java -jar ../server.jar -l ../levels/MAbispebjerg.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600  
 
@@ -33,15 +33,22 @@ javac data/InMemoryDataSource.java
 # java -jar ../server.jar -l ../levels/MAExample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 # java -jar ../server.jar -l ../levels/MAchallenge.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
+# java -jar ../server.jar -l ../levels/SAsoko1_16_testObstacle.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+
 # java -jar ../server.jar -l ../levels/MAsimple2_2_testConflict_withBox4.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 # java -jar ../server.jar -l ../MAGroupName.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 # java -jar ../server.jar -l ../levels/SAmicromouseContest2011.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
 
-#java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
-java -jar ../server.jar -l ../19levels/MAAIMAS.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+# java -jar ../server.jar -l ../levels/MAthomasAppartment_bluepurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+
+# java -jar ../server.jar -l ../levels/SAsoko1_16_unsovlable.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+
+# java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+
+
 
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 
