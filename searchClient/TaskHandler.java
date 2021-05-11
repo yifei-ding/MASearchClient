@@ -5,6 +5,7 @@ import domain.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 public class TaskHandler {
@@ -268,11 +269,124 @@ public class TaskHandler {
                 data.addTask(task2);
 //                goalCount--;
             }
-
-
         }
         System.err.println("[TaskHandler] Initial tasks: "+data.getAllTasks().toString());
     }
+
+    // TODO: input a task which no solution, return the sub-tasks for helping solving it
+    // TODO: if the box/agent already has its task to move out of the path?
+    // if the task is move the box/agent to the goal, just use the box.location.
+    // if it's a sub  task for move box/agent out of the path, use the orginal location, so we can check the task is still valid or not.
+    public void taskHelper(Task task){
+        // find the path in static map
+        HashMap<Location, Integer> staticdegreeMap = data.getStaticdegreeMap();
+        HashMap<Location, Object> dynamicMap = data.getDynamicMap();
+        LocationPair[] locationPairs;
+        Location from;
+        Location to;
+        int boxId;
+        to = task.getTargetLocation();
+        int agentId = task.getAgentId();
+        Agent agent = allAgents.get(agentId);
+        Location location = agent.getLocation();
+        Constraint constraint = null;
+        if (task.getBoxId() == -1) { //task without box
+            from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
+            boxId = -1;
+        } else { //task with box
+            from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
+            boxId = task.getBoxId();
+        }
+        locationPairs = LowLevelSolver.staticSolve(from, to, agent.getId(), boxId, agent.getLocation()); // locations
+        //find obstacles
+        HashSet<Location> obstacles = new HashSet<>(); // the mandatory locations
+//        HashSet<Location> pathLocations = new HashSet<>();
+        boolean isInCorridor = false;
+        for(LocationPair locationPair : locationPairs){
+            Location location_temp = locationPair.getAgentLocation();
+//            pathLocations.add(location_temp);
+            if(staticdegreeMap.get(location_temp)==2){// recognize the corridor, -the mandatory locations
+                isInCorridor = true;
+                obstacles.add(location_temp);
+            }else if(isInCorridor){
+                obstacles.add(location_temp);
+                isInCorridor = false;
+            }
+        }
+        for(Location location_temp: obstacles){
+            if(dynamicMap.get(location_temp)!=null){ // check if there is object
+                Object obj = dynamicMap.get(location);
+                if (obj instanceof Box) {
+                    int newBoxId = ((Box) obj).getId();
+                    int taskId = allTasks.size();
+                    Location targetLocation = findTargetLocation(obstacles,location_temp);//from the original cell to find a nearest cell match the requirements
+                    // Find the best match agent
+                    int newAgentId = findBestAgent(newBoxId,targetLocation);
+                    int distance = getManhattanDistance(allAgents.get(newAgentId).getLocation(),allBoxes.get(newBoxId).getLocation())+getManhattanDistance(allBoxes.get(newBoxId).getLocation(),targetLocation);
+                    int priority = distance*10;
+                    Task newTask_1 = new Task(taskId,newAgentId,-1,allBoxes.get(boxId).getLocation(),priority);
+                    Task newTask_2 = new Task(taskId,newAgentId,newBoxId,targetLocation,priority+1); // TOdo: set the priority
+                    data.addTask(newTask_1);
+                    data.addTask(newTask_2);
+                }else if(obj instanceof Agent){
+                    int newAgentId = ((Agent) obj).getId();
+                    int taskId = allTasks.size();
+                    Location targetLocation = findTargetLocation(obstacles,location_temp);
+                    Task newTask = new Task(taskId,newAgentId,-1,targetLocation,0);
+                    data.addTask(newTask);
+                }
+            }
+        }
+    }
+
+
+
+    public Location findTargetLocation(HashSet<Location> obstacles,Location startLocation){ //find the goal according to given obstacles
+        Location currentLocation = startLocation;
+        HashSet<Location> exploredPath = new HashSet<Location>();
+        do{
+            ArrayList<Location> fourDirections = new ArrayList<Location>(); // to explore the 4 neighbors
+            int i = currentLocation.getRow();
+            int j = currentLocation.getCol();
+            Location locationUp = new Location(i, j + 1);
+            Location locationDown = new Location(i, j - 1);
+            Location locationLeft = new Location(i - 1, j);
+            Location locationRight = new Location(i + 1, j);
+            fourDirections.add(locationUp);
+            fourDirections.add(locationDown);
+            fourDirections.add(locationLeft);
+            fourDirections.add(locationRight);
+            // choose the next cell
+            for (Location location : fourDirections) {
+                if (StaticdegreeMap.get(location) != null && !exploredPath.contains(location)) {//not wall, and new
+                    currentLocation = location; //update location
+                    exploredPath.add(currentLocation);
+                }
+            }
+
+        } while (obstacles.contains(currentLocation)==true || dynamicMap.get(currentLocation)!=null); //end requirements: not in obstacle positions and no object in that location
+
+        return currentLocation;
+    }
+
+    public int findBestAgent(int boxId, Location targetLocation){
+        //according to box color and location find match agents
+        Box box = allBoxes.get(boxId);
+        ArrayList<Integer> agentList = data.getAgentByColor(box.getColor());
+        int min_distance = -1;
+        int matchedAgentId = -1;
+        for(int agentId : agentList){
+            Agent agent = allAgents.get(agentId);
+            int distance = getManhattanDistance(box.getLocation(), agent.getLocation());
+            if (min_distance == -1 || distance < min_distance){
+                min_distance = distance;
+                matchedAgentId = agentId;
+            }
+        }
+        return matchedAgentId;
+    }
+
+
 
     public Task pop(int agentId){
         /**

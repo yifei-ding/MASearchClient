@@ -11,7 +11,6 @@ public class SearchClient {
     private static String mapName;
     private static InMemoryDataSource data;
     private HashMap<Integer, Goal> allGoals = new HashMap<Integer, Goal>();
-
     public static void readMap(BufferedReader serverMessages)
             throws IOException {
         // We can assume that the level file is conforming to specification, since the server verifies this.
@@ -169,7 +168,8 @@ public class SearchClient {
 
             }
         }
-
+        //read degree map here
+        data.getDegreeMap();
 
     }
 
@@ -178,7 +178,7 @@ public class SearchClient {
         ArrayList<Location> degree1Locations = new ArrayList<Location>();
         ArrayList<Location> degree2Locations = new ArrayList<Location>();
         HashMap<Location, Goal> goals = new HashMap<>();
-        HashMap<Location, Integer> StaticdegreeMap = data.getDegreeMap();
+        HashMap<Location, Integer> staticdegreeMap = data.getStaticdegreeMap();
         HashMap<Integer, Goal> allGoals = data.getAllGoals();
         Iterator<Integer> iterator = allGoals.keySet().iterator();
         while (iterator.hasNext()) {
@@ -187,10 +187,10 @@ public class SearchClient {
             Location location = goal.getLocation();
             goals.put(location,goal);
         }
-        Iterator<Location> iterator2 = StaticdegreeMap.keySet().iterator();
+        Iterator<Location> iterator2 = staticdegreeMap.keySet().iterator();
         while (iterator2.hasNext()) { // extract locations whose degree ==1 and 2
             Location location = iterator2.next();
-            int degreeNum = StaticdegreeMap.get(location);
+            int degreeNum = staticdegreeMap.get(location);
             if (degreeNum == 1){
                 degree1Locations.add(location);
             }else if (degreeNum == 2){
@@ -220,8 +220,8 @@ public class SearchClient {
                     fourDirections.add(locationRight);
                     // choose the next cell
                     for (Location location : fourDirections) {
-                        if (StaticdegreeMap.get(location) != null) {
-                            if (StaticdegreeMap.get(location) > 1 && !exploredPath.contains(location)) {// that means this is the next cell
+                        if (staticdegreeMap.get(location) != null) {
+                            if (staticdegreeMap.get(location) > 1 && !exploredPath.contains(location)) {// that means this is the next cell
                                 currentLocation = location; //update location
                                 exploredPath.add(currentLocation);
                                 //set pervious goal ID
@@ -235,7 +235,7 @@ public class SearchClient {
                             }
                         }
                     }
-                } while (StaticdegreeMap.get(currentLocation) < 3);
+                } while (staticdegreeMap.get(currentLocation) < 3);
             }
         }
         // TODO: assign goal sequence for corrdior

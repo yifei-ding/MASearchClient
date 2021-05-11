@@ -114,6 +114,9 @@ public class InMemoryDataSource {
         return allBoxes;
     }
 
+    public HashMap<Location, Integer> getStaticdegreeMap() {
+        return staticdegreeMap;
+    }
 
     /*
      * @Author Yifei

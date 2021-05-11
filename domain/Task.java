@@ -1,7 +1,5 @@
 package domain;
 
-import data.InMemoryDataSource;
-
 public class Task {
     private int id;
     private int boxId;
@@ -12,6 +10,7 @@ public class Task {
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
 
+    private Location startLocation; // used for checking the box/agent is still at the orginal location or not.
     /**
     * @author Yifei
     * @description Construct a task with boxId means the agent need to push/pull the box to goal.
@@ -37,6 +36,14 @@ public class Task {
         this.targetLocation = targetLocation;
         this.priority = priority;
         this.isCompleted = false;
+    }
+
+    public Location getStartLocation() {
+        return startLocation;
+    }
+
+    public void setStartLocation(Location startLocation) {
+        this.startLocation = startLocation;
     }
 
     public int getId() {
