@@ -200,6 +200,7 @@ public class SearchClient {
         if (degree1Locations.size()!=0){
             for (Location cellLocation : degree1Locations) {// for solving the goal in the bottom
                 HashSet<Location> exploredPath = new HashSet<Location>();
+                int exploredCellNumber = 0;
                 Location currentLocation = cellLocation;
                 int previousGoalId = -1;
                 if(goals.get(cellLocation)!=null){ // if there is a goal in the degree ==1 cell
@@ -218,6 +219,7 @@ public class SearchClient {
                     fourDirections.add(locationDown);
                     fourDirections.add(locationLeft);
                     fourDirections.add(locationRight);
+                    exploredCellNumber++;
                     // choose the next cell
                     for (Location location : fourDirections) {
                         if (staticdegreeMap.get(location) != null) {
@@ -235,7 +237,7 @@ public class SearchClient {
                             }
                         }
                     }
-                } while (staticdegreeMap.get(currentLocation) < 3);
+                } while (staticdegreeMap.get(currentLocation) < 3 && exploredPath.size()>=exploredCellNumber);
             }
         }
         // TODO: assign goal sequence for corrdior
@@ -248,7 +250,7 @@ public class SearchClient {
 
         return highLevelSolver.solve();
 //        System.err.println("[SearchClient] Skip highlevel to test low level");
-//        return null;
+//    return null;
 
     }
 
@@ -272,17 +274,21 @@ public class SearchClient {
         SearchClient searchClient = new SearchClient();
         data = InMemoryDataSource.getInstance();
         SearchClient.readMap(serverMessages);
+        System.err.println("read map completed");
         SearchClient.setGoalOrder(); // Assign the goals order
-//        System.err.println("[272 Goals] "+data.getAllGoals().toString());
+        // TODO: fix setgoalorder
+        //System.err.println("[272 Goals] "+data.getAllGoals().toString());
         TaskHandler taskHandler = TaskHandler.getInstance();
+        //System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
         taskHandler.assignTask();
-        SearchClient.testLowLevel(data);
-//        System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
+//        SearchClient.testLowLevel(data);
+
+
 
         // Search for a plan.
         Action[][] plan;
         try {
-            plan = searchClient.search(); // todo: Is this mean we should return all actions at once?
+            plan = searchClient.search(); //
         } catch (OutOfMemoryError ex) {
             System.err.println("[SearchClient] Maximum memory usage exceeded.");
             plan = null;

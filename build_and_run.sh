@@ -21,7 +21,9 @@ javac data/InMemoryDataSource.java
 # for observing different maps
 
 
-# java -jar ../server.jar -l ../levels/SAsoko3_04.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 -o "../logs/example.log"
+ java -jar ../server.jar -l ../levels/MAAIMAS.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600  
+
+#java -jar ../server.jar -l ../levels/SAsoko3_04.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 -o "../logs/example.log"
 
 # java -jar ../server.jar -l ../levels/MAbispebjerg.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600  
 
@@ -39,7 +41,7 @@ javac data/InMemoryDataSource.java
 
 #java -jar ../server.jar -l ../levels/MAthomasAppartment_redpurple.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
-java -jar ../server.jar -l ../testlevels/SAtowersOfHoChiMinh03.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
+java -jar ../server.jar -l ../19levels/MAAIMAS.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 180
 
 
 # java -jar ../server.jar -l ../levels/MAexample.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600 

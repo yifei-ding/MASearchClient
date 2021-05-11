@@ -1,5 +1,8 @@
 package domain;
 
+
+import data.InMemoryDataSource;
+
 public class Task {
     private int id;
     private int boxId;
@@ -7,6 +10,9 @@ public class Task {
     private Location targetLocation;
     private int priority;
     private boolean isCompleted;
+    private static InMemoryDataSource data = InMemoryDataSource.getInstance();
+
+
     private Location startLocation; // used for checking the box/agent is still at the orginal location or not.
     /**
     * @author Yifei
@@ -20,7 +26,7 @@ public class Task {
         this.targetLocation = targetLocation;
         this.priority = priority;
         this.isCompleted = false;
-    } // in task, if there are boxId, do a whole process from find the box then move the box. ?
+    }
     /**
      * @author Yifei
      * @description Construct a task without boxId means the agent is moving by itself. boxId = -1 denotes without box.
@@ -93,14 +99,25 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
-               // "id=" + id + ", "
-                "boxId=" + boxId +
-                ", agentId=" + agentId +
-                ", targetLocation=" + targetLocation +
-              //  ", priority=" + priority +
-               // ", isCompleted=" + isCompleted +
-                "}"+'\n' ;
+        if (boxId != -1) {
+            return "Task{" +
+                    // "id=" + id + ", "
+                    "box=" + data.getBox(boxId).toString() +
+                    ", agent=" + data.getAgent(agentId).toString() +
+                    ", targetLocation=" + targetLocation +
+                    //  ", priority=" + priority +
+                    // ", isCompleted=" + isCompleted +
+                    "}" + '\n';
+        }
+        else
+            return "Task{" +
+                    // "id=" + id + ", "
+                    "no box" +
+                    ", agent=" + data.getAgent(agentId).toString() +
+                    ", targetLocation=" + targetLocation +
+                    //  ", priority=" + priority +
+                    // ", isCompleted=" + isCompleted +
+                    "}" + '\n';
     }
 }
 
