@@ -88,7 +88,6 @@ public class LowLevelSolver {
         Location from;
         Location goalLocation = task.getTargetLocation();
         Location agentInitialLocation = allAgents.get(task.getAgentId()).getLocation();
-        //TODO: to identify whether the task is solvable (regardless of the constraints)
         //do a low level search, with no constraints
         if (task.getBoxId() == -1) { //task without box
             return IsConnected(agentInitialLocation,goalLocation);

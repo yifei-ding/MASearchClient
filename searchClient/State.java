@@ -171,7 +171,7 @@ public class State {
         locations.add(location); //equivalent to NoOp
         if (boxId == -1){
             for (Location location : locations) {
-                if (this.isStaticApplicable(location) && !isConstraint(timeStep+1,location)) { //fixed issue 4/27: low level also returns initial location, so that timestep is consistent
+                if (this.isStaticApplicable(location)) { //fixed issue 4/27: low level also returns initial location, so that timestep is consistent
                     expandedStates.add(new State(this,location));
                 }
             }
@@ -188,13 +188,11 @@ public class State {
                         boxDestination = new Location(this.location.getRow() + action.boxRowDelta, this.location.getCol() + action.boxColDelta);
                     }
                     else boxDestination = this.location;
-
-                    if (!isConstraint(timeStep+1,agentDestination,boxDestination)) {
 //                            System.err.println("Agent next location: " + agentDestination.toString());
 //                            System.err.println("Box next location: " + boxDestination.toString());
                         if (!agentDestination.equals(boxDestination))
                             expandedStates.add(new State(this, agentDestination, boxDestination));
-                    }
+
                 }
             }
         }
