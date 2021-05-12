@@ -179,7 +179,7 @@ public class State {
         else{
             //check all possible actions
             for (Action action:Action.values()){
-                if (this.isApplicable(action)){
+                if (this.isStaticApplicable(action)){
 
                     agentDestination = new Location(this.agentLocation.getRow() + action.agentRowDelta, this.agentLocation.getCol() + action.agentColDelta);
 
@@ -308,6 +308,53 @@ public class State {
             else return false;
         }
         else return false;
+    }
+
+    private boolean isStaticApplicable(Action action) {
+        int agentRow;
+        int agentCol;
+        int boxRow;
+        int boxCol;
+        int destinationRow;
+        int destinationCol;
+        Location agentDestination;
+        Location boxDestination;
+        agentRow = this.agentLocation.getRow();
+        agentCol = this.agentLocation.getCol();
+        boxRow = this.location.getRow();
+        boxCol = this.location.getCol();
+
+        switch (action.type) {
+            case NoOp:
+                return true;
+            case Move:
+                destinationRow = agentRow + action.agentRowDelta;
+                destinationCol = agentCol + action.agentColDelta;
+                agentDestination = new Location(destinationRow,destinationCol);
+//                return this.cellIsFree(agentDestination);
+
+                return true;
+            case Push:
+                destinationRow = agentRow + action.agentRowDelta;
+                destinationCol = agentCol + action.agentColDelta;
+                agentDestination = new Location(destinationRow,destinationCol);
+
+                //box location should equal to agent destination
+                if (this.location.equals(agentDestination)){
+                    return true;
+                } else return false;
+            case Pull:
+                destinationRow = boxRow + action.boxRowDelta;
+                destinationCol = boxCol + action.boxColDelta;
+                boxDestination = new Location(destinationRow,destinationCol);
+                //box destination should equal to agent location
+                if (this.agentLocation.equals(boxDestination)){
+                    return true;
+
+                }
+                else return false;
+        }
+        return false;
     }
 
     private boolean isConstraint(int timeStep, Location location) {

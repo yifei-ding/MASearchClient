@@ -3,10 +3,7 @@ package searchClient;
 import data.InMemoryDataSource;
 import domain.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 public class TaskHandler {
     private static final TaskHandler taskHandler = new TaskHandler();
@@ -18,7 +15,7 @@ public class TaskHandler {
 
     private HashMap<Location, Object> staticMap = new HashMap<Location, Object>();
     private HashMap<Location, Object> dynamicMap = new HashMap<Location, Object>();
-    private HashMap<Location, Integer> StaticdegreeMap = new HashMap<Location, Integer>();
+//    private HashMap<Location, Integer> StaticdegreeMap = new HashMap<Location, Integer>();
     private HashMap<Integer, ArrayList<Location>> corridor = new HashMap<Integer, ArrayList<Location>>();
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
     private HashMap<Integer, ArrayList<Location>> subMap = new HashMap<Integer, ArrayList<Location>>();
@@ -222,11 +219,7 @@ public class TaskHandler {
                     }
                     //TODO: check if min_distance is correct
                 }
-
-
              //   boxList.remove(matchedBox.getId());//if find matchbox,remove it from boxlist TODO: bug fix
-
-
                 if (matchedBox == null){
                     System.err.println("This map is not solvable!");
                     continue;
@@ -268,7 +261,7 @@ public class TaskHandler {
                 if(matchedAgent!=null){
                     Task task2 = new Task(taskId,matchedAgent.getId(),matchedBox.getId(), goal.getLocation(),priority-1);
                     matchedBoxes.add(matchedBox.getId()); // add matched box into restriction
-                    taskId++;
+//                    taskId++;
                     //data.addTask(task1);
                     data.addTask(task2);
                 }
@@ -294,8 +287,6 @@ public class TaskHandler {
         to = task.getTargetLocation();
         int agentId = task.getAgentId();
         Agent agent = allAgents.get(agentId);
-        Location location = agent.getLocation();
-        Constraint constraint = null;
         if (task.getBoxId() == -1) { //task without box
             from = allAgents.get(agent.getId()).getLocation(); //starting position is agent location
             boxId = -1;
@@ -303,39 +294,53 @@ public class TaskHandler {
             from = allBoxes.get(task.getBoxId()).getLocation(); //starting position is box location
             boxId = task.getBoxId();
         }
+//        System.err.println("297: "+ staticdegreeMap.toString());
         locationPairs = LowLevelSolver.staticSolve(from, to, agent.getId(), boxId, agent.getLocation()); // locations
         //find obstacles
         HashSet<Location> obstacles = new HashSet<>(); // the mandatory locations
+        obstacles.add(to);
 //        HashSet<Location> pathLocations = new HashSet<>();
         boolean isInCorridor = false;
+        Location entrance = null;
         for(LocationPair locationPair : locationPairs){
             Location location_temp = locationPair.getAgentLocation();
-//            pathLocations.add(location_temp);
-            if(staticdegreeMap.get(location_temp)==2){// recognize the corridor, -the mandatory locations
-                isInCorridor = true;
-                obstacles.add(location_temp);
-            }else if(isInCorridor){
-                obstacles.add(location_temp);
-                isInCorridor = false;
+            System.err.println("304: "+ location_temp);
+            if(staticdegreeMap.get(location_temp)!=null){
+                if(staticdegreeMap.get(location_temp)==2){// recognize the corridor, -the mandatory locations
+                    isInCorridor = true;
+                    obstacles.add(entrance);
+                    obstacles.add(location_temp);
+                }else if(isInCorridor){// get out of the corridor
+                    obstacles.add(location_temp);
+                    isInCorridor = false;
+                }else if(!isInCorridor){//update the entrance
+                    entrance = location_temp;
+                }
             }
         }
+        System.err.println("322: " + obstacles.toString());
         for(Location location_temp: obstacles){
             if(dynamicMap.get(location_temp)!=null){ // check if there is object
-                Object obj = dynamicMap.get(location);
+                Object obj = dynamicMap.get(location_temp);
                 if (obj instanceof Box) {
                     int newBoxId = ((Box) obj).getId();
+                    if(newBoxId==boxId){//check the obstacle if is the task box
+                        continue;
+                    }
                     int taskId = allTasks.size();
                     Location targetLocation = findTargetLocation(obstacles,location_temp);//from the original cell to find a nearest cell match the requirements
                     // Find the best match agent
                     int newAgentId = findBestAgent(newBoxId,targetLocation);
                     int distance = getManhattanDistance(allAgents.get(newAgentId).getLocation(),allBoxes.get(newBoxId).getLocation())+getManhattanDistance(allBoxes.get(newBoxId).getLocation(),targetLocation);
                     int priority = distance*10;
-                    Task newTask_1 = new Task(taskId,newAgentId,-1,allBoxes.get(boxId).getLocation(),priority);
+//                    Task newTask_1 = new Task(taskId,newAgentId,-1,allBoxes.get(boxId).getLocation(),priority);
                     Task newTask_2 = new Task(taskId,newAgentId,newBoxId,targetLocation,priority+1); // TOdo: set the priority
-                    data.addTask(newTask_1);
+//                    data.addTask(newTask_1);
                     data.addTask(newTask_2);
                 }else if(obj instanceof Agent){
                     int newAgentId = ((Agent) obj).getId();
+//                    System.out.println("340 Location: "+location_temp);
+//                    System.out.println("340 AgentID: "+newAgentId);
                     int taskId = allTasks.size();
                     Location targetLocation = findTargetLocation(obstacles,location_temp);
                     Task newTask = new Task(taskId,newAgentId,-1,targetLocation,0);
@@ -350,7 +355,18 @@ public class TaskHandler {
     public Location findTargetLocation(HashSet<Location> obstacles,Location startLocation){ //find the goal according to given obstacles
         Location currentLocation = startLocation;
         HashSet<Location> exploredPath = new HashSet<Location>();
-        do{
+        Stack<Location> unexploredPath = new Stack<>();
+        unexploredPath.push(currentLocation);
+        do {
+//            System.out.println("364:" + currentLocation);
+//            System.out.println("365:" + exploredPath.toString());
+//            System.out.println("366:" + unexploredPath.toString());
+            if (unexploredPath.isEmpty()) {
+                return null;
+            }
+            currentLocation = unexploredPath.pop(); //update location
+            exploredPath.add(currentLocation);
+
             ArrayList<Location> fourDirections = new ArrayList<Location>(); // to explore the 4 neighbors
             int i = currentLocation.getRow();
             int j = currentLocation.getCol();
@@ -363,14 +379,19 @@ public class TaskHandler {
             fourDirections.add(locationLeft);
             fourDirections.add(locationRight);
             // choose the next cell
+//            boolean isEnd = true;
             for (Location location : fourDirections) {
-                if (StaticdegreeMap.get(location) != null && !exploredPath.contains(location)) {//not wall, and new
-                    currentLocation = location; //update location
-                    exploredPath.add(currentLocation);
+                if (data.getStaticdegreeMap().get(location) != null && !exploredPath.contains(location)) {//not wall, and new
+//                    isEnd = false;
+                    unexploredPath.push(location);
                 }
             }
-
-        } while (obstacles.contains(currentLocation)==true || dynamicMap.get(currentLocation)!=null); //end requirements: not in obstacle positions and no object in that location
+//            System.out.println(isEnd);
+//            if (isEnd) {//reached a endpoint, so restart from start point
+//                currentLocation = startLocation;
+//            }
+//        }while (obstacles.contains(currentLocation));
+        } while (obstacles.contains(currentLocation) || data.getDynamicMap().get(currentLocation)!=null); //end requirements: not in obstacle positions and no object in that location
 
         return currentLocation;
     }
