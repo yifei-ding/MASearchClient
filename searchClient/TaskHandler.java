@@ -440,9 +440,9 @@ public class TaskHandler {
         while (!unexploredPath.isEmpty()){
             System.err.println("440: unexplored path :"+unexploredPath);
             Location tempLocation = unexploredPath.pop();
-            if (data.getStaticdegreeMap().get(tempLocation) != null
-                    && !exploredPath.contains(tempLocation)
-                    && !obstacles.contains(tempLocation)) {//not wall, and new
+            if (data.getStaticdegreeMap().get(tempLocation) != null //not wall
+                    && !exploredPath.contains(tempLocation) //
+                    && !obstacles.contains(tempLocation)) {//not obstacle
 //                    isEnd = false;
                 if(!data.getDynamicMap().containsKey(tempLocation)){
                     currentLocation = tempLocation;
@@ -450,6 +450,7 @@ public class TaskHandler {
                     currentLocation = tempLocation;
                 }
             }
+            exploredPath.add(tempLocation);
             System.err.println("442: current Location"+currentLocation);
 
             for (Location location : currentLocation.getNeighbours()){
