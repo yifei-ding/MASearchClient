@@ -8,7 +8,7 @@ import java.util.*;
 public class TaskHandler {
     private static final TaskHandler taskHandler = new TaskHandler();
 
-    private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
+//    private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
     private HashMap<Integer, Goal> allGoals = new HashMap<Integer, Goal>();
     private HashMap<Integer, Agent> allAgents = new HashMap<Integer, Agent>();
     private HashMap<Integer, Box> allBoxes = new HashMap<Integer, Box>();
@@ -276,7 +276,7 @@ public class TaskHandler {
     // if the task is move the box/agent to the goal, just use the box.location.
     // if it's a sub  task for move box/agent out of the path, use the orginal location, so we can check the task is still valid or not.
     public void taskHelper(Task task){
-        System.err.println("[TaskHandler] Call Task Helper");
+//        System.err.println("[TaskHandler] Call Task Helper: "+data.getAllTasks().toString());
         // find the path in static map
         HashMap<Location, Integer> staticdegreeMap = data.getStaticdegreeMap();
         HashMap<Location, Object> dynamicMap = data.getDynamicMap();
@@ -298,57 +298,107 @@ public class TaskHandler {
         locationPairs = LowLevelSolver.staticSolve(from, to, agent.getId(), boxId, agent.getLocation()); // locations
         //find obstacles
         HashSet<Location> obstacles = new HashSet<>(); // the mandatory locations
+//        obstacles.add(from);
         obstacles.add(to);
 //        HashSet<Location> pathLocations = new HashSet<>();
         boolean isInCorridor = false;
-        Location entrance = null;
+        Location entrance = from;
+//        System.err.println("306 Path: "+Arrays.toString(locationPairs));
+        Location firstObstacle = null;
         for(LocationPair locationPair : locationPairs){
-            Location location_temp = locationPair.getAgentLocation();
-            System.err.println("304: "+ location_temp);
-            if(staticdegreeMap.get(location_temp)!=null){
-                if(staticdegreeMap.get(location_temp)==2){// recognize the corridor, -the mandatory locations
-                    isInCorridor = true;
-                    obstacles.add(entrance);
-                    obstacles.add(location_temp);
-                }else if(isInCorridor){// get out of the corridor
-                    obstacles.add(location_temp);
-                    isInCorridor = false;
-                }else if(!isInCorridor){//update the entrance
-                    entrance = location_temp;
-                }
+            Location location_temp;
+            if(boxId == -1){
+                location_temp = locationPair.getAgentLocation();
+            }else {
+                location_temp = locationPair.getAgentLocation();//todo
             }
-        }
-        System.err.println("322: " + obstacles.toString());
-        for(Location location_temp: obstacles){
-            if(dynamicMap.get(location_temp)!=null){ // check if there is object
-                Object obj = dynamicMap.get(location_temp);
-                if (obj instanceof Box) {
-                    int newBoxId = ((Box) obj).getId();
-                    if(newBoxId==boxId){//check the obstacle if is the task box
-                        continue;
+
+            obstacles.add(location_temp);
+            obstacles.add(locationPair.getBoxLocation());
+//            System.err.println("304: "+ location_temp);
+            if(dynamicMap.containsKey(location_temp)){
+                if(firstObstacle==null){
+                    System.err.println("2222222: "+location_temp);
+
+                    Object obj = dynamicMap.get(location_temp);
+                    if(obj instanceof Box){
+                        Box box = (Box)obj;
+                        System.err.println("317-box: "+box);
+                        if(box.getId()!= task.getBoxId()){
+                            firstObstacle = location_temp;
+                        }
+                    }else if(obj instanceof Agent){
+                        Agent agent1 = (Agent) obj;
+                        System.err.println("323-agent: "+agent1);
+                        if(agent1.getId()!= task.getAgentId()){
+                            firstObstacle = location_temp;
+                        }
                     }
-                    int taskId = allTasks.size();
-                    Location targetLocation = findTargetLocation(obstacles,location_temp);//from the original cell to find a nearest cell match the requirements
-                    // Find the best match agent
-                    int newAgentId = findBestAgent(newBoxId,targetLocation);
-                    int distance = getManhattanDistance(allAgents.get(newAgentId).getLocation(),allBoxes.get(newBoxId).getLocation())+getManhattanDistance(allBoxes.get(newBoxId).getLocation(),targetLocation);
-                    int priority = distance*10;
-//                    Task newTask_1 = new Task(taskId,newAgentId,-1,allBoxes.get(boxId).getLocation(),priority);
-                    Task newTask_2 = new Task(taskId,newAgentId,newBoxId,targetLocation,priority+1); // TOdo: set the priority
-//                    data.addTask(newTask_1);
-                    data.addTask(newTask_2);
-                }else if(obj instanceof Agent){
-                    int newAgentId = ((Agent) obj).getId();
-//                    System.out.println("340 Location: "+location_temp);
-//                    System.out.println("340 AgentID: "+newAgentId);
-                    int taskId = allTasks.size();
-                    Location targetLocation = findTargetLocation(obstacles,location_temp);
-                    Task newTask = new Task(taskId,newAgentId,-1,targetLocation,0);
-                    data.addTask(newTask);
                 }
+                System.err.println("329 First Obstacle: "+firstObstacle);
+
+//                if(staticdegreeMap.get(location_temp)==2){// recognize the corridor, -the mandatory locations
+//                    isInCorridor = true;
+//                    obstacles.add(entrance);
+//                    obstacles.add(location_temp);
+//                }else if(isInCorridor){// get out of the corridor
+//                    obstacles.add(location_temp);
+//                    isInCorridor = false;
+//                }else if(!isInCorridor){//update the entrance
+//                    entrance = location_temp;
+//                }
+
+
+
+            }
+
+        }
+        System.err.println("347 Obstacles: "+obstacles.toString());
+
+        if(dynamicMap.get(firstObstacle)!=null){// check if there is object
+            //TODO: according to the sequence assign the pripority
+            Object obj = dynamicMap.get(firstObstacle);
+            if (obj instanceof Box) {
+                int newBoxId = ((Box) obj).getId();
+//                System.out.println("337 BoxID: "+newBoxId);
+                int taskId = data.getAllTasks().size() + 1;
+                System.err.println("338TaskId: "+taskId);
+                Location targetLocation = findTargetLocation(obstacles,firstObstacle);//from the original cell to find a nearest cell match the requirements
+                System.err.println("334: "+targetLocation);
+//                        temp_obstacles.add(targetLocation);// Add the location to restrictions
+                // Find the best match agent
+                int newAgentId = findBestAgent(newBoxId,targetLocation);
+                int distance = getManhattanDistance(allAgents.get(newAgentId).getLocation(),allBoxes.get(newBoxId).getLocation())+getManhattanDistance(allBoxes.get(newBoxId).getLocation(),targetLocation);
+                int priority = distance*10;
+//                    Task newTask_1 = new Task(taskId,newAgentId,-1,allBoxes.get(boxId).getLocation(),priority);
+                Task newTask_2 = new Task(taskId,newAgentId,newBoxId,targetLocation,task.getPriority()-1); // TOdo: set the priority
+//                    data.addTask(newTask_1);
+                task.setPreviousTaskId(newTask_2.getId());
+                data.addTask(task);
+                data.addTask(newTask_2);
+            }else if(obj instanceof Agent){
+                int newAgentId = ((Agent) obj).getId();
+//                    System.out.println("340 Location: "+location_temp);
+                System.out.println("340 AgentID: "+newAgentId);
+                int taskId = data.getAllTasks().size();
+                Location targetLocation = findTargetLocation(obstacles,firstObstacle);
+                System.err.println("352 targetLocation: "+targetLocation);
+//                        temp_obstacles.add(targetLocation);// Add the location to restrictions
+                Task newTask = new Task(taskId,newAgentId,-1,targetLocation,0);
+                task.setPreviousTaskId(taskId);
+                data.addTask(task);
+                data.addTask(newTask);
             }
         }
+//        System.err.println("322: " + obstacles.toString());
+//        HashSet<Location> temp_obstacles = new HashSet<>();
+//        temp_obstacles.addAll(obstacles);
+//        for(Location location_temp: obstacles){
+////            System.err.println("325: "+location_temp);
+//
+//        }
     }
+
 
 
 
@@ -391,8 +441,18 @@ public class TaskHandler {
 //                currentLocation = startLocation;
 //            }
 //        }while (obstacles.contains(currentLocation));
-        } while (obstacles.contains(currentLocation) || data.getDynamicMap().get(currentLocation)!=null); //end requirements: not in obstacle positions and no object in that location
+        } while (obstacles.contains(currentLocation) || data.getDynamicMap().get(currentLocation)!=null ); //end requirements: not in obstacle positions and no object in that location
 
+        while (data.getStaticdegreeMap().get(currentLocation)==2){
+            currentLocation = unexploredPath.pop();
+            for (Location location : currentLocation.getNeighbours()){
+                if (data.getStaticdegreeMap().get(location) != null && !exploredPath.contains(location)) {//not wall, and new
+//                    isEnd = false;
+                    unexploredPath.push(location);
+                }
+            }
+
+        }
         return currentLocation;
     }
 
@@ -427,8 +487,18 @@ public class TaskHandler {
         ArrayList<Integer> taskList = data.getAllTasksByAgent(agentId); //already in descending order
         if (taskList != null){
             for (Integer taskId:taskList){
-                if (!data.getTaskById(taskId).isCompleted()) //check whether the task is completed TODO:check whether precondition tasks are completed
-                    task = data.getTaskById(taskId);
+                Task currentTask = data.getTaskById(taskId);
+                int previousTaskId = currentTask.getPreviousTaskId();
+
+                if (!currentTask.isCompleted()){ //check whether the task is completed TODO:check whether precondition tasks are completed
+                    if(previousTaskId!=-1){
+                        if(data.getTaskById(previousTaskId).isCompleted()){
+                            task = data.getTaskById(taskId);
+                        }
+                    }else {
+                        task = data.getTaskById(taskId);
+                    }
+                }
             }
         }
         return task;
