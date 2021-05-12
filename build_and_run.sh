@@ -22,7 +22,7 @@ javac data/InMemoryDataSource.java
 
 java -jar ../server.jar -l ../19levels/MAMKM.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
-#java -jar ../server.jar -l ../testlevels/SAtowersOfHoChiMinh03.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+# java -jar ../server.jar -l ../testlevels/SAtowersOfHoChiMinh03.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
  # java -jar ../server.jar -l ../levels/MAAIMAS.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600  
 

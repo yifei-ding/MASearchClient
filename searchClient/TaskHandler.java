@@ -8,14 +8,9 @@ import java.util.*;
 public class TaskHandler {
     private static final TaskHandler taskHandler = new TaskHandler();
 
-//    private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
-    private HashMap<Integer, Goal> allGoals = new HashMap<Integer, Goal>();
     private HashMap<Integer, Agent> allAgents = new HashMap<Integer, Agent>();
     private HashMap<Integer, Box> allBoxes = new HashMap<Integer, Box>();
 
-    private HashMap<Location, Object> staticMap = new HashMap<Location, Object>();
-    private HashMap<Location, Object> dynamicMap = new HashMap<Location, Object>();
-//    private HashMap<Location, Integer> StaticdegreeMap = new HashMap<Location, Integer>();
     private HashMap<Integer, ArrayList<Location>> corridor = new HashMap<Integer, ArrayList<Location>>();
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
     private HashMap<Integer, ArrayList<Location>> subMap = new HashMap<Integer, ArrayList<Location>>();
@@ -143,7 +138,6 @@ public class TaskHandler {
     };
 
     public void assignTask(){
-        allGoals = data.getAllGoals();
         allAgents = data.getAllAgents();
         allBoxes = data.getAllBoxes();
         int taskId = 0;
@@ -152,7 +146,7 @@ public class TaskHandler {
         subMap = getSubMap();
 //        System.err.println(subMap.toString());
         HashSet<Integer> matchedBoxes = new HashSet<>();
-        for (Goal goal : allGoals.values()){
+        for (Goal goal : data.getAllGoals().values()){
             Location goallocation = goal.getLocation();
             //get the number of submap which goal belong to
             Iterator<Integer> iterator = subMap.keySet().iterator();
@@ -371,7 +365,7 @@ public class TaskHandler {
 //                System.out.println("337 BoxID: "+newBoxId);
             int taskId = data.getAllTasks().size() + 1;
             System.err.println("364 TaskId: " + taskId);
-            Location targetLocation = findTargetLocation(obstacles, firstObstacle);//from the original cell to find a nearest cell match the requirements
+            Location targetLocation = findTargetLocation(obstacles, firstObstacle,data.getAgent(newAgentId).getLocation());//from the original cell to find a nearest cell match the requirements
             System.err.println("366 Target location: " + targetLocation);
 //                        temp_obstacles.add(targetLocation);// Add the location to restrictions
             // Find the best match agent
@@ -387,7 +381,7 @@ public class TaskHandler {
 //                    System.out.println("340 Location: "+location_temp);
             System.out.println("340 AgentID: " + newAgentId);
             int taskId = data.getAllTasks().size();
-            Location targetLocation = findTargetLocation(obstacles, firstObstacle);
+            Location targetLocation = findTargetLocation(obstacles, firstObstacle,data.getAgent(newAgentId).getLocation());
             System.err.println("352 targetLocation: " + targetLocation);
 //                        temp_obstacles.add(targetLocation);// Add the location to restrictions
             Task newTask = new Task(taskId, newAgentId, -1, targetLocation, 0);
@@ -408,11 +402,13 @@ public class TaskHandler {
 //            System.out.println("364:" + currentLocation);
 //            System.out.println("365:" + exploredPath.toString());
 //            System.out.println("366:" + unexploredPath.toString());
+            System.err.println("414: unexploredPath  "+unexploredPath.toString());
             if (unexploredPath.isEmpty()) {
                 return null;
             }
             currentLocation = unexploredPath.pop(); //update location
             exploredPath.add(currentLocation);
+            System.err.println("413: currentLocation  "+currentLocation);
 
             ArrayList<Location> fourDirections = new ArrayList<Location>(); // to explore the 4 neighbors
             int i = currentLocation.getRow();
@@ -429,28 +425,48 @@ public class TaskHandler {
 //            boolean isEnd = true;
             for (Location location : fourDirections) {
                 //todo: improve
-                if (data.getStaticdegreeMap().get(location) != null && !exploredPath.contains(location) && !dynamicMap.containsKey(location)) {//not wall, and new, and free
+                if (location.equals(agentLocation)){
+                    unexploredPath.push(location);
+                    continue;
+                }
+                if (data.getStaticdegreeMap().get(location) != null && !exploredPath.contains(location) && !data.getDynamicMap().containsKey(location)) {//not wall, and new, and free
 //                    isEnd = false;
                     unexploredPath.push(location);
                 }
             }
-//            System.out.println(isEnd);
-//            if (isEnd) {//reached a endpoint, so restart from start point
-//                currentLocation = startLocation;
-//            }
-//        }while (obstacles.contains(currentLocation));
-        } while (obstacles.contains(currentLocation) || data.getDynamicMap().get(currentLocation)!=null ); //end requirements: not in obstacle positions and no object in that location
-
-        while (data.getStaticdegreeMap().get(currentLocation)==2){
-            currentLocation = unexploredPath.pop();
-            for (Location location : currentLocation.getNeighbours()){
-                if (data.getStaticdegreeMap().get(location) != null && !exploredPath.contains(location)) {//not wall, and new
+        } while (obstacles.contains(currentLocation) ); //end requirements: not in obstacle positions and no object in that location
+        System.err.println("437: current Location"+currentLocation);
+        // find the deepest cell
+        while (!unexploredPath.isEmpty()){
+            System.err.println("440: unexplored path :"+unexploredPath);
+            Location tempLocation = unexploredPath.pop();
+            if (data.getStaticdegreeMap().get(tempLocation) != null
+                    && !exploredPath.contains(tempLocation)
+                    && !obstacles.contains(tempLocation)) {//not wall, and new
 //                    isEnd = false;
-                    unexploredPath.push(location);
+                if(!data.getDynamicMap().containsKey(tempLocation)){
+                    currentLocation = tempLocation;
+                }else if (tempLocation.equals(agentLocation)){
+                    currentLocation = tempLocation;
+                }
+            }
+            System.err.println("442: current Location"+currentLocation);
+
+            for (Location location : currentLocation.getNeighbours()){
+                if (data.getStaticdegreeMap().get(location) != null
+                        && !exploredPath.contains(location)
+                        && !obstacles.contains(location)) {//not wall, and new
+//                    isEnd = false;
+                        if(!data.getDynamicMap().containsKey(location)){
+                            unexploredPath.push(location);
+                        }else if (location.equals(agentLocation)){
+                            unexploredPath.push(location);
+                        }
                 }
             }
 
         }
+        System.err.println("453: current Location"+currentLocation);
         return currentLocation;
     }
 
