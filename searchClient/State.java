@@ -198,7 +198,19 @@ public class State {
         }
         return expandedStates;
     }
+    private boolean isConstraint(int timeStep, Location location) {
+//        System.err.println("isConstraint");
+        for (Constraint constraint : this.constraints){
+            if (constraint.getAgentId() == this.agentId){
+                if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(location)){
+//                            System.err.println("isConstraint");
+                    return true;
+                }
+            }
+        }
 
+        return false;
+    }
     private boolean isConstraint(int timeStep, Location agentDestination, Location boxDestination) {
         if(this.constraints == null){
             return false;
@@ -331,9 +343,8 @@ public class State {
                 destinationRow = agentRow + action.agentRowDelta;
                 destinationCol = agentCol + action.agentColDelta;
                 agentDestination = new Location(destinationRow,destinationCol);
-//                return this.cellIsFree(agentDestination);
+                return this.isStaticApplicable(agentDestination);
 
-                return true;
             case Push:
                 destinationRow = agentRow + action.agentRowDelta;
                 destinationCol = agentCol + action.agentColDelta;
@@ -341,33 +352,35 @@ public class State {
 
                 //box location should equal to agent destination
                 if (this.location.equals(agentDestination)){
-                    return true;
-                } else return false;
+//                    System.err.println("box location equal to agent destination");
+                    destinationRow = boxRow + action.boxRowDelta;
+                    destinationCol = boxCol + action.boxColDelta;
+                    boxDestination = new Location(destinationRow,destinationCol);
+                    //box destination is free
+                    if (this.isStaticApplicable(boxDestination)){
+                        return true;
+                    }
+                    else return false;
+                }
+                else return false;
             case Pull:
                 destinationRow = boxRow + action.boxRowDelta;
                 destinationCol = boxCol + action.boxColDelta;
                 boxDestination = new Location(destinationRow,destinationCol);
                 //box destination should equal to agent location
                 if (this.agentLocation.equals(boxDestination)){
-                    return true;
-
+//                    System.err.println("box destination equal to agent location");
+                    destinationRow = agentRow + action.agentRowDelta;
+                    destinationCol = agentCol + action.agentColDelta;
+                    agentDestination = new Location(destinationRow,destinationCol);
+                    //agent destination is free
+                    if (this.isStaticApplicable(agentDestination)){
+                        return true;
+                    }
+                    else return false;
                 }
                 else return false;
         }
-        return false;
-    }
-
-    private boolean isConstraint(int timeStep, Location location) {
-//        System.err.println("isConstraint");
-        for (Constraint constraint : this.constraints){
-            if (constraint.getAgentId() == this.agentId){
-                if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(location)){
-//                            System.err.println("isConstraint");
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
 
