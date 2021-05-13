@@ -65,13 +65,13 @@ public class LowLevelSolver {
             //TODO: maybe there's need to filter constraints
             //4. Call LowLevelSolver.solve
             if (solvable(task)){
-                System.err.println("[LowLevelSolver]Solvable");
+                System.err.println("[LowLevelSolver]Solvable: " + task.toString());
                 int agentId = task.getAgentId();
                 action = solve(constraints, from, to, task.getAgentId(), boxId, data.getAgent(agentId).getLocation());
                 plan[agentId] = action;
             }
             else{
-                System.err.println("[LowLevelSolver]Not solvable");
+                System.err.println("[LowLevelSolver]Not solvable: " + task.toString());
                 taskHandler.taskHelper(task); //call helper to generate new tasks to help remove obstacles
                 return LowLevelSolver.solveForAllAgents(constraints); //replan
             }

@@ -304,7 +304,7 @@ public class TaskHandler {
         Location entrance = null;
         for(LocationPair locationPair : locationPairs){
             Location location_temp = locationPair.getAgentLocation();
-            System.err.println("304: "+ location_temp);
+//            System.err.println("304: "+ location_temp);
             if(staticdegreeMap.get(location_temp)!=null){
                 if(staticdegreeMap.get(location_temp)==2){// recognize the corridor, -the mandatory locations
                     isInCorridor = true;
@@ -318,7 +318,7 @@ public class TaskHandler {
                 }
             }
         }
-        System.err.println("322: " + obstacles.toString());
+//        System.err.println("322: " + obstacles.toString());
         for(Location location_temp: obstacles){
             if(dynamicMap.get(location_temp)!=null){ // check if there is object
                 Object obj = dynamicMap.get(location_temp);

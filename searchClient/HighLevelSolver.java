@@ -489,7 +489,7 @@ public class HighLevelSolver {
                 if (agentLocation2.equals(boxLocation1))
                     return true;
             }
-            if (boxLocation1 !=null && boxLocation2 !=null) {
+            if (boxLocation1 !=null && boxLocation2 !=null){
                 if (boxLocation1.equals(boxLocation2))
                     return true;
             }
