@@ -20,9 +20,10 @@ javac data/InMemoryDataSource.java
 # The searchclient uses the BFS strategy by default.
 # for observing different maps
 
-# java -jar ../server.jar -l ../19levels/MAMKM.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+ java -jar ../server.jar -l ../19levels/MAMKM.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+#java -jar ../server.jar -l ../testlevels/SAtowersOfHoChiMinh10.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
-java -jar ../server.jar -l ../testlevels/SAtowersOfHoChiMinh04.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
+#java -jar ../server.jar -l ../testlevels/SAtowersOfSaigon04.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600
 
  # java -jar ../server.jar -l ../levels/MAAIMAS.lvl -c "java -Xmx6g searchClient.SearchClient" -g -s 500 -t 600  
 
