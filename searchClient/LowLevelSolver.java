@@ -3,10 +3,7 @@ package searchClient;
 import data.InMemoryDataSource;
 import domain.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 public class LowLevelSolver {
     private static HashMap<Integer, Agent> allAgents;
@@ -29,14 +26,20 @@ public class LowLevelSolver {
         TaskHandler taskHandler = TaskHandler.getInstance();
         data.initializeObstacleMap(); //treat all walls, agents and boxes as obstacles.
         ArrayList<Task> taskList = new ArrayList<>();
+        System.err.println("[LowLevelSolver] Remaining tasks: "+data.countRemainingTask());
+
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority
             Task task = taskHandler.pop(agent.getId());
             if (task != null) {
+                System.err.println("Agent "+agent.getId() + " have task " + task.toString());
+
                 taskList.add(task);
             }
             else{ //agent has no task, then don't move
+                System.err.println("Agent "+agent.getId() + " don't have task");
+
                 action = new LocationPair[1];
                 action[0] = new LocationPair(agent.getLocation(),null);
                 plan[agent.getId()] = action;
@@ -77,9 +80,9 @@ public class LowLevelSolver {
             }
         }
         //print merged plan
-//        System.err.println("[LowLevelSolver]Merged plan:");
-//        for (int i=0; i<plan.length;i++)
-//            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
+        System.err.println("[LowLevelSolver]Merged plan:");
+        for (int i=0; i<plan.length;i++)
+            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
 
         return plan;
     }
@@ -129,7 +132,7 @@ public class LowLevelSolver {
             }
 
         }
-        System.err.println("Not connected");
+        //System.err.println("Not connected");
     return false;
     }
 

@@ -380,7 +380,7 @@ public class TaskHandler {
         } else if (obj instanceof Agent) {
 //                    System.out.println("340 Location: "+location_temp);
 //            System.out.println("340 AgentID: " + newAgentId);
-            int taskId = data.getAllTasks().size();
+            int taskId = data.getAllTasks().size() + 1;
             Location targetLocation = findTargetLocation(obstacles, firstObstacle,data.getAgent(newAgentId).getLocation());
             System.err.println("352 targetLocation: " + targetLocation);
 //                        temp_obstacles.add(targetLocation);// Add the location to restrictions

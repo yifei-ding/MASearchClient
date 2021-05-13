@@ -23,6 +23,7 @@ public class HighLevelSolver {
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
         Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
+        System.err.println("[HighLevelSolver] Count remaining tasks...");
 
         while (data.countRemainingTask()>0) {
             tree = new ArrayList<>();
@@ -31,11 +32,15 @@ public class HighLevelSolver {
             /**
              * For checking whether all tasks in low level are solvable
              */
-            LocationPair[][] solution = initialState.getSolution();
-            for (LocationPair[] singeAgentSolution: solution){
-                if (singeAgentSolution == null)
-                    return null;
-            }
+//            LocationPair[][] solution = initialState.getSolution();
+//            int i = -1;
+//            for (LocationPair[] singeAgentSolution: solution){
+//                i++;
+//                if (singeAgentSolution == null)
+//                    System.err.println("[HighLevelSolver] Agent " + i + " doesn't have solution in low level");
+//                    return null;
+//
+//            }
             initialState.updateCost();
             tree.add(initialState);
 
@@ -50,6 +55,8 @@ public class HighLevelSolver {
                     Action[][] action = translate(currentSolution); //translate
                     action = addPadding(action); //add NoOp to the end of short solutions if each solution is of different length TODO: can switch to RHCR
                     finalSolution = concatenateSolution(finalSolution, action); //append current solution to final solution
+                    data.countRemainingTask();
+
                     break;
                 } else
                     dealWithFirstConflict(node);
