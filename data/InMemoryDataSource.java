@@ -32,6 +32,8 @@ public class InMemoryDataSource {
     private HashMap<Location, Wall> wallMap; //single wall map
 
     private HashMap<Location, Object> dynamicMap; //agent+box
+    private HashMap<Location, Boolean> obstacleMap; //for low level to check if the cell is free
+
     private HashMap<Location, Integer> staticdegreeMap; // location+degree four direction arraylist?
 
 
@@ -50,6 +52,7 @@ public class InMemoryDataSource {
         allGoalsByName = new HashMap<String, ArrayList<Integer>>();
         staticMap = new HashMap<Location, Object>();
         dynamicMap = new HashMap<Location, Object>();
+        obstacleMap = new HashMap<Location, Boolean>();
         allTasksByAgent = new HashMap<Integer, ArrayList<Integer>>();
         wallMap = new HashMap<Location, Wall>();
         staticdegreeMap = new HashMap<Location, Integer>();
@@ -157,6 +160,38 @@ public class InMemoryDataSource {
 
     public void setStaticMap(Location location, Object object) {
         staticMap.put(location, object);
+    }
+
+    public void setObstacleMap(Location location, Boolean isObstacle) {
+        obstacleMap.put(location, isObstacle);
+    }
+
+    public HashMap<Location, Boolean> getObstacleMap(){
+        return obstacleMap;
+    }
+
+    /**
+    * @author Yifei
+    * @description For each round of tasks, initialize obstacle map with the location of all walls, all agents and all boxes.
+    * @date 2021/5/11
+     */
+    public void initializeObstacleMap() {
+        this.obstacleMap = new HashMap<Location, Boolean>();
+
+        for (Map.Entry<Location, Wall> entry : wallMap.entrySet()) {
+            Location location = entry.getKey();
+            Wall wall = entry.getValue();
+            if (wall.isWall())
+                obstacleMap.put(location, true);
+            else
+                obstacleMap.put(location, false);
+        }
+        for (Agent agent : allAgents.values()) {
+            obstacleMap.put(agent.getLocation(), true);
+        }
+        for (Box box : allBoxes.values()) {
+            obstacleMap.put(box.getLocation(), true);
+        }
     }
 
     public void setWallMap(Location location, Wall wall) {

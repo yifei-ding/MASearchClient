@@ -28,8 +28,17 @@ public class HighLevelSolver {
             tree = new ArrayList<>();
             HighLevelState initialState = new HighLevelState(new HashSet<>());
             initialState.calculateSolution();
+            /**
+             * For checking whether all tasks in low level are solvable
+             */
+            LocationPair[][] solution = initialState.getSolution();
+            for (LocationPair[] singeAgentSolution: solution){
+                if (singeAgentSolution == null)
+                    return null;
+            }
             initialState.updateCost();
             tree.add(initialState);
+
             while (!tree.isEmpty()) {
                 HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
                 System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().size());
@@ -73,9 +82,6 @@ public class HighLevelSolver {
         }
         return max;
     }
-
-
-
 
     private Action[][] concatenateSolution(Action[][] finalSolution, Action[][] currentSolution) {
         Action[][] result = new Action[data.getAllAgents().size()][];
@@ -135,6 +141,15 @@ public class HighLevelSolver {
 
     }
 
+    /**
+    * @author Yifei
+    * @description This is the main function: 1. find a first conflict
+     * (whether it's vertex/edge conflict, or whether it's AgentAgent Conflict, AgentBox Conflict, BoxBox Conflict)
+     * 2. Add the children of the conflict to the tree
+    * @date 2021/5/10
+    * @param [state, agentId1, agentId2, route1, route2]
+    * @return void
+     */
     private void dealWithFirstConflict(HighLevelState state, int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
         int minIndex = Math.min(route1.length, route2.length)-1;
         Location agentCurrentLocation1;
@@ -173,7 +188,6 @@ public class HighLevelSolver {
                 if (agentCurrentLocation1.equals(boxCurrentLocation2)) {
                     conflict = new AgentBoxConflict(agentId1, agentId2, agentCurrentLocation1, boxCurrentLocation2, k);
                     System.err.println("Find Vertex AB conflict 1: " + conflict.toString());
-
                     addChildrenOfVertexConflictToTree(state,conflict);
                     break;
 //                    return conflict;
@@ -339,6 +353,8 @@ public class HighLevelSolver {
      */
     private void addChildrenOfEdgeConflictToTree(HighLevelState node, Conflict conflict) {
         tree.remove(node);
+        if (isCorridorConflict(node,conflict))
+            System.err.println("The edge conflict is a corridor conflict");
 
         Constraint newConstraint;
         Constraint newConstraint2;
@@ -425,6 +441,10 @@ public class HighLevelSolver {
      */
     private void addChildrenOfVertexConflictToTree(HighLevelState node, Conflict conflict) {
         tree.remove(node);
+        if (isCorridorConflict(node,conflict)) {
+            //TODO: add a bunch of constraints for corridor conflict (instead of only one constraint.)
+            System.err.println("The vertex conflict is a corridor conflict");
+        }
         for (int i = 0; i < 2; i++) {
             HighLevelState child = new HighLevelState(node.getConstraints());
             Constraint newConstraint;
@@ -452,6 +472,34 @@ public class HighLevelSolver {
             child.updateCost();
             addToTree(child);
         }
+    }
+
+    private boolean isCorridorConflict(HighLevelState node, Conflict conflict) {
+        LocationPair[][] solution = node.getSolution();
+        LocationPair[] route1;
+        LocationPair[] route2;
+        Location location1;
+        Location location2;
+        HashMap<Location,Integer> degreeMap = data.getDegreeMap();
+        if (conflict.getId1() != -1 && conflict.getId2() != -1){ //the corridor conflict can only happen with vertex conflict or mutual edge conflict
+            route1 = solution[conflict.getId1()];
+            route2 = solution[conflict.getId2()];
+            location1 = conflict.getLocation1();
+            location2 = conflict.getLocation2();
+            if (location1.equals(location2)) { //vertex conflict
+                if (degreeMap.get(location1) ==2){
+                    return true;
+                }
+                else return false;
+            }
+            else { //edge conflict
+                if (degreeMap.get(location1) ==2 || degreeMap.get(location2) ==2 )
+                    return true;
+                else return false;
+            }
+        }
+        else
+            return false;
     }
 
     private HighLevelState findBestNodeWithMinCost(ArrayList<HighLevelState> tree) {

@@ -3,6 +3,8 @@ package domain;
 
 import data.InMemoryDataSource;
 
+import java.util.Objects;
+
 public class Task {
     private int id;
     private int boxId;
@@ -10,8 +12,16 @@ public class Task {
     private Location targetLocation;
     private int priority;
     private boolean isCompleted;
+    private int previousTaskId;
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
+    public int getPreviousTaskId() {
+        return previousTaskId;
+    }
+
+    public void setPreviousTaskId(int previousTaskId) {
+        this.previousTaskId = previousTaskId;
+    }
 
     private Location startLocation; // used for checking the box/agent is still at the orginal location or not.
     /**
@@ -26,6 +36,7 @@ public class Task {
         this.targetLocation = targetLocation;
         this.priority = priority;
         this.isCompleted = false;
+        this.previousTaskId = -1;
     }
     /**
      * @author Yifei
@@ -98,10 +109,23 @@ public class Task {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return boxId == task.boxId && agentId == task.agentId && priority == task.priority && Objects.equals(targetLocation, task.targetLocation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(boxId, agentId, targetLocation, priority);
+    }
+
+    @Override
     public String toString() {
         if (boxId != -1) {
             return "Task{" +
-                    // "id=" + id + ", "
+                     "id=" + id + ", " +
                     "box=" + data.getBox(boxId).toString() +
                     ", agent=" + data.getAgent(agentId).toString() +
                     ", targetLocation=" + targetLocation +
@@ -111,7 +135,7 @@ public class Task {
         }
         else
             return "Task{" +
-                    // "id=" + id + ", "
+                     "id=" + id + ", "+
                     "no box" +
                     ", agent=" + data.getAgent(agentId).toString() +
                     ", targetLocation=" + targetLocation +

@@ -20,6 +20,7 @@ public class State {
     private Location agentLocation;
     private HashSet<Constraint> constraints;
     private InMemoryDataSource data = InMemoryDataSource.getInstance();
+    private HashMap<Location,Boolean> obstacleMap = data.getObstacleMap();
     private HashMap<Location, Object> map = data.getStaticMap();
 
 
@@ -170,7 +171,7 @@ public class State {
         locations.add(location); //equivalent to NoOp
         if (boxId == -1){
             for (Location location : locations) {
-                if (this.isStaticApplicable(location) && !isConstraint(timeStep+1,location)) { //fixed issue 4/27: low level also returns initial location, so that timestep is consistent
+                if (this.isStaticApplicable(location)) { //fixed issue 4/27: low level also returns initial location, so that timestep is consistent
                     expandedStates.add(new State(this,location));
                 }
             }
@@ -178,7 +179,7 @@ public class State {
         else{
             //check all possible actions
             for (Action action:Action.values()){
-                if (this.isApplicable(action)){
+                if (this.isStaticApplicable(action)){
 
                     agentDestination = new Location(this.agentLocation.getRow() + action.agentRowDelta, this.agentLocation.getCol() + action.agentColDelta);
 
@@ -199,7 +200,19 @@ public class State {
         }
         return expandedStates;
     }
+    private boolean isConstraint(int timeStep, Location location) {
+//        System.err.println("isConstraint");
+        for (Constraint constraint : this.constraints){
+            if (constraint.getAgentId() == this.agentId){
+                if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(location)){
+//                            System.err.println("isConstraint");
+                    return true;
+                }
+            }
+        }
 
+        return false;
+    }
     private boolean isConstraint(int timeStep, Location agentDestination, Location boxDestination) {
         if(this.constraints == null){
             return false;
@@ -291,48 +304,106 @@ public class State {
     }
 
     private boolean cellIsFree(Location location) {
-        Object obj = data.getStaticMap().get(location);
-        if (obj instanceof Wall) {
-            if (((Wall)obj).isWall())
-                return false;
+//        Object obj = data.getStaticMap().get(location);
+//        if (obj instanceof Wall) {
+//            if (((Wall)obj).isWall())
+//                return false;
+//        }
+//
+//        //might also check whether there's a box at location?
+//        obj = data.getDynamicMap().get(location);
+//        if (obj instanceof Box) {
+//            return false;
+//        }
+//        return true;
+        if (obstacleMap.containsKey(location)){
+            if (!obstacleMap.get(location))
+                return true;
+            else return false;
         }
-
-        //might also check whether there's a box at location?
-        obj = data.getDynamicMap().get(location);
-        if (obj instanceof Box) {
-            return false;
-        }
-        return true;
+        else return false;
     }
 
-    private boolean isConstraint(int timeStep, Location location) {
-//        System.err.println("isConstraint");
-        for (Constraint constraint : this.constraints){
-            if (constraint.getAgentId() == this.agentId){
-                if (constraint.getTimeStep() == timeStep && constraint.getLocation().equals(location)){
-//                            System.err.println("isConstraint");
-                    return true;
-                }
-            }
-        }
+    private boolean isStaticApplicable(Action action) {
+        int agentRow;
+        int agentCol;
+        int boxRow;
+        int boxCol;
+        int destinationRow;
+        int destinationCol;
+        Location agentDestination;
+        Location boxDestination;
+        agentRow = this.agentLocation.getRow();
+        agentCol = this.agentLocation.getCol();
+        boxRow = this.location.getRow();
+        boxCol = this.location.getCol();
 
+        switch (action.type) {
+            case NoOp:
+                return true;
+            case Move:
+                destinationRow = agentRow + action.agentRowDelta;
+                destinationCol = agentCol + action.agentColDelta;
+                agentDestination = new Location(destinationRow,destinationCol);
+                return this.isStaticApplicable(agentDestination);
+
+            case Push:
+                destinationRow = agentRow + action.agentRowDelta;
+                destinationCol = agentCol + action.agentColDelta;
+                agentDestination = new Location(destinationRow,destinationCol);
+
+                //box location should equal to agent destination
+                if (this.location.equals(agentDestination)){
+//                    System.err.println("box location equal to agent destination");
+                    destinationRow = boxRow + action.boxRowDelta;
+                    destinationCol = boxCol + action.boxColDelta;
+                    boxDestination = new Location(destinationRow,destinationCol);
+                    //box destination is free
+                    if (this.isStaticApplicable(boxDestination)){
+                        return true;
+                    }
+                    else return false;
+                }
+                else return false;
+            case Pull:
+                destinationRow = boxRow + action.boxRowDelta;
+                destinationCol = boxCol + action.boxColDelta;
+                boxDestination = new Location(destinationRow,destinationCol);
+                //box destination should equal to agent location
+                if (this.agentLocation.equals(boxDestination)){
+//                    System.err.println("box destination equal to agent location");
+                    destinationRow = agentRow + action.agentRowDelta;
+                    destinationCol = agentCol + action.agentColDelta;
+                    agentDestination = new Location(destinationRow,destinationCol);
+                    //agent destination is free
+                    if (this.isStaticApplicable(agentDestination)){
+                        return true;
+                    }
+                    else return false;
+                }
+                else return false;
+        }
         return false;
     }
 
     private boolean isApplicable(Location location) {
-        Object obj = map.get(location);
-        if (obj instanceof Wall) {
-            if (((Wall)obj).isWall())
-                return false;
+//        Object obj = map.get(location);
+//        if (obj instanceof Wall) {
+//            if (((Wall)obj).isWall())
+//                return false;
+//        }
+//
+//        //TODO: debug
+//        obj = data.getDynamicMap().get(location);
+//        if (obj instanceof Box) {
+//            return false;
+//        }
+        if (obstacleMap.containsKey(location)){
+            if (!obstacleMap.get(location))
+                return true;
+            else return false;
         }
-
-        //TODO: debug
-        obj = data.getDynamicMap().get(location);
-        if (obj instanceof Box) {
-            return false;
-        }
-
-        return true;
+        else return false;
     }
     private boolean isStaticApplicable(Location location) {// for only static map
         Object obj = map.get(location);
@@ -367,12 +438,10 @@ public class State {
     @Override
     public String toString() {
         return "State{" +
-                 "timeStep=" + timeStep +
-                ", location=" + location +
-                //", goalLocation=" + goalLocation +
-                //", agentId=" + agentId +
-                //", boxId=" + boxId +
+                "timeStep=" + timeStep +
+                ", boxLocation=" + location +
                 ", agentLocation=" + agentLocation +
+//                ", constraints=" + constraints +
                 '}';
     }
 
@@ -381,11 +450,11 @@ public class State {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         State state = (State) o;
-        return  location.equals(state.location) && agentLocation.equals(state.agentLocation);
+        return timeStep == state.timeStep && Objects.equals(location, state.location) && Objects.equals(agentLocation, state.agentLocation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timeStep, location, g, agentLocation);
+        return Objects.hash(timeStep, location, agentLocation);
     }
 }

@@ -276,7 +276,6 @@ public class SearchClient {
         SearchClient.readMap(serverMessages);
         System.err.println("read map completed");
         SearchClient.setGoalOrder(); // Assign the goals order
-        // TODO: fix setgoalorder
         //System.err.println("[272 Goals] "+data.getAllGoals().toString());
         TaskHandler taskHandler = TaskHandler.getInstance();
         //System.err.println("[SearchClient]: all boxes " + data.getAllBoxes().toString());
