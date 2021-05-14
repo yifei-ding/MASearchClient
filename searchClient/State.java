@@ -302,18 +302,6 @@ public class State {
     }
 
     private boolean cellIsFree(Location location) {
-//        Object obj = data.getStaticMap().get(location);
-//        if (obj instanceof Wall) {
-//            if (((Wall)obj).isWall())
-//                return false;
-//        }
-//
-//        //might also check whether there's a box at location?
-//        obj = data.getDynamicMap().get(location);
-//        if (obj instanceof Box) {
-//            return false;
-//        }
-//        return true;
         if (obstacleMap.containsKey(location)){
             if (!obstacleMap.get(location))
                 return true;
@@ -385,17 +373,6 @@ public class State {
     }
 
     private boolean isApplicable(Location location) {
-//        Object obj = map.get(location);
-//        if (obj instanceof Wall) {
-//            if (((Wall)obj).isWall())
-//                return false;
-//        }
-//
-//        //TODO: debug
-//        obj = data.getDynamicMap().get(location);
-//        if (obj instanceof Box) {
-//            return false;
-//        }
         if (obstacleMap.containsKey(location)){
             if (!obstacleMap.get(location))
                 return true;

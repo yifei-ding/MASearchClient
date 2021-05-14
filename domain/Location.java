@@ -29,21 +29,7 @@ public class Location {
         this.col = col;
     }
 
-
-//
-//    public Location getUpNeighbour(){
-//        return new Location(row-1, col,getDegree(row-1, col));
-//    }
-//    public Location getDownNeighbour(){
-//        return new Location(row+1, col,getDegree(row-1, col));
-//    }
-//    public Location getLeftNeighbour(){
-//        return new Location(row, col-1,,getDegree(row-1, col));
-//    }
-//    public Location getRightNeighbour(){
-//        return new Location(row, col+1,,getDegree(row-1, col));
-//    }
-        public Location getUpNeighbour(){
+    public Location getUpNeighbour(){
         return new Location(row-1, col);
     }
     public Location getDownNeighbour(){
@@ -56,21 +42,12 @@ public class Location {
         return new Location(row, col+1);
     }
 
-
-
-    public void setDegree(){
-
-
-
-
-
+    public boolean hasNeighbour(Location location){
+        ArrayList<Location> neighbours = this.getNeighbours();
+        return neighbours.contains(location);
     }
 
 
-    public int getDegree(int row, int col){
-        return degree;
-
-    }
 
     /**
      * @return 4 neighbouring locations of a location in an ArrayList

@@ -23,8 +23,6 @@ public class HighLevelSolver {
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
         Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
-        System.err.println("[HighLevelSolver] Count remaining tasks...");
-
         while (data.countRemainingTask()>0) {
             tree = new ArrayList<>();
             HighLevelState initialState = new HighLevelState(new HashSet<>());
@@ -55,8 +53,6 @@ public class HighLevelSolver {
                     Action[][] action = translate(currentSolution); //translate
                     action = addPadding(action); //add NoOp to the end of short solutions if each solution is of different length TODO: can switch to RHCR
                     finalSolution = concatenateSolution(finalSolution, action); //append current solution to final solution
-                    data.countRemainingTask();
-
                     break;
                 } else
                     dealWithFirstConflict(node);
@@ -74,21 +70,205 @@ public class HighLevelSolver {
                 LocationPair[] route1 = solution[i];
                 LocationPair[] route2 = solution[j];
                 //now we have one path each for agent1 and agent2
-                dealWithFirstConflict(state, i,j,route1,route2);
+                dealWithFirstConflict2(state, i,j, route1,route2); //TODO: toggle this for testing new functions
             }
         }
 
     }
 
+    private void dealWithFirstConflict2(HighLevelState state, int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
+        if (route1 != null && route2 != null) { //each solution should not be null
+            //TODO: How to detect target conflict (add padding first?)
+            //Target conflict: when agent 1 need to go to agent2's goal location after agent2 reaches goal (and agent2 don't move anymore).
+            int minIndex = Math.min(route1.length, route2.length) - 1;
+            /**
+            * Get agent box start location
+             */
+            Location agentStartLocation1 = route1[0].getAgentLocation();
+            Location agentStartLocation2 = route2[0].getAgentLocation();
+            Location boxStartLocation1 = route1[0].getBoxLocation();
+            Location boxStartLocation2 = route2[0].getBoxLocation();
+            /**
+             * Get agent box end location
+             */
+            Location agentEndLocation1 = route1[route1.length-1].getAgentLocation();
+            Location agentEndLocation2 = route2[route2.length-1].getAgentLocation();
+            Location boxEndLocation1 = route1[route1.length-1].getBoxLocation();
+            Location boxEndLocation2 = route2[route2.length-1].getBoxLocation();
+
+            Location agentCurrentLocation1;
+            Location agentCurrentLocation2;
+            Location agentNextLocation1;
+            Location agentNextLocation2;
+            Location boxNextLocation1;
+            Location boxNextLocation2;
+
+            Conflict conflict;
+            int distance;
+
+            if (boxStartLocation1 == null && boxStartLocation2 == null){ //two agents are both moving without box
+                for (int k=0; k< minIndex; k++) { //timestep
+                    agentCurrentLocation1 = route1[k].getAgentLocation();
+                    agentCurrentLocation2 = route2[k].getAgentLocation();
+
+                    if (agentCurrentLocation1.equals(agentCurrentLocation2)) { //vertex conflict
+                        conflict = new AgentAgentConflict(agentId1, agentId2, agentCurrentLocation1, agentCurrentLocation2, k);
+                        System.err.println("[HighLevelSolver] Find agent agent vertex conflict");
+                        addChildrenOfConflictToTree(state, conflict,2);
+                        break;
+                    }
+                    else{
+                        agentNextLocation1 = route1[k+1].getAgentLocation();
+                        agentNextLocation2 = route2[k+1].getAgentLocation();
+                        if (agentCurrentLocation1.equals(agentNextLocation2) && agentCurrentLocation2.equals(agentNextLocation1)){  //mutual edge conflict
+                            conflict = new AgentAgentConflict(agentId1, agentId2, agentNextLocation1, agentNextLocation2, k+1);
+                            System.err.println("[HighLevelSolver] Find agent agent mutual edge conflict");
+                            addChildrenOfConflictToTree(state, conflict,1);
+                            break;
+                        }
+                        else if (agentCurrentLocation1.equals(agentNextLocation2)){ //single edge conflict
+                            conflict = new AgentAgentConflict(-1, agentId2, new Location(-1,-1), agentNextLocation2, k+1);
+                            System.err.println("[HighLevelSolver] Find agent2 single edge conflict");
+                            addChildrenOfConflictToTree(state, conflict,1);
+                            break;
+                        }
+                        else if (agentCurrentLocation2.equals(agentNextLocation1)){ //single edge conflict
+                            conflict = new AgentAgentConflict(agentId1, -1, agentNextLocation1, new Location(-1,-1), k+1);
+                            System.err.println("[HighLevelSolver] Find agent1 single edge conflict");
+                            addChildrenOfConflictToTree(state, conflict,1);
+                            break;
+                        }
+                    }
+                }
+
+
+
+            }
+        }
+    }
+
+    private void addChildrenOfConflictToTree(HighLevelState state, Conflict conflict, int constraintLength) {
+        tree.remove(state);
+        Constraint newConstraint;
+        Constraint newConstraint2;
+//        int corridorLength = getCorridorLength(state,conflict);
+//        System.err.println("Corridor length= " + corridorLength);
+//        int length = Math.max(constraintLength,corridorLength);
+        int length = constraintLength;
+        if (conflict.getLocation1().equals(conflict.getLocation2())){ //vertex conflict
+            for (int i = 0; i < 2; i++) {
+                HighLevelState child = new HighLevelState(state.getConstraints());
+                if (i==0) {
+                    /**
+                     * The first constraint can either be for a box or for an agent
+                     */
+                    if (conflict instanceof BoxBoxConflict) {
+                        newConstraint = new Constraint(conflict.getId1(), true, conflict.getTimestep(), conflict.getLocation1());
+                    }
+                    else {
+                        newConstraint = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
+                    }
+                }
+                else {
+                    /**
+                     * The second constraint can either be for a box or for an agent
+                     */
+                    if (conflict instanceof AgentAgentConflict) {
+                        newConstraint = new Constraint(conflict.getId2(), false, conflict.getTimestep(), conflict.getLocation2());
+                    }
+                    else {
+                        newConstraint = new Constraint(conflict.getId2(), true, conflict.getTimestep(), conflict.getLocation2());
+                    }
+
+                }
+                child.addRangeConstraints(newConstraint,constraintLength); // 5/13 update to range constraints
+//            if (corridorLength >0) {
+//                child.addRangeConstraints(newConstraint, 0-corridorLength);
+//            }
+                child.calculateSolution();
+                child.updateCost();
+                addToTree(child);
+            }
+        }
+        else if (conflict.getLocation1().hasNeighbour(conflict.getLocation2())) { //mutual edge conflict
+            for (int i = 0; i < 2; i++) {
+                HighLevelState child = new HighLevelState(state.getConstraints());
+                if (i == 0) {
+                    /**
+                     * The first child (add constraints for agent1)
+                     */
+                    if (conflict instanceof BoxBoxConflict) {
+                        newConstraint = new Constraint(conflict.getId1(), true,conflict.getTimestep() - 1, conflict.getLocation2()); //TODO: note this could be wrong
+                        newConstraint2 = new Constraint(conflict.getId1(), true, conflict.getTimestep(), conflict.getLocation1());  //TODO: note this could be wrong
+
+                    }
+                    else {
+                        newConstraint = new Constraint(conflict.getId1(), false,conflict.getTimestep() - 1, conflict.getLocation2());
+                        newConstraint2 = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
+
+                    }
+                } else {
+                    /**
+                     * The second child (add constraints for agent2)
+                     */
+                    if (conflict instanceof AgentAgentConflict) {
+                        newConstraint = new Constraint(conflict.getId2(), false,conflict.getTimestep() - 1, conflict.getLocation1());
+                        newConstraint2 = new Constraint(conflict.getId2(), false, conflict.getTimestep(), conflict.getLocation2());
+
+                    }
+                    else {
+                        newConstraint = new Constraint(conflict.getId2(), true,conflict.getTimestep() - 1, conflict.getLocation1());
+                        newConstraint2 = new Constraint(conflict.getId2(), true, conflict.getTimestep(), conflict.getLocation2());
+
+
+                    }
+                }
+                child.addConstraint(newConstraint);
+                child.addRangeConstraints(newConstraint2,constraintLength); // 5/13 update to range constraints
+//                if (corridorLength >0) {
+//                    child.addRangeConstraints(newConstraint, 0-corridorLength);
+//                }
+                child.calculateSolution();
+                child.updateCost();
+                this.addToTree(child);
+            }
+        }
+        else if (conflict.getId2() == -1){ //single edge conflict for agent1
+            HighLevelState child = new HighLevelState(state.getConstraints());
+            if (conflict instanceof AgentAgentConflict)
+                newConstraint = new Constraint(conflict.getId1(), false,conflict.getTimestep(), conflict.getLocation1());
+            else
+                newConstraint = new Constraint(conflict.getId1(), true,conflict.getTimestep(), conflict.getLocation1());
+
+            child.addRangeConstraints(newConstraint,constraintLength); // 5/13 update to range constraints
+            child.calculateSolution();
+            child.updateCost();
+            this.addToTree(child);
+        }
+        else if (conflict.getId1() == -1) { //single edge conflict for agent2
+            HighLevelState child = new HighLevelState(state.getConstraints());
+            if (conflict instanceof AgentAgentConflict)
+                newConstraint = new Constraint(conflict.getId2(), false,conflict.getTimestep(), conflict.getLocation2());
+            else
+                newConstraint = new Constraint(conflict.getId2(), true,conflict.getTimestep(), conflict.getLocation2());
+
+            child.addRangeConstraints(newConstraint,length); // 5/15 update to range constraints with corridor length
+            child.calculateSolution();
+            child.updateCost();
+            this.addToTree(child);
+        }
+
+    }
+
     /**
-    * @author Yifei
-    * @description This is the main function: 1. find a first conflict
-     * (whether it's vertex/edge conflict, or whether it's AgentAgent Conflict, AgentBox Conflict, BoxBox Conflict)
-     * 2. Add the children of the conflict to the tree
-    * @date 2021/5/10
-    * @param [state, agentId1, agentId2, route1, route2]
-    * @return void
-     */
+            * @author Yifei
+            * @description This is the main function: 1. find a first conflict
+             * (whether it's vertex/edge conflict, or whether it's AgentAgent Conflict, AgentBox Conflict, BoxBox Conflict)
+             * 2. Add the children of the conflict to the tree
+            * @date 2021/5/10
+            * @param state, agentId1, agentId2, route1, route2
+            * @return void
+             */
     private void dealWithFirstConflict(HighLevelState state, int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
         int minIndex = Math.min(route1.length, route2.length)-1;
         Location agentCurrentLocation1;
@@ -115,10 +295,9 @@ public class HighLevelSolver {
              */
             //vertex conflict could be 3 types of conflict: agent-agent conflict, agent-box conflict, box-box conflict
             if (agentCurrentLocation1.equals(agentCurrentLocation2)) {
-
                 conflict = new AgentAgentConflict(agentId1, agentId2, agentCurrentLocation1, agentCurrentLocation2, k);
                 System.err.println("Find Vertex AA conflict: " + conflict.toString());
-                addChildrenOfVertexConflictToTree(state,conflict);
+                addChildrenOfVertexConflictToTree(state,conflict,2);
                 break;
 //                return conflict;
             }
@@ -127,7 +306,7 @@ public class HighLevelSolver {
                 if (agentCurrentLocation1.equals(boxCurrentLocation2)) {
                     conflict = new AgentBoxConflict(agentId1, agentId2, agentCurrentLocation1, boxCurrentLocation2, k);
                     System.err.println("Find Vertex AB conflict 1: " + conflict.toString());
-                    addChildrenOfVertexConflictToTree(state, conflict);
+                    addChildrenOfVertexConflictToTree(state,conflict,2);
                     break;
 //                    return conflict;
                 }
@@ -136,7 +315,7 @@ public class HighLevelSolver {
                 if (agentCurrentLocation2.equals(boxCurrentLocation1)) {
                     conflict = new AgentBoxConflict(agentId2, agentId1, agentCurrentLocation2, boxCurrentLocation1, k);
                     System.err.println("Find Vertex AB conflict 2: " + conflict.toString());
-                    addChildrenOfVertexConflictToTree(state, conflict);
+                    addChildrenOfVertexConflictToTree(state,conflict,2);
                     break;
 //                    return conflict;
                 }
@@ -145,8 +324,7 @@ public class HighLevelSolver {
                 if (boxCurrentLocation1.equals(boxCurrentLocation2)) {
                     conflict = new BoxBoxConflict(agentId1, agentId2, boxCurrentLocation1, boxCurrentLocation2, k);
                     System.err.println("Find Vertex BB conflict : " + conflict.toString());
-
-                    addChildrenOfVertexConflictToTree(state,conflict);
+                    addChildrenOfVertexConflictToTree(state,conflict,2);
                     break;
 //                    return conflict;
                 }
@@ -295,11 +473,11 @@ public class HighLevelSolver {
      */
     private void addChildrenOfEdgeConflictToTree(HighLevelState node, Conflict conflict) {
         tree.remove(node);
-        if (isCorridorConflict(node,conflict))
-            System.err.println("The edge conflict is a corridor conflict");
-
+        int constraintLength=2;
+//        int corridorLength = getCorridorLength(node,conflict);
         Constraint newConstraint;
         Constraint newConstraint2;
+
         /**
         * First case: mutual edge conflict.
         * This will add two children to the tree.
@@ -314,10 +492,12 @@ public class HighLevelSolver {
                     if (conflict instanceof BoxBoxConflict) {
                         newConstraint = new Constraint(conflict.getId1(), true,conflict.getTimestep() - 1, conflict.getLocation2()); //TODO: note this could be wrong
                         newConstraint2 = new Constraint(conflict.getId1(), true, conflict.getTimestep(), conflict.getLocation1());  //TODO: note this could be wrong
+
                     }
                     else {
                         newConstraint = new Constraint(conflict.getId1(), false,conflict.getTimestep() - 1, conflict.getLocation2());
                         newConstraint2 = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
+
                     }
                 } else {
                     /**
@@ -326,14 +506,20 @@ public class HighLevelSolver {
                     if (conflict instanceof AgentAgentConflict) {
                         newConstraint = new Constraint(conflict.getId2(), false,conflict.getTimestep() - 1, conflict.getLocation1());
                         newConstraint2 = new Constraint(conflict.getId2(), false, conflict.getTimestep(), conflict.getLocation2());
+
                     }
                     else {
                         newConstraint = new Constraint(conflict.getId2(), true,conflict.getTimestep() - 1, conflict.getLocation1());
                         newConstraint2 = new Constraint(conflict.getId2(), true, conflict.getTimestep(), conflict.getLocation2());
+
+
                     }
                 }
                 child.addConstraint(newConstraint);
-                child.addConstraint(newConstraint2);
+                child.addRangeConstraints(newConstraint2,constraintLength); // 5/13 update to range constraints
+//                if (corridorLength >0) {
+//                    child.addRangeConstraints(newConstraint, 0-corridorLength);
+//                }
                 child.calculateSolution();
                 child.updateCost();
                 this.addToTree(child);
@@ -349,7 +535,8 @@ public class HighLevelSolver {
                 newConstraint = new Constraint(conflict.getId2(), false,conflict.getTimestep(), conflict.getLocation2());
             else
                 newConstraint = new Constraint(conflict.getId2(), true,conflict.getTimestep(), conflict.getLocation2());
-            child.addConstraint(newConstraint);
+
+            child.addRangeConstraints(newConstraint,constraintLength); // 5/13 update to range constraints
             child.calculateSolution();
             child.updateCost();
             this.addToTree(child);
@@ -366,13 +553,14 @@ public class HighLevelSolver {
             else
                 newConstraint = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
 
-            child.addConstraint(newConstraint);
+            child.addRangeConstraints(newConstraint,2); // 5/13 update to range constraints
             child.calculateSolution();
             child.updateCost();
             this.addToTree(child);
             }
 
     }
+
 
     /**
     * @author Yifei
@@ -381,12 +569,9 @@ public class HighLevelSolver {
     * @param node, conflict
      * @return void
      */
-    private void addChildrenOfVertexConflictToTree(HighLevelState node, Conflict conflict) {
+    private void addChildrenOfVertexConflictToTree(HighLevelState node, Conflict conflict, int constraintLength) {
         tree.remove(node);
-        if (isCorridorConflict(node,conflict)) {
-            //TODO: add a bunch of constraints for corridor conflict (instead of only one constraint.)
-            System.err.println("The vertex conflict is a corridor conflict");
-        }
+//        int corridorLength = getCorridorLength(node,conflict);
         for (int i = 0; i < 2; i++) {
             HighLevelState child = new HighLevelState(node.getConstraints());
             Constraint newConstraint;
@@ -394,54 +579,83 @@ public class HighLevelSolver {
                 /**
                 * The first constraint can either be for a box or for an agent
                  */
-                if (conflict instanceof BoxBoxConflict)
+                if (conflict instanceof BoxBoxConflict) {
                     newConstraint = new Constraint(conflict.getId1(), true, conflict.getTimestep(), conflict.getLocation1());
-                else
+                }
+                else {
                     newConstraint = new Constraint(conflict.getId1(), false, conflict.getTimestep(), conflict.getLocation1());
+                }
             }
             else {
                 /**
                  * The second constraint can either be for a box or for an agent
                  */
-                if (conflict instanceof AgentAgentConflict)
+                if (conflict instanceof AgentAgentConflict) {
                     newConstraint = new Constraint(conflict.getId2(), false, conflict.getTimestep(), conflict.getLocation2());
-                else
+                }
+                else {
                     newConstraint = new Constraint(conflict.getId2(), true, conflict.getTimestep(), conflict.getLocation2());
+                }
 
             }
-            child.addConstraint(newConstraint);
+            child.addRangeConstraints(newConstraint,constraintLength); // 5/13 update to range constraints
+//            if (corridorLength >0) {
+//                child.addRangeConstraints(newConstraint, 0-corridorLength);
+//            }
             child.calculateSolution();
             child.updateCost();
             addToTree(child);
         }
     }
 
-    private boolean isCorridorConflict(HighLevelState node, Conflict conflict) {
+    private CorridorConflict getCorridorConflict(HighLevelState node, Conflict conflict) {
         LocationPair[][] solution = node.getSolution();
         LocationPair[] route1;
         LocationPair[] route2;
         Location location1;
         Location location2;
-        HashMap<Location,Integer> degreeMap = data.getDegreeMap();
-        if (conflict.getId1() != -1 && conflict.getId2() != -1){ //the corridor conflict can only happen with vertex conflict or mutual edge conflict
+        int k = conflict.getTimestep();
+        int length=0;
+        CorridorConflict corridorConflict = null;
+        if (conflict.getId1() != -1 && conflict.getId2() != -1) { //the corridor conflict can only happen with vertex conflict or mutual edge conflict
             route1 = solution[conflict.getId1()];
             route2 = solution[conflict.getId2()];
-            location1 = conflict.getLocation1();
-            location2 = conflict.getLocation2();
-            if (location1.equals(location2)) { //vertex conflict
-                if (degreeMap.get(location1) ==2){
-                    return true;
+            if (conflict instanceof AgentAgentConflict) {
+                location1 = route1[k].getAgentLocation();
+                location2 = route2[k].getAgentLocation();
+                if (location1.equals(location2)) //vertex conflict
+                    length--;
+                while ((degreeIs2(location1) || degreeIs2(location2)) && k > 0) {
+                    if (degreeIs2(location1) && degreeIs2(location2)) {
+                        length = length + 2;
+                        location1 = route1[k].getAgentLocation();
+                        location2 = route2[k].getAgentLocation();
+                    }
+                    else if (degreeIs2(location1)){
+                        length++;
+                        location1 = route1[k].getAgentLocation();
+                        //TODO: stop searching location2
+                    }
+                    else if (degreeIs2(location2)){
+                        length++;
+                        location2 = route2[k].getAgentLocation();
+                        //TODO: stop searching location2
+                    }
+                    System.err.println("Current corridor length= " + length);
+                    k--;
+
                 }
-                else return false;
-            }
-            else { //edge conflict
-                if (degreeMap.get(location1) ==2 || degreeMap.get(location2) ==2 )
-                    return true;
-                else return false;
+                return corridorConflict;
             }
         }
-        else
-            return false;
+        return corridorConflict;
+    }
+
+    private boolean degreeIs2(Location location){
+        HashMap<Location,Integer> degreeMap = data.getDegreeMap();
+        if (degreeMap.get(location) == 2)
+            return true;
+        else return false;
     }
 
     private HighLevelState findBestNodeWithMinCost(ArrayList<HighLevelState> tree) {

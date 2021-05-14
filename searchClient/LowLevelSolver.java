@@ -26,19 +26,17 @@ public class LowLevelSolver {
         TaskHandler taskHandler = TaskHandler.getInstance();
         data.initializeObstacleMap(); //treat all walls, agents and boxes as obstacles.
         ArrayList<Task> taskList = new ArrayList<>();
-        System.err.println("[LowLevelSolver] Remaining tasks: "+data.countRemainingTask());
-
         //for each agent, do
         for (Agent agent : allAgents.values()) {
             //1. get an uncompleted task of the agent with highest priority
             Task task = taskHandler.pop(agent.getId());
             if (task != null) {
-                System.err.println("Agent "+agent.getId() + " have task " + task.toString());
+//                System.err.println("Agent "+agent.getId() + " have task " + task.toString());
 
                 taskList.add(task);
             }
             else{ //agent has no task, then don't move
-                System.err.println("Agent "+agent.getId() + " don't have task");
+//                System.err.println("Agent "+agent.getId() + " don't have task");
 
                 action = new LocationPair[1];
                 action[0] = new LocationPair(agent.getLocation(),null);
@@ -68,26 +66,27 @@ public class LowLevelSolver {
             //TODO: maybe there's need to filter constraints
             //4. Call LowLevelSolver.solve
             if (solvable(task)){
-                System.err.println("[LowLevelSolver]Solvable: " + task.toString());
+//                System.err.println("[LowLevelSolver]Solvable: " + task.toString());
                 int agentId = task.getAgentId();
                 action = solve(constraints, from, to, task.getAgentId(), boxId, data.getAgent(agentId).getLocation());
                 plan[agentId] = action;
             }
             else{
-                System.err.println("[LowLevelSolver]Not solvable: " + task.toString());
+//                System.err.println("[LowLevelSolver]Not solvable: " + task.toString());
                 taskHandler.taskHelper(task); //call helper to generate new tasks to help remove obstacles
                 return LowLevelSolver.solveForAllAgents(constraints); //replan
             }
         }
         //print merged plan
-        System.err.println("[LowLevelSolver]Merged plan:");
-        for (int i=0; i<plan.length;i++)
-            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
+//        System.err.println("[LowLevelSolver]Merged plan:");
+//        for (int i=0; i<plan.length;i++)
+//            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
 
         return plan;
     }
 
     private static boolean solvable(Task task) {
+//        System.err.println("Call solvable");
         Location from;
         Location goalLocation = task.getTargetLocation();
         Location agentInitialLocation = allAgents.get(task.getAgentId()).getLocation();
@@ -116,6 +115,7 @@ public class LowLevelSolver {
 //            System.err.println("Frontier.size: " + frontier.size());
             explored.add(node);
             if (node.equals(goal)) {
+//            System.err.println("Connected");
                 return true;
             }
             else{
@@ -132,8 +132,9 @@ public class LowLevelSolver {
             }
 
         }
-        //System.err.println("Not connected");
-    return false;
+//        System.err.println("Not connected");
+
+        return false;
     }
 
     public static LocationPair[] solve(HashSet<Constraint> constraints, Location from, Location to, int agentId, int boxId, Location agentLocation)
@@ -149,10 +150,10 @@ public class LowLevelSolver {
         while (true) {
 //            System.err.println("[LowLevelSolver] Frontier size: " + frontier.size());
             //if frontier is null return false
-            if (frontier.isEmpty()) { //TODO: implement solvable(task) instead
-                System.err.println("[LowLevelSolver]Frontier is empty");
-                return new LocationPair[]{};
-            }
+//            if (frontier.isEmpty()) { //TODO: Note: frontier will never be empty
+//                System.err.println("[LowLevelSolver]Frontier is empty");
+//                return new LocationPair[]{};
+//            }
             //choose a node n from frontier (and remove)
             State node = frontier.pop();
             //if n is a goal state then return solution

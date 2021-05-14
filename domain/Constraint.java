@@ -22,6 +22,13 @@ public class Constraint {
         this.location = location;
     }
 
+    public Constraint(int agentId, int timeStep, Location location) {
+        this.agentId = agentId;
+        this.isBoxConstraint = false;
+        this.timeStep = timeStep;
+        this.location = location;
+    }
+
     public int getAgentId() {
         return agentId;
     }
