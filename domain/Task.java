@@ -50,6 +50,8 @@ public class Task {
         this.targetLocation = targetLocation;
         this.priority = priority;
         this.isCompleted = false;
+        this.previousTaskId = -1; //5/15 debug: add default previousTaskId -1 to tasks without box
+
     }
 
     public Location getStartLocation() {
@@ -129,8 +131,9 @@ public class Task {
                     "box=" + data.getBox(boxId).toString() +
                     ", agent=" + data.getAgent(agentId).toString() +
                     ", targetLocation=" + targetLocation +
-                    //  ", priority=" + priority +
-                    // ", isCompleted=" + isCompleted +
+//                    ", previousTask=" + previousTaskId +
+//                      ", priority=" + priority +
+//                     ", isCompleted=" + isCompleted +
                     "}" + '\n';
         }
         else
@@ -139,8 +142,9 @@ public class Task {
                     "no box" +
                     ", agent=" + data.getAgent(agentId).toString() +
                     ", targetLocation=" + targetLocation +
-                    //  ", priority=" + priority +
-                    // ", isCompleted=" + isCompleted +
+//                    ", previousTask=" + previousTaskId +
+//                    ", priority=" + priority +
+//                     ", isCompleted=" + isCompleted +
                     "}" + '\n';
     }
 }
