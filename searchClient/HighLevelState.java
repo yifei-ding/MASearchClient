@@ -1,5 +1,6 @@
 package searchClient;
 
+import domain.Conflict;
 import domain.Constraint;
 import domain.Location;
 import domain.LocationPair;
@@ -35,6 +36,20 @@ public class HighLevelState {
         Location location = constraint.getLocation();
         for (int i = startTimeStep; i < endTimeStep; i++) {
             this.constraints.add(new Constraint(agentId,isBoxConstraint,i,location));
+        }
+    }
+    public void addRangeConstraintsBackwards(Constraint constraint, int length){
+        System.err.println("Add RangeConstraintsBackwards: " + constraint.toString() + " length= " + length );
+
+        int startTimeStep = constraint.getTimeStep();
+        int endTimeStep = startTimeStep - length;
+        int agentId = constraint.getAgentId();
+        boolean isBoxConstraint = constraint.isBoxConstraint();
+        Location location = constraint.getLocation();
+        for (int i = startTimeStep; i > endTimeStep; i--) {
+            Constraint constraint1 = new Constraint(agentId,isBoxConstraint,i,location);
+//            System.err.println("Add constarint: " + constraint1.toString() );
+            this.constraints.add(constraint1);
         }
     }
 
