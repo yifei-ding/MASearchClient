@@ -159,10 +159,21 @@ public class HighLevelSolver {
                     LocationPair[] locationPairToTranslate = new LocationPair[2];
                     locationPairToTranslate[0] = route1[k];
                     locationPairToTranslate[1] = route1[k+1];
-//                    while (agentCurrentLocation1.hasNeighbour(boxCurrentLocation1) && agentCurrentLocation2.hasNeighbour(boxCurrentLocation2)){
-                        Action[] action1 = translateSingleSolution(locationPairToTranslate);
-                        System.err.println("Action 1: " + action1[0]);
-//                    }
+                    Action[] action1 = translateSingleSolution(locationPairToTranslate);
+                    System.err.println("Action 1: " + action1[0]);
+                    locationPairToTranslate[0] = route2[k];
+                    locationPairToTranslate[1] = route2[k+1];
+                    Action[] action2 = translateSingleSolution(locationPairToTranslate);
+                    System.err.println("Action 2: " + action2[0]);
+                    //TODO:
+                    // switch action.type
+                    // case: push => box is in the front
+                    // case: pull => agent is in the front
+                    // case: move => only agent is moving
+                    // check conflict between the front object
+
+
+
 
                 }
             }
