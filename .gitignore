@@ -1,3 +1,5 @@
 /.idea
 /*.iml
 *.class
+/build_and_run_all_all_levels.sh
+/build_and_run.sh

@@ -25,13 +25,19 @@ public class HighLevelState {
     }
 
     public void addConstraint(Constraint constraint) {
-        if (!this.constraints.contains(constraint))
-            this.constraints.add(constraint);
-//        System.err.println("[HighLevelState] Add constraint " + constraint.toString());
-
-//        System.err.println("[HighLevelState] After adding constraint  " + this.constraints.toString());
-
+        this.constraints.add(constraint);
     }
+    public void addRangeConstraints(Constraint constraint, int length){
+        int startTimeStep = constraint.getTimeStep();
+        int endTimeStep = startTimeStep + length;
+        int agentId = constraint.getAgentId();
+        boolean isBoxConstraint = constraint.isBoxConstraint();
+        Location location = constraint.getLocation();
+        for (int i = startTimeStep; i < endTimeStep; i++) {
+            this.constraints.add(new Constraint(agentId,isBoxConstraint,i,location));
+        }
+    }
+
 
     public LocationPair[][] calculateSolution() {
         solution = LowLevelSolver.solveForAllAgents(this.constraints);
@@ -82,6 +88,8 @@ public class HighLevelState {
                 "constraints=" + constraints +
                 '}';
     }
+
+
 
 //    public static void main(String[] args) {
 //        HashSet<Constraint> constraints1 = new HashSet<>();

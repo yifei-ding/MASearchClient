@@ -194,6 +194,27 @@ public class InMemoryDataSource {
         }
     }
 
+    public HashMap<Location,Boolean> getInitialObstacleMap() {
+        HashMap<Location,Boolean> map = new HashMap<Location, Boolean>();
+
+        for (Map.Entry<Location, Wall> entry : wallMap.entrySet()) {
+            Location location = entry.getKey();
+            Wall wall = entry.getValue();
+            if (wall.isWall())
+                map.put(location, true);
+            else
+                map.put(location, false);
+        }
+        for (Agent agent : allAgents.values()) {
+            map.put(agent.getLocation(), true);
+        }
+        for (Box box : allBoxes.values()) {
+            map.put(box.getLocation(), true);
+        }
+        return map;
+    }
+
+
     public void setWallMap(Location location, Wall wall) {
         wallMap.put(location, wall);
     }
