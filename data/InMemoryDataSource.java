@@ -87,7 +87,9 @@ public class InMemoryDataSource {
     }
 
     public void addTask(Task task) {
+//        System.err.println("[Add task] " + task.toString());
         allTasks.put(task.getId(), task);
+
         int agentId = task.getAgentId();
         //group tasks by agent id
         ArrayList<Integer> list = allTasksByAgent.get(agentId);
@@ -95,7 +97,7 @@ public class InMemoryDataSource {
             list = new ArrayList<>();
         }
         list.add(task.getId());
-        allTasksByAgent.put(task.getAgentId(), list);
+        allTasksByAgent.put(agentId, list);
     }
 
     public HashMap<Integer, Task> getAllTasks() {
@@ -260,8 +262,7 @@ public class InMemoryDataSource {
 
 
     public ArrayList<Integer> getAllTasksByAgent(int agentId) {
-        Integer id = agentId;
-        return allTasksByAgent.get(id);
+        return allTasksByAgent.get(agentId);
     }
 
     public ArrayList<Integer> getBoxByName(String name) {

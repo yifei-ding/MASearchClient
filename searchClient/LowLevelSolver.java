@@ -32,7 +32,6 @@ public class LowLevelSolver {
             Task task = taskHandler.pop(agent.getId());
             if (task != null) {
 //                System.err.println("Agent "+agent.getId() + " have task " + task.toString());
-
                 taskList.add(task);
             }
             else{ //agent has no task, then don't move
@@ -78,9 +77,9 @@ public class LowLevelSolver {
             }
         }
         //print merged plan
-        System.err.println("[LowLevelSolver]Merged plan:");
-        for (int i=0; i<plan.length;i++)
-            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
+//        System.err.println("[LowLevelSolver]Merged plan:");
+//        for (int i=0; i<plan.length;i++)
+//            System.err.println("Agent "+i+" : " + Arrays.toString(plan[i]));
 
         return plan;
     }

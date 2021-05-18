@@ -44,9 +44,9 @@ public class HighLevelSolver {
 
             while (!tree.isEmpty()) {
                 HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
-                System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().size());
+                System.err.println("[-----------------Constraints of the current pop out node--------------]: " + node.getConstraints().toString());
                 System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
-                if (!hasEdgeConflict(node) && !hasVertexConflict(node)) {
+                if (!hasEdgeConflict(node) && !hasVertexConflict(node)  && !hasTargetConflict(node)) {
                     LocationPair[][] currentSolution = node.getSolution(); //current solution is the solution of each agent in a round of tasks
                     updateLocation(currentSolution); //given each agent's solution, get the last element, and update agent/box location in data accordingly
                     updateTask(currentSolution); //set the task as completed
@@ -64,6 +64,49 @@ public class HighLevelSolver {
 
     }
 
+    private boolean hasTargetConflict(HighLevelState state) {
+        return false; // 5/18 skip target conflict temporarily
+//        LocationPair[][] solution = state.getSolution();
+//        for(int i =0;i<solution.length;i++) { //i=agent 1
+//            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+//                LocationPair[] route1 = solution[i];
+//                LocationPair[] route2 = solution[j];
+//                //now we have one path each for agent1 and agent2
+//                if (hasTargetConflict(state, i,j, route1,route2)) {
+//                    System.err.println("Has target conflict");
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+    }
+
+    private boolean hasTargetConflict(HighLevelState state, int i, int j, LocationPair[] route1, LocationPair[] route2) {
+        if (route1.length != route2.length){
+            if (route1.length < route2.length){
+                LocationPair route1Destination = route1[route1.length-1];
+                for (int k = route1.length; k < route2.length; k++) {
+                    if (route2[k].overlaps(route1Destination))
+                        return true;
+                }
+                return false;
+            }
+            else {
+                LocationPair route2Destination = route2[route2.length-1];
+                for (int k = route2.length; k < route1.length; k++) {
+                    if (route1[k].overlaps(route2Destination))
+                        return true;
+                }
+                return false;
+
+            }
+        }
+        else return false;
+
+
+    }
+
+
     public void dealWithFirstConflict(HighLevelState state){
         LocationPair[][] solution = state.getSolution();
         for(int i =0;i<solution.length;i++) { //i=agent 1
@@ -79,23 +122,13 @@ public class HighLevelSolver {
 
     private void dealWithFirstConflict(HighLevelState state, int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
         if (route1 != null && route2 != null) { //each solution should not be null
-            //TODO: detect target conflict (add padding first)
             //Target conflict: when agent 1 need to go to agent2's goal location after agent2 reaches goal (and agent2 don't move anymore).
             int minIndex = Math.min(route1.length, route2.length) - 1;
             /**
-            * Get agent box start location
-             */
-            Location agentStartLocation1 = route1[0].getAgentLocation();
-            Location agentStartLocation2 = route2[0].getAgentLocation();
+            * Get box start location
+            */
             Location boxStartLocation1 = route1[0].getBoxLocation();
             Location boxStartLocation2 = route2[0].getBoxLocation();
-            /**
-             * Get agent box end location
-             */
-            Location agentEndLocation1 = route1[route1.length-1].getAgentLocation();
-            Location agentEndLocation2 = route2[route2.length-1].getAgentLocation();
-            Location boxEndLocation1 = route1[route1.length-1].getBoxLocation();
-            Location boxEndLocation2 = route2[route2.length-1].getBoxLocation();
 
             Location agentCurrentLocation1;
             Location agentCurrentLocation2;
@@ -106,8 +139,11 @@ public class HighLevelSolver {
             Location boxNextLocation1;
             Location boxNextLocation2;
 
-            Conflict conflict;
-            int distance;
+            Conflict conflict = null;
+            Action action1;
+            Action action2;
+            Action previousAction1 = null;
+            Action previousAction2 = null;
 
             if (boxStartLocation1 == null && boxStartLocation2 == null){ //two agents are both moving without box
                 for (int k=0; k< minIndex; k++) { //timestep
@@ -151,37 +187,233 @@ public class HighLevelSolver {
                 //TODO
             }
             else if (boxStartLocation1 != null && boxStartLocation2 != null) { //two agents are both moving with box
+                previousAction1 = translateToAction(route1[0], route1[1]);
+                previousAction2 = translateToAction(route2[0], route2[1]);
+
                 for (int k = 0; k < minIndex; k++) { //timestep
                     agentCurrentLocation1 = route1[k].getAgentLocation();
                     agentCurrentLocation2 = route2[k].getAgentLocation();
                     boxCurrentLocation1 = route1[k].getBoxLocation();
                     boxCurrentLocation2 = route2[k].getBoxLocation();
-                    LocationPair[] locationPairToTranslate = new LocationPair[2];
-                    locationPairToTranslate[0] = route1[k];
-                    locationPairToTranslate[1] = route1[k+1];
-                    Action[] action1 = translateSingleSolution(locationPairToTranslate);
-                    System.err.println("Action 1: " + action1[0]);
-                    locationPairToTranslate[0] = route2[k];
-                    locationPairToTranslate[1] = route2[k+1];
-                    Action[] action2 = translateSingleSolution(locationPairToTranslate);
-                    System.err.println("Action 2: " + action2[0]);
-                    //TODO:
-                    // switch action.type
-                    // case: push => box is in the front
-                    // case: pull => agent is in the front
-                    // case: move => only agent is moving
-                    // check conflict between the front object
+                    agentNextLocation1 = route1[k+1].getAgentLocation();
+                    agentNextLocation2 = route2[k+1].getAgentLocation();
+                    boxNextLocation1 = route1[k+1].getBoxLocation();
+                    boxNextLocation2 = route2[k+1].getBoxLocation();
+//                    System.err.println("k= " + k);
+                    if (translateToAction(route1[k],route1[k+1]).type != ActionType.NoOp) {
+                        action1 = translateToAction(route1[k], route1[k+1]);
+                        previousAction1 = translateToAction(route1[k], route1[k+1]);
+                    }
+                    else
+                        action1 = previousAction1;
+
+                    if (translateToAction(route2[k],route2[k+1]).type != ActionType.NoOp) {
+                        action2 = translateToAction(route2[k], route2[k+1]);
+                        previousAction2 = translateToAction(route2[k], route2[k+1]);
+                    }
+                    else
+                        action2 = previousAction2;
 
 
+//                    System.err.println("Action1= " + action1.name);
+//                    System.err.println("Action2= " + action2.name);
 
+                    if  ((action1.type == ActionType.Pull || action1.type == ActionType.Move) && (action2.type == ActionType.Pull || action2.type == ActionType.Move)){ //agent agent conflict
+                        /**
+                        * Conflict between heads of the combined object
+                         */
+//                        System.err.println("Searching for AgentAgentConflict");
+                        if (getEdgeConflictType(agentCurrentLocation1,agentCurrentLocation2)){ //vertex conflict
+                            conflict = new AgentAgentConflict(agentId1, agentId2, agentCurrentLocation1, agentCurrentLocation2, k);
+                            addChildrenOfConflictToTree(state,conflict,3);
+                            break;
+                        }
+                        else if (getEdgeConflictType(agentCurrentLocation1,agentCurrentLocation2,agentNextLocation1,agentNextLocation2) != -1) {
+                            int type = getEdgeConflictType(agentCurrentLocation1,agentCurrentLocation2,agentNextLocation1,agentNextLocation2);
+                            switch (type) {
+                                case 0:
+                                    conflict = new AgentAgentConflict(agentId1, agentId2, agentNextLocation1, agentNextLocation2,k+1 );
+                                    break;
+                                case 1:
+                                    conflict = new AgentAgentConflict(agentId1, -1, agentNextLocation1, new Location(-1,-1),k+1 );
+                                    break;
+                                case 2:
+                                    conflict = new AgentAgentConflict(-1, agentId2, new Location(-1,-1), agentNextLocation2,k+1 );
+                                    break;
+                            }
+                            addChildrenOfConflictToTree(state,conflict,2);
+                            break;
+                        }
+                        /**
+                         * Conflict between head and tail
+                         */
+                        else if (agentNextLocation1.equals(boxCurrentLocation2)){
+                            conflict = new AgentAgentConflict(agentId1, -1, agentNextLocation1, new Location(-1,-1), k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
+                        else if (agentNextLocation2.equals(boxCurrentLocation1)){
+                            conflict = new AgentAgentConflict(-1, agentId2, new Location(-1,-1),agentNextLocation2 , k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
 
+                    }
+                    else if ((action1.type == ActionType.Push) && (action2.type == ActionType.Push)){ //BoxBoxConflict
+//                        System.err.println("Searching for BoxBoxConflict");
+                        /**
+                         * Conflict between heads of the combined object
+                         */
+                        if (getEdgeConflictType(boxCurrentLocation1,boxCurrentLocation2)){ //vertex conflict
+                            conflict = new BoxBoxConflict(agentId1, agentId2, boxCurrentLocation1, boxCurrentLocation2, k);
+                            addChildrenOfConflictToTree(state,conflict,3);
+                            break;
+                        }
+                        else if (getEdgeConflictType(boxCurrentLocation1,boxCurrentLocation2,boxNextLocation1,boxNextLocation2) != -1) {
+                            int type = getEdgeConflictType(boxCurrentLocation1,boxCurrentLocation2,boxNextLocation1,boxNextLocation2);
+                            switch (type) {
+                                case 0:
+                                    conflict = new BoxBoxConflict(agentId1, agentId2, boxNextLocation1, boxNextLocation2,k+1 );
+                                    break;
+                                case 1:
+                                    conflict = new BoxBoxConflict(agentId1, -1, boxNextLocation1, new Location(-1,-1),k+1 );
+                                    break;
+                                case 2:
+                                    conflict = new BoxBoxConflict(-1, agentId2, new Location(-1,-1), boxNextLocation2,k+1 );
+                                    break;
+                            }
+                            addChildrenOfConflictToTree(state,conflict,2);
+                            break;
+                        }
+                        /**
+                         * Conflict between head and tail
+                         */
+                        else if (boxNextLocation1.equals(agentCurrentLocation2)){
+                            conflict = new BoxBoxConflict(agentId1, -1, boxNextLocation1, new Location(-1,-1), k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
+                        else if (boxNextLocation2.equals(agentCurrentLocation1)){
+                            conflict = new BoxBoxConflict(-1, agentId2, new Location(-1,-1),boxNextLocation2 , k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
+
+                    }
+
+                    else if ((action1.type == ActionType.Pull || action1.type == ActionType.Move) && action2.type == ActionType.Push){ //agent1box2 conflict
+//                        System.err.println("Searching for agent1box2 conflict");
+                        /**
+                         * Conflict between heads of the combined object
+                         */
+                        if (getEdgeConflictType(agentCurrentLocation1,boxCurrentLocation2)){ //vertex conflict
+                            conflict = new AgentBoxConflict(agentId1, agentId2, agentCurrentLocation1, boxCurrentLocation2, k);
+                            addChildrenOfConflictToTree(state,conflict,3);
+                            break;
+                        }
+                        else if (getEdgeConflictType(agentCurrentLocation1,boxCurrentLocation2,agentNextLocation1,boxNextLocation2) != -1) {
+                            int type = getEdgeConflictType(agentCurrentLocation1,boxCurrentLocation2,agentNextLocation1,boxNextLocation2);
+                            switch (type) {
+                                case 0:
+                                    conflict = new AgentBoxConflict(agentId1, agentId2, agentNextLocation1, boxNextLocation2,k+1 );
+                                    break;
+                                case 1:
+                                    conflict = new AgentBoxConflict(agentId1, -1, agentNextLocation1, new Location(-1,-1),k+1 );
+                                    break;
+                                case 2:
+                                    conflict = new AgentBoxConflict(-1, agentId2, new Location(-1,-1), boxNextLocation2,k+1 );
+                                    break;
+                            }
+                            addChildrenOfConflictToTree(state,conflict,2);
+                            break;
+                        }
+                        /**
+                         * Conflict between head and tail
+                         */
+                        //TODO be careful
+                        else if (agentNextLocation1.equals(agentCurrentLocation2)){
+                            conflict = new AgentBoxConflict(agentId1, -1, agentNextLocation1, new Location(-1,-1), k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
+                        else if (boxNextLocation2.equals(boxCurrentLocation1)){ //note: when box1 is not moving yet, this could cause box2 wait for a long time
+                            conflict = new AgentBoxConflict(-1, agentId2, new Location(-1,-1),boxNextLocation2 , k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
+                    }
+                    else if ((action2.type == ActionType.Pull || action2.type == ActionType.Move) && action1.type == ActionType.Push){ //agent2box1 conflict
+//                        System.err.println("Searching for agent2box1 conflict");
+                        /**
+                         * Conflict between heads of the combined object
+                         */
+                        if (getEdgeConflictType(agentCurrentLocation2,boxCurrentLocation1)){ //vertex conflict
+                            conflict = new AgentBoxConflict(agentId2, agentId1, agentCurrentLocation2, boxCurrentLocation1, k);
+                            addChildrenOfConflictToTree(state,conflict,3);
+                            break;
+                        }
+                        else if (getEdgeConflictType(agentCurrentLocation2,boxCurrentLocation1,agentNextLocation2,boxNextLocation1) != -1) {
+                            int type = getEdgeConflictType(agentCurrentLocation2,boxCurrentLocation1,agentNextLocation2,boxNextLocation1);
+                            switch (type) {
+                                case 0:
+                                    conflict = new AgentBoxConflict(agentId2, agentId1, agentNextLocation2, boxNextLocation1,k+1 );
+                                    break;
+                                case 1:
+                                    conflict = new AgentBoxConflict(agentId2, -1, agentNextLocation2, new Location(-1,-1),k+1 );
+                                    break;
+                                case 2:
+                                    conflict = new AgentBoxConflict(-1, agentId1, new Location(-1,-1), boxNextLocation1,k+1 );
+                                    break;
+                            }
+                            addChildrenOfConflictToTree(state,conflict,2);
+                            break;
+                        }
+                        /**
+                         * Conflict between head and tail
+                         */
+                        //TODO be careful
+                        else if (boxNextLocation1.equals(boxCurrentLocation2)){
+                            conflict = new AgentBoxConflict(-1, agentId1,new Location(-1,-1),  boxNextLocation1,  k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
+                        else if (agentNextLocation2.equals(agentCurrentLocation1)){
+                            conflict = new AgentBoxConflict(agentId2, -1, agentNextLocation2 , new Location(-1,-1),k+1 );
+                            addChildrenOfConflictToTree(state,conflict,1);
+                            break;
+                        }
+                    }
                 }
             }
 
         }
     }
+
+    private int getEdgeConflictType(Location agentCurrentLocation1, Location agentCurrentLocation2, Location agentNextLocation1, Location agentNextLocation2) {
+        if (agentCurrentLocation1.equals(agentNextLocation2) && agentCurrentLocation2.equals(agentNextLocation1))
+            return 0;
+        else if (agentCurrentLocation1.equals(agentNextLocation2))
+            return 2;
+        else if (agentCurrentLocation2.equals(agentNextLocation1))
+            return 1;
+        else return -1;
+    }
+
+    private boolean getEdgeConflictType(Location agentCurrentLocation1, Location agentCurrentLocation2) {
+        return agentCurrentLocation1.equals(agentCurrentLocation2);
+    }
+
+    private Action translateToAction(LocationPair locationPair, LocationPair locationPair1) {
+        LocationPair[] locationPairToTranslate = new LocationPair[2];
+        locationPairToTranslate[0] = locationPair;
+        locationPairToTranslate[1] = locationPair1;
+        Action[] action = translateSingleSolution(locationPairToTranslate);
+        return action[0];
+    }
+
     //5/16 newly added function to generalize conflicts
     private void addChildrenOfConflictToTree(HighLevelState state, Conflict conflict, int constraintLength) {
+        System.err.println("[HighLevel Conflict] " + conflict.toString());
         tree.remove(state);
         Constraint newConstraint;
         Constraint newConstraint2;
@@ -433,6 +665,7 @@ public class HighLevelSolver {
         }
         return false;
     }
+
 
     private boolean hasEdgeConflict(LocationPair[] route1, LocationPair[] route2) {
         int minIndex = Math.min(route1.length, route2.length)-1;

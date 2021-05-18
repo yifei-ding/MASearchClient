@@ -240,7 +240,7 @@ public class SearchClient {
                 } while (staticdegreeMap.get(currentLocation) < 3 && exploredPath.size()>=exploredCellNumber);
             }
         }
-        // TODO: assign goal sequence for corrdior
+        // TODO: assign goal sequence for corridor
 
     }
 

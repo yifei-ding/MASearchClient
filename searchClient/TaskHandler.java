@@ -363,7 +363,7 @@ public class TaskHandler {
         if (obj instanceof Box) {
             int newBoxId = ((Box) obj).getId();
 //                System.out.println("337 BoxID: "+newBoxId);
-            int taskId = data.getAllTasks().size() + 1;
+            int taskId = data.getAllTasks().size() + 2;
             System.err.println("364 TaskId: " + taskId);
             Location targetLocation = findTargetLocation(obstacles, firstObstacle,data.getAgent(newAgentId).getLocation());//from the original cell to find a nearest cell match the requirements
             System.err.println("366 Target location: " + targetLocation);
@@ -376,17 +376,19 @@ public class TaskHandler {
 //                    data.addTask(newTask_1);
             task.setPreviousTaskId(newTask_2.getId());
             data.addTask(task);
+            System.err.println("Add task " + newTask_2.toString());
             data.addTask(newTask_2);
         } else if (obj instanceof Agent) {
 //                    System.out.println("340 Location: "+location_temp);
 //            System.out.println("340 AgentID: " + newAgentId);
-            int taskId = data.getAllTasks().size() + 1;
+            int taskId = data.getAllTasks().size() + 2;
             Location targetLocation = findTargetLocation(obstacles, firstObstacle,data.getAgent(newAgentId).getLocation());
             System.err.println("352 targetLocation: " + targetLocation);
 //                        temp_obstacles.add(targetLocation);// Add the location to restrictions
             Task newTask = new Task(taskId, newAgentId, -1, targetLocation, 0);
             task.setPreviousTaskId(taskId);
             data.addTask(task);
+            System.err.println("Add task " + newTask.toString());
             data.addTask(newTask);
         }
     }
@@ -512,6 +514,7 @@ public class TaskHandler {
          */
         Task task = null;
         ArrayList<Integer> taskList = data.getAllTasksByAgent(agentId); //already in descending order
+//        System.err.println("Task list of agent " + agentId + " :" + taskList.toString());
         if (taskList != null){
             for (Integer taskId:taskList){
                 Task currentTask = data.getTaskById(taskId);
