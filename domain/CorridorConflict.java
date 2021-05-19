@@ -10,6 +10,7 @@ public class CorridorConflict {
     private int length;
     private int t1e1;
     private int t2e2;
+    private ConflictType type;
     
     /**
     * @author Yifei
@@ -21,7 +22,7 @@ public class CorridorConflict {
      * length: length of corridor, including exit1 and exit2
     * @date 2021/5/13
      */
-    public CorridorConflict(int agentId1, int agentId2, Location exit1, Location exit2, int length, int t1e1, int t2e2) {
+    public CorridorConflict(int agentId1, int agentId2, Location exit1, Location exit2, int length, int t1e1, int t2e2, ConflictType type) {
         this.agentId1 = agentId1;
         this.agentId2 = agentId2;
         this.exit1 = exit1;
@@ -29,6 +30,15 @@ public class CorridorConflict {
         this.length = length;
         this.t1e1 = t1e1;
         this.t2e2 = t2e2;
+        this.type = type;
+    }
+
+    public ConflictType getType() {
+        return type;
+    }
+
+    public void setType(ConflictType type) {
+        this.type = type;
     }
 
     public int getAgentId1() {
