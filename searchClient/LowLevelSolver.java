@@ -142,7 +142,7 @@ public class LowLevelSolver {
         //Use graph search to find a solution
 //        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Location " + agentLocation.toString());
         State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
-        Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
+        Frontier frontier = new FrontierBestFirst(new HeuristicPWXD(initialState,2));
 //        Frontier frontier = new FrontierDFS();
 
         frontier.add(initialState);
@@ -187,7 +187,7 @@ public class LowLevelSolver {
     {
         HashSet<Constraint> constraints = null;
         State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
-        Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
+        Frontier frontier = new FrontierBestFirst(new HeuristicPWXD(initialState,2));
 //        Frontier frontier = new FrontierDFS();
 
         frontier.add(initialState);
