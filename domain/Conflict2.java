@@ -1,38 +1,41 @@
 package domain;
 
+import java.util.HashSet;
 import java.util.Objects;
 
 public class Conflict2 {
-    private int id1;
-    private int id2;
+    private int agentId1;
+    private int agentId2;
     private LocationPair location1;
     private LocationPair location2;
+    private int timestep1;
+    private int timestep2;
     private ConflictType type;
-    private int timestep;
 
-    public Conflict2(int id1, int id2, LocationPair location1, LocationPair location2, ConflictType type, int timestep) {
-        this.id1 = id1;
-        this.id2 = id2;
+    public Conflict2(int agentId1, int agentId2, LocationPair location1, LocationPair location2, int timestep1, int timestep2, ConflictType type) {
+        this.agentId1 = agentId1;
+        this.agentId2 = agentId2;
         this.location1 = location1;
         this.location2 = location2;
+        this.timestep1 = timestep1;
+        this.timestep2 = timestep2;
         this.type = type;
-        this.timestep = timestep;
     }
 
-    public int getId1() {
-        return id1;
+    public int getAgentId1() {
+        return agentId1;
     }
 
-    public void setId1(int id1) {
-        this.id1 = id1;
+    public void setAgentId1(int agentId1) {
+        this.agentId1 = agentId1;
     }
 
-    public int getId2() {
-        return id2;
+    public int getAgentId2() {
+        return agentId2;
     }
 
-    public void setId2(int id2) {
-        this.id2 = id2;
+    public void setAgentId2(int agentId2) {
+        this.agentId2 = agentId2;
     }
 
     public LocationPair getLocation1() {
@@ -51,12 +54,20 @@ public class Conflict2 {
         this.location2 = location2;
     }
 
-    public int getTimestep() {
-        return timestep;
+    public int getTimestep1() {
+        return timestep1;
     }
 
-    public void setTimestep(int timestep) {
-        this.timestep = timestep;
+    public void setTimestep1(int timestep1) {
+        this.timestep1 = timestep1;
+    }
+
+    public int getTimestep2() {
+        return timestep2;
+    }
+
+    public void setTimestep2(int timestep2) {
+        this.timestep2 = timestep2;
     }
 
     public ConflictType getType() {
@@ -72,23 +83,24 @@ public class Conflict2 {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Conflict2 conflict2 = (Conflict2) o;
-        return id1 == conflict2.id1 && id2 == conflict2.id2 && timestep == conflict2.timestep && Objects.equals(location1, conflict2.location1) && Objects.equals(location2, conflict2.location2) && type == conflict2.type;
+        return agentId1 == conflict2.agentId1 && agentId2 == conflict2.agentId2 && timestep1 == conflict2.timestep1 && timestep2 == conflict2.timestep2 && Objects.equals(location1, conflict2.location1) && Objects.equals(location2, conflict2.location2) && type == conflict2.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id1, id2, location1, location2, type, timestep);
+        return Objects.hash(agentId1, agentId2, location1, location2, timestep1, timestep2, type);
     }
 
     @Override
     public String toString() {
         return "Conflict2{" +
-                "id1=" + id1 +
-                ", id2=" + id2 +
+                "agentId1=" + agentId1 +
+                ", agentId2=" + agentId2 +
                 ", location1=" + location1 +
                 ", location2=" + location2 +
+                ", timestep1=" + timestep1 +
+                ", timestep2=" + timestep2 +
                 ", type=" + type +
-                ", timestep=" + timestep +
                 '}';
     }
 }

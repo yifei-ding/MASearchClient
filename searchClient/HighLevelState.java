@@ -40,7 +40,6 @@ public class HighLevelState {
     }
     public void addRangeConstraintsBackwards(Constraint constraint, int length){
         System.err.println("Add RangeConstraintsBackwards: " + constraint.toString() + " length= " + length );
-
         int startTimeStep = constraint.getTimeStep();
         int endTimeStep = startTimeStep - length;
         int agentId = constraint.getAgentId();
@@ -60,12 +59,13 @@ public class HighLevelState {
     }
 
     public LocationPair[][] getSolution() {
-        //print solution
-//        System.err.println("[HighLevelState] Get solution:");
-//        for (int i=0; i<solution.length;i++)
-//            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
-
         return solution;
+    }
+    public void printSolution(){
+        //print solution
+        System.err.println("[HighLevelState] Get solution:");
+        for (int i=0; i<solution.length;i++)
+            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
     }
 
     public int getCost() {
@@ -104,6 +104,11 @@ public class HighLevelState {
                 '}';
     }
 
+    public void addConstraints(ArrayList<Constraint> constraints) {
+        for (Constraint constraint:constraints){
+            this.addConstraint(constraint);
+        }
+    }
 
 
 //    public static void main(String[] args) {

@@ -1,5 +1,6 @@
 package domain;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 
@@ -50,20 +51,36 @@ public class LocationPair {
     }
 
     public boolean overlaps(LocationPair anotherPair) {
-        HashSet<Location> set = this.toSet();
-        HashSet<Location> set2 = anotherPair.toSet();
-        for (Location location:set){
-            if (set2.contains(location))
+        ArrayList<Location> list = this.toList();
+        ArrayList<Location> list2 = anotherPair.toList();
+        for (Location temp :list) {
+            if (list2.contains(temp))
                 return true;
         }
-    return false;
+        return false;
     }
 
-    public HashSet<Location> toSet(){
-       HashSet<Location> set = new HashSet<>();
-       set.add(this.agentLocation);
-       if (this.boxLocation != null)
-           set.add(this.boxLocation);
-       return set;
+    public ArrayList<Location> getOverlapLocation(LocationPair anotherPair){
+        ArrayList<Location> location = new ArrayList<>();
+        ArrayList<Location> list = this.toList();
+        ArrayList<Location> list2 = anotherPair.toList();
+        for (Location temp :list) {
+            if (list2.contains(temp))
+                location.add(temp);
+        }
+        return location;
+    }
+
+    public int getOverlapSize(LocationPair anotherPair){
+        ArrayList<Location> location = this.getOverlapLocation(anotherPair);
+        return location.size();
+    }
+
+    public ArrayList<Location> toList(){
+        ArrayList<Location> list = new ArrayList<>();
+       list.add(this.agentLocation);
+       if (this.boxLocation != null && !list.contains(boxLocation))
+           list.add(this.boxLocation);
+       return list;
     }
 }

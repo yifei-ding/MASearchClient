@@ -155,6 +155,8 @@ public class LowLevelSolver {
 //            }
             //choose a node n from frontier (and remove)
             State node = frontier.pop();
+            if (node == null)
+                System.err.println("Empty node: " + node.toString());
             //if n is a goal state then return solution
             if (node.isGoalState()) {
 //                System.err.println("[LowLevelSolver] Found goal state " + node.toString());
