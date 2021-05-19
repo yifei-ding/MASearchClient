@@ -2,6 +2,7 @@ package searchClient;
 
 import data.InMemoryDataSource;
 import domain.*;
+import jdk.jshell.spi.ExecutionControl;
 
 import java.util.*;
 
@@ -107,6 +108,7 @@ public class HighLevelSolver {
     }
 
     public void dealWithFirstConflict2(HighLevelState state, int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
+//        state.printSolution();
         int minIndex = Math.min(route1.length, route2.length) - 1;
         Conflict2 conflict2 = null;
         LocationPair location1;
@@ -116,11 +118,14 @@ public class HighLevelSolver {
             if (route1[k].overlaps(route2[k])){
                 ArrayList<Location> overlap = route1[k].getOverlapLocation(route2[k]);
                 if (overlap.size()==2){
+                    System.err.println("Case1");
                     conflict2 = new Conflict2(agentId1,agentId2,route1[k],route2[k],k,k,ConflictType.MutualEdge);
                     addConflict2(state,conflict2);
                     break;
                 }
                 else {
+                    System.err.println("Case2");
+                    flag = 0;
                     Location overlapLocation = overlap.get(0);
                     if (overlapLocation.equals(route1[k].getAgentLocation()))
                         location1 = new LocationPair(overlapLocation,null);
@@ -140,6 +145,7 @@ public class HighLevelSolver {
                         conflict2.setType(ConflictType.SingleEdge2);
                     if (flag == 1)
                         conflict2.setType(ConflictType.SingleEdge1);
+
                     addConflict2(state,conflict2);
                     break;
 
@@ -147,6 +153,7 @@ public class HighLevelSolver {
             }
             else if (!route1[k+1].overlaps(route2[k+1])){
                 if (route2[k+1].overlaps(route1[k])) {
+                    System.err.println("Case3");
                     Location overlapLocation = route1[k].getOverlapLocation(route2[k+1]).get(0);
                     if (overlapLocation.equals(route1[k].getAgentLocation()))
                         location1 = new LocationPair(overlapLocation,null);
@@ -161,6 +168,7 @@ public class HighLevelSolver {
                     break;
                 }
                 else if (route1[k+1].overlaps(route2[k])) {
+                    System.err.println("Case4");
                     Location overlapLocation = route1[k+1].getOverlapLocation(route2[k]).get(0);
                     if (overlapLocation.equals(route1[k+1].getAgentLocation()))
                         location1 = new LocationPair(overlapLocation,null);
@@ -204,15 +212,15 @@ public class HighLevelSolver {
                 addToTree(child);
                 break;
             case Vertex, MutualEdge:
-                for (int i = 1 ; i <= 2; i++) {
+                for (int i = 1; i<3; i++) {
                     child = new HighLevelState(state.getConstraints());
                     constraints = conflictToConstraints(conflict2,i);
                     child.addConstraints(constraints);
                     child.calculateSolution();
                     child.updateCost();
                     addToTree(child);
-                    break;
                 }
+                break;
 
 
         }
@@ -816,11 +824,7 @@ public class HighLevelSolver {
     private boolean hasEdgeConflict(LocationPair[] route1, LocationPair[] route2) {
         int minIndex = Math.min(route1.length, route2.length)-1;
         for (int k=0; k< minIndex; k++) { //timestep
-            if (route1[k+1].overlaps(route2[k+1])) {
-                System.err.println("Route overlap at " + (k+1));
-                return true;
-            }
-            else if (route1[k].overlaps(route2[k+1])) {
+            if (route1[k].overlaps(route2[k+1])) {
                 System.err.println("Route overlap at " + k + " and "+ (k+1));
                 return true;
             }

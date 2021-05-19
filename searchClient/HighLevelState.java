@@ -40,6 +40,7 @@ public class HighLevelState {
     }
     public void addRangeConstraintsBackwards(Constraint constraint, int length){
         System.err.println("Add RangeConstraintsBackwards: " + constraint.toString() + " length= " + length );
+
         int startTimeStep = constraint.getTimeStep();
         int endTimeStep = startTimeStep - length;
         int agentId = constraint.getAgentId();
