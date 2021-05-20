@@ -27,18 +27,7 @@ public class HighLevelSolver {
             tree = new ArrayList<>();
             HighLevelState initialState = new HighLevelState(new HashSet<>());
             initialState.calculateSolution();
-            /**
-             * For checking whether all tasks in low level are solvable
-             */
-//            LocationPair[][] solution = initialState.getSolution();
-//            int i = -1;
-//            for (LocationPair[] singeAgentSolution: solution){
-//                i++;
-//                if (singeAgentSolution == null)
-//                    System.err.println("[HighLevelSolver] Agent " + i + " doesn't have solution in low level");
-//                    return null;
-//
-//            }
+
             initialState.updateCost();
             tree.add(initialState);
 
@@ -995,8 +984,23 @@ public class HighLevelSolver {
      */
     private void addToTree(HighLevelState child) {
 //        System.err.println("[Check child] " + child.toString());
+        /**
+         * For checking whether all tasks in low level are solvable
+         */
+        boolean flag = true;
+            LocationPair[][] solution = child.getSolution();
+            int i = -1;
+            for (LocationPair[] singeAgentSolution: solution){
+                i++;
+                if (singeAgentSolution == null) {
+                    flag = false;
+                    System.err.println("[HighLevelSolver] Agent " + i + " doesn't have solution in low level");
+                    break;
+                }
 
-        if (child.getCost() > 0 && !tree.contains(child)) {
+            }
+
+        if (child.getCost() > 0 && !tree.contains(child) && flag) {
             System.err.println("[Add child]");
             tree.add(child);
         }

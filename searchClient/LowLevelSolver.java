@@ -149,10 +149,10 @@ public class LowLevelSolver {
         while (true) {
 //            System.err.println("[LowLevelSolver] Frontier size: " + frontier.size());
             //if frontier is null return false
-//            if (frontier.isEmpty()) { //TODO: Note: frontier will never be empty
-//                System.err.println("[LowLevelSolver]Frontier is empty");
-//                return new LocationPair[]{};
-//            }
+            if (frontier.isEmpty()) {
+                System.err.println("[LowLevelSolver]Task is unsolvable");
+                return new LocationPair[]{};
+            }
             //choose a node n from frontier (and remove)
             State node = frontier.pop();
             //if n is a goal state then return solution
