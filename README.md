@@ -1,3 +1,8 @@
+## 5/20 To zip the log files: "../solvedlevels" should be the folder of maps
+
+java -jar ../server.jar -c "java -Xmx6g searchClient.SearchClient" -l ../solvedlevels -t 180 -o "MAG18-"$(date "+%H%M%S")".zip"
+
+
 # MASearchClient
 Run **build_and_run.sh** to build and run the client
 
@@ -21,6 +26,3 @@ The log file cannot be overwritten. So file name should not already exist.
 
 ## Levels and server.jar should be put parallel to root folder
 
-##5/20 To zip the log files: "../solvedlevels" should be the folder of maps
-
-java -jar ../server.jar -c "java -Xmx6g searchClient.SearchClient" -l ../solvedlevels -t 180 -o "MAG18-"$(date "+%H%M%S")".zip"
