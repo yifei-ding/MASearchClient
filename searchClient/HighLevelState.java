@@ -14,11 +14,20 @@ public class HighLevelState {
 
     private HashSet<Constraint> constraints = new HashSet<>();
     private LocationPair[][] solution;
+    private int numberOfConflicts;
     private int cost;
 
     public HighLevelState(HashSet<Constraint> constraints) {
 //        this.constraints = constraints;
         this.constraints.addAll(constraints);
+    }
+
+    public int getNumberOfConflicts() {
+        return numberOfConflicts;
+    }
+
+    public void setNumberOfConflicts(int numberOfConflicts) {
+        this.numberOfConflicts = numberOfConflicts;
     }
 
     public HashSet<Constraint> getConstraints() {

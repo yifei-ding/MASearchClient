@@ -124,3 +124,68 @@ class HeuristicGreedy
         return "greedy evaluation";
     }
 }
+
+
+//pwXD is a piecewise downward curve which uses A* until h<g, after which is uses WA* with a weight of 2w-1.
+//Returns w-optimal solutions.
+
+
+class HeuristicPWXD
+        extends Heuristic
+{
+    private int w;
+
+    public HeuristicPWXD(State initialState, int w)
+    {
+        super(initialState);
+        this.w = w;
+    }
+
+    @Override
+    public int f(State s){
+        if(h(s)> s.g()){
+            return s.g() + this.w * this.h(s);
+        }
+        else{
+            return  (s.g()+(2*w-1)*h(s))/w;
+        }
+    }
+    @Override
+    public String toString()
+    {
+        return String.format("WA*(%d) evaluation", this.w);
+    }
+}
+
+
+/*
+XDP stands for convex downward parabola. This is a small modification to weighted A*. In Weighted A*,
+the set of states with the same priority are on a straight line. XDP changes this straight line to a parabola.
+XDP causes the best-first search to find near-optimal paths near the start and paths that are up to (2w-1) supoptimal
+near the goal. Overall the paths found are still w-optimal, and re-openings are not required.
+*/
+
+
+
+
+class HeuristicXDP
+        extends Heuristic
+{
+    private int w;
+
+    public HeuristicXDP(State initialState, int w)
+    {
+        super(initialState);
+        this.w = w;
+    }
+
+    @Override
+    public int f(State s){
+        return (int) ((0.5*w)*(s.g()+(2*w-1)*h(s)+Math.sqrt(Math.pow((s.g()-h(s)),2)+4*w*s.g()*h(s))));
+    }
+    @Override
+    public String toString()
+    {
+        return String.format("WA*(%d) evaluation", this.w);
+    }
+}

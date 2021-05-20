@@ -2,8 +2,7 @@ package searchClient;
 
 import data.InMemoryDataSource;
 import domain.*;
-import jdk.jshell.spi.ExecutionControl;
-
+import java.lang.Math;
 import java.util.*;
 
 public class HighLevelSolver {
@@ -330,7 +329,7 @@ public class HighLevelSolver {
                         HighLevelState childOfCorridorConflict = new HighLevelState(state.getConstraints());
                         if (i == 0) {
                             timeStep = corridorConflict.getT2e2() + 2;
-                            //agent1 cannot go to exit2 before agent 2 arrives at exit2; +2 is to avoid bumping into tail and single edge conflict.
+                            //agent1 cannot go to exit2 before agent 2 arrives at exit2; +2 is to avoid bumping into tail and rear-end collision.
                             if (conflict2.getLocation1().getAgentLocation() != null)
                                 newConstraint = new Constraint(corridorConflict.getAgentId1(), false, timeStep, corridorConflict.getExit2());
                             else
@@ -353,7 +352,6 @@ public class HighLevelSolver {
                     for (int i = 1; i<2; i++) {
                         child = new HighLevelState(state.getConstraints());
                         constraints = conflictToConstraints(conflict2, i);
-    //                    System.err.println("********* " + constraints.toString());
                         child.addConstraints(constraints);
                         child.calculateSolution();
                         child.updateCost();
