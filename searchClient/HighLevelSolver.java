@@ -12,7 +12,7 @@ public class HighLevelSolver {
     private HashMap<Integer, Task> allTasks = new HashMap<Integer, Task>();
     private HashMap<Location, Boolean> map;
     private static final int INFINITY = 2147483647;
-    private static final int w = 20; //replan every w steps
+    private int w; //replan every w steps
     private ArrayList<HighLevelState> tree = new ArrayList<>();
     private TaskHandler taskHandler = TaskHandler.getInstance();
 
@@ -23,25 +23,33 @@ public class HighLevelSolver {
     public Action[][] solve() {
         System.err.println("[HighLevelSolver] Solving...");
         Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
-        while (data.countRemainingTask()>0) {
+        int step=0;
+        int count=0; //end in 5 rounds of tasks, to observe logs
+        while (data.countRemainingTask()>0 && count<100) {
+            count++;
+            w = 100;
             tree = new ArrayList<>();
             HighLevelState initialState = new HighLevelState(new HashSet<>());
             initialState.calculateSolution();
             initialState.updateCost();
             tree.add(initialState);
             System.err.println("[-------**********----------Current remaining tasks-----******---------]: " + data.countRemainingTask());
-
             while (!tree.isEmpty()) {
                 HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
                 System.err.println("[-------Constraints of the current pop out node-----]: " + node.getConstraints().size());
                 System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
 //                node.printSolution();
+                int minLength = getMinLength(node.getSolution());
+                w = Math.min(w,minLength);
                 if (!hasVertexConflict(node) && !hasEdgeConflict(node) && !hasTargetConflict(node)) {
+                    step+=w;
+                    System.err.println("Current steps: " + step );
                     LocationPair[][] currentSolution = node.getSolution(); //current solution is the solution of each agent in a round of tasks
                     updateLocation(currentSolution); //given each agent's solution, get the last element, and update agent/box location in data accordingly
                     updateTask(currentSolution); //set the task as completed
                     Action[][] action = translate(currentSolution); //translate
-                    action = addPadding(action); //add NoOp to the end of short solutions if each solution is of different length TODO: can switch to RHCR
+                    action = addPadding2(action); //add NoOp to the end of short solutions if each solution is of different length TODO: can switch to RHCR
+//                    printSolution(action);
                     finalSolution = concatenateSolution(finalSolution, action); //append current solution to final solution
                     break;
                 } else {
@@ -99,6 +107,8 @@ public class HighLevelSolver {
     public void dealWithFirstConflict2(HighLevelState state, int agentId1, int agentId2, LocationPair[] route1, LocationPair[] route2) {
 //        state.printSolution();
         int minIndex = Math.min(route1.length, route2.length) - 1;
+        minIndex = Math.min(minIndex,w); //5/20 for RHCR
+
         Conflict2 conflict2 = null;
         LocationPair location1 = null;
         LocationPair location2 = null;
@@ -222,7 +232,6 @@ public class HighLevelSolver {
 
                 }
                 else if (overlap.size() ==1 && (overlap1.size()==1 || overlap2.size() ==1)) {
-
                     //Head-tail collision
                     if (overlap1.size() == 1) { //agent1 bump into agent2
                         collision = overlap1.get(0);
@@ -555,6 +564,7 @@ public class HighLevelSolver {
 
     private boolean hasVertexConflict(LocationPair[] route1, LocationPair[] route2) {
         int minIndex = Math.min(route1.length, route2.length);
+        minIndex = Math.min(minIndex,w); //5/20 for RHCR
         for (int k=0; k< minIndex; k++){ //timestep
             if (route1[k].overlaps(route2[k])) {
 //                System.err.println("Vertex Route overlap at " + (k));
@@ -583,6 +593,8 @@ public class HighLevelSolver {
 
     private boolean hasEdgeConflict(LocationPair[] route1, LocationPair[] route2) {
         int minIndex = Math.min(route1.length, route2.length)-1;
+        minIndex = Math.min(minIndex,w-1); //5/20 for RHCR
+
         for (int k=0; k< minIndex; k++) { //timestep
             if (route1[k].overlaps(route2[k+1])) {
 //                System.err.println("Route overlap at " + k + " and "+ (k+1));
@@ -611,6 +623,22 @@ public class HighLevelSolver {
         return result;
     }
 
+    private Action[][] addPadding2(Action[][] action) {
+        int max = getMaxLength(action);
+        max = Math.min(max,w-1);
+        Action[][] result = new Action[action.length][max];
+        for (int i = 0; i < action.length; i++) {
+            for (int j = 0; j < max; j++) {
+                if (j<action[i].length)
+                    result[i][j] = action[i][j];
+                else
+                    result[i][j] = Action.NoOp;
+            }
+        }
+        return result;
+    }
+
+
     private int getMaxLength(Action[][] action){
         int max = 0;
         for (int i = 0; i < action.length; i++) {
@@ -618,6 +646,14 @@ public class HighLevelSolver {
                 max = action[i].length;
         }
         return max;
+    }
+    private int getMinLength(LocationPair[][] action){
+        int min = INFINITY;
+        for (int i = 0; i < action.length; i++) {
+            if (action[i].length > 1 && action[i].length < min)
+                min = action[i].length;
+        }
+        return min;
     }
 
     private Action[][] concatenateSolution(Action[][] finalSolution, Action[][] currentSolution) {
@@ -640,20 +676,23 @@ public class HighLevelSolver {
 
     private void updateTask(LocationPair[][] currentSolution) {
         for (int i = 0; i < currentSolution.length; i++) { //i=agentId
-            taskHandler.completeTask(i);
+            if (currentSolution[i].length<=w)
+                taskHandler.completeTask(i);
         }
     }
 
     private void updateLocation(LocationPair[][] currentSolution) {
         for (int i = 0; i < currentSolution.length; i++) { //i=agentId
-            int lastIndex = currentSolution[i].length-1;
+            int lastIndex = Math.min(currentSolution[i].length-1,w-1); //RHCR
             Location agentLocation = currentSolution[i][lastIndex].getAgentLocation(); //get latest agent location
             Location boxLocation = currentSolution[i][lastIndex].getBoxLocation(); //get latest box location
+            System.err.println("Set agent " + i + " at " + agentLocation.toString());
             data.setAgentLocation(i,agentLocation); //update agent location in data
             Task task = taskHandler.pop(i);
             if (task != null) {
                 int boxId = task.getBoxId(); //get boxId
                 if (boxLocation!=null){
+                    System.err.println("Set box " + boxId  + " at " + boxLocation.toString());
                     data.setBoxLocation(boxId,boxLocation);
                 }
             }
@@ -790,8 +829,11 @@ public class HighLevelSolver {
     //print merged plan
     private void printSolution(Action[][] solution){
         System.err.println("[HighLevelState] Found solution: ");
-        for (int i=0; i<solution.length;i++)
-            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
+        for (int i=0; i<solution.length;i++) {
+            System.err.println("Agent " + i + " : " + Arrays.toString(solution[i]));
+            System.err.println("Agent " + i + " : " + (solution[i].length));
+        }
+
     }
 
 

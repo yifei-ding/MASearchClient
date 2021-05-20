@@ -90,8 +90,10 @@ public class HighLevelState {
     public void printSolution(){
         //print solution
         System.err.println("[HighLevelState] Get solution:");
-        for (int i=0; i<solution.length;i++)
+        for (int i=0; i<solution.length;i++){
             System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
+                    System.err.println("Agent "+i+" : " + solution[i].length);}
+
     }
 
     public int getCost() {

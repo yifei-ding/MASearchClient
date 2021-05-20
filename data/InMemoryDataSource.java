@@ -315,6 +315,7 @@ public class InMemoryDataSource {
     }
     public void setTaskAsComplete(int taskId) {
         Task task = allTasks.get(taskId);
+        System.err.println("[TaskCompleted] " + task.toString());
         task.setCompleted(true);
         allTasks.put(taskId,task);
 
