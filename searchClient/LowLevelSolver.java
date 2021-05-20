@@ -68,6 +68,12 @@ public class LowLevelSolver {
 //                System.err.println("[LowLevelSolver]Solvable: " + task.toString());
                 int agentId = task.getAgentId();
                 action = solve(constraints, from, to, task.getAgentId(), boxId, data.getAgent(agentId).getLocation());
+                if (action.length == 0){
+                    System.err.println("[LowLevelState] Agent " + agentId + " is not solvable in low level");
+                    return null;
+                }
+
+                else
                 plan[agentId] = action;
             }
             else{
@@ -149,14 +155,13 @@ public class LowLevelSolver {
         while (true) {
 //            System.err.println("[LowLevelSolver] Frontier size: " + frontier.size());
             //if frontier is null return false
-//            if (frontier.isEmpty()) { //TODO: Note: frontier will never be empty
-//                System.err.println("[LowLevelSolver]Frontier is empty");
-//                return new LocationPair[]{};
-//            }
+            if (frontier.isEmpty()) { //Frontier is empty means under the constraints, this level is not solvable.
+                System.err.println("[LowLevelSolver]Frontier is empty");
+                return new LocationPair[]{};
+            }
             //choose a node n from frontier (and remove)
             State node = frontier.pop();
-            if (node == null)
-                System.err.println("Empty node: " + node.toString());
+
             //if n is a goal state then return solution
             if (node.isGoalState()) {
 //                System.err.println("[LowLevelSolver] Found goal state " + node.toString());

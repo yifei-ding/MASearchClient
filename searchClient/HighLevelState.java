@@ -55,12 +55,28 @@ public class HighLevelState {
 
 
     public LocationPair[][] calculateSolution() {
-        solution = LowLevelSolver.solveForAllAgents(this.constraints);
-        return solution;
+        this.solution = LowLevelSolver.solveForAllAgents(this.constraints);
+        /**
+         * For checking whether all tasks in low level are solvable
+         */
+//        int i = -1;
+//        for (LocationPair[] singeAgentSolution: solution){
+//            i++;
+//            if (singeAgentSolution == null)
+//                System.err.println("[HighLevelState] Agent " + i + " task error in low level");
+//
+//            if (singeAgentSolution.length==0) {
+//                System.err.println("[HighLevelState] Agent " + i + " doesn't have solution in low level");
+//                this.solution = null;
+//                break;
+//            }
+//
+//        }
+        return  this.solution;
     }
 
     public LocationPair[][] getSolution() {
-        return solution;
+        return  this.solution;
     }
     public void printSolution(){
         //print solution
@@ -109,6 +125,7 @@ public class HighLevelState {
         for (Constraint constraint:constraints){
             this.addConstraint(constraint);
         }
+//        System.err.println(this.constraints.toString());
     }
 
 

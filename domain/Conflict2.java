@@ -11,6 +11,8 @@ public class Conflict2 {
     private int timestep1;
     private int timestep2;
     private ConflictType type;
+    private int range1;
+    private int range2;
 
     public Conflict2(int agentId1, int agentId2, LocationPair location1, LocationPair location2, int timestep1, int timestep2, ConflictType type) {
         this.agentId1 = agentId1;
@@ -20,6 +22,36 @@ public class Conflict2 {
         this.timestep1 = timestep1;
         this.timestep2 = timestep2;
         this.type = type;
+        this.range1=1;
+        this.range2=1;
+    }
+
+    public Conflict2(int agentId1, int agentId2, LocationPair location1, LocationPair location2, int timestep1, int timestep2, ConflictType type, int range1, int range2) {
+        this.agentId1 = agentId1;
+        this.agentId2 = agentId2;
+        this.location1 = location1;
+        this.location2 = location2;
+        this.timestep1 = timestep1;
+        this.timestep2 = timestep2;
+        this.type = type;
+        this.range1 = range1;
+        this.range2 = range2;
+    }
+
+    public int getRange1() {
+        return range1;
+    }
+
+    public void setRange1(int range1) {
+        this.range1 = range1;
+    }
+
+    public int getRange2() {
+        return range2;
+    }
+
+    public void setRange2(int range2) {
+        this.range2 = range2;
     }
 
     public int getAgentId1() {
@@ -83,12 +115,12 @@ public class Conflict2 {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Conflict2 conflict2 = (Conflict2) o;
-        return agentId1 == conflict2.agentId1 && agentId2 == conflict2.agentId2 && timestep1 == conflict2.timestep1 && timestep2 == conflict2.timestep2 && Objects.equals(location1, conflict2.location1) && Objects.equals(location2, conflict2.location2) && type == conflict2.type;
+        return agentId1 == conflict2.agentId1 && agentId2 == conflict2.agentId2 && timestep1 == conflict2.timestep1 && timestep2 == conflict2.timestep2 && range1 == conflict2.range1 && range2 == conflict2.range2 && Objects.equals(location1, conflict2.location1) && Objects.equals(location2, conflict2.location2) && type == conflict2.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(agentId1, agentId2, location1, location2, timestep1, timestep2, type);
+        return Objects.hash(agentId1, agentId2, location1, location2, timestep1, timestep2, type, range1, range2);
     }
 
     @Override
