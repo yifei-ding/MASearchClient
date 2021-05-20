@@ -59,23 +59,23 @@ public class HighLevelState {
         /**
          * For checking whether all tasks in low level are solvable
          */
-//        int i = -1;
-//        for (LocationPair[] singeAgentSolution: solution){
-//            i++;
-//            if (singeAgentSolution == null)
-//                System.err.println("[HighLevelState] Agent " + i + " task error in low level");
-//
-//            if (singeAgentSolution.length==0) {
-//                System.err.println("[HighLevelState] Agent " + i + " doesn't have solution in low level");
-//                this.solution = null;
-//                break;
-//            }
-//
-//        }
-        return  this.solution;
+
+        return this.solution;
     }
 
     public LocationPair[][] getSolution() {
+        int i = -1;
+        for (LocationPair[] singeAgentSolution: solution){
+            i++;
+            if (singeAgentSolution == null)
+                System.err.println("[HighLevelState] Agent " + i + " task error in low level");
+
+            if (singeAgentSolution.length==0) {
+                System.err.println("[HighLevelState] Agent " + i + " doesn't have solution in low level");
+                return null;
+            }
+
+        }
         return  this.solution;
     }
     public void printSolution(){

@@ -68,12 +68,6 @@ public class LowLevelSolver {
 //                System.err.println("[LowLevelSolver]Solvable: " + task.toString());
                 int agentId = task.getAgentId();
                 action = solve(constraints, from, to, task.getAgentId(), boxId, data.getAgent(agentId).getLocation());
-                if (action.length == 0){
-                    System.err.println("[LowLevelState] Agent " + agentId + " is not solvable in low level");
-                    return null;
-                }
-
-                else
                 plan[agentId] = action;
             }
             else{
