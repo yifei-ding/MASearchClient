@@ -25,7 +25,7 @@ public class HighLevelSolver {
         Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
         int step=0;
         int count=0; //end in 5 rounds of tasks, to observe logs
-        while (data.countRemainingTask()>0 && count<100) {
+        while (data.countRemainingTask()>0) {
             count++;
             w = 100;
             tree = new ArrayList<>();

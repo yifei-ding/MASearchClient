@@ -386,7 +386,7 @@ public class TaskHandler {
             System.err.println("352 targetLocation: " + targetLocation);
 //                        temp_obstacles.add(targetLocation);// Add the location to restrictions
             Task newTask = new Task(taskId, newAgentId, -1, targetLocation, 0);
-            task.setPreviousTaskId(taskId);
+            task.setPreviousTaskId(newTask.getId());
             data.addTask(task);
             System.err.println("Add task " + newTask.toString());
             data.addTask(newTask);
