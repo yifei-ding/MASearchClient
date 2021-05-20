@@ -38,7 +38,7 @@ public class HighLevelSolver {
                 HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
                 System.err.println("[-------Constraints of the current pop out node-----]: " + node.getConstraints().size());
                 System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
-//                node.printSolution();
+                node.printSolution();
                 int minLength = getMinLength(node.getSolution());
                 w = Math.min(w,minLength);
                 if (!hasVertexConflict(node) && !hasEdgeConflict(node) && !hasTargetConflict(node)) {
@@ -480,12 +480,10 @@ public class HighLevelSolver {
         else {
             flag1 = 1; //box
             location1 = conflict.getLocation1().getBoxLocation();
-
         }
         if (conflict.getLocation2().getAgentLocation() != null){
             flag2 = 0;
             location2 = conflict.getLocation2().getAgentLocation();
-
         }
         else {
             flag2 = 1;
@@ -499,7 +497,6 @@ public class HighLevelSolver {
                         location1 = route1[k1].getAgentLocation();
                     else
                         location1 = route1[k1].getBoxLocation();
-
                 }
                 exit1 = location1;
                 corridorSet.add(exit1);
@@ -517,8 +514,12 @@ public class HighLevelSolver {
                 exit2 = location2;
                 corridorSet.add(exit2);
                 t2e2 = k2;
-                corridorConflict = new CorridorConflict(conflict.getAgentId1(), conflict.getAgentId2(), exit1, exit2, corridorSet.size(), t1e1, t2e2);
-                System.err.println("Current corridorConflict= " + corridorConflict.toString());
+                //toggle
+                if (corridorSet.size()>3 && !exit1.equals(exit2)){
+                    corridorConflict = new CorridorConflict(conflict.getAgentId1(), conflict.getAgentId2(), exit1, exit2, corridorSet.size(), t1e1, t2e2);
+                    System.err.println("Current corridorConflict= " + corridorConflict.toString());
+                }
+                else return null;
             }
         }
         return corridorConflict;
