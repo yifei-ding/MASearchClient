@@ -13,6 +13,8 @@ public class Task {
     private int priority;
     private boolean isCompleted;
     private int previousTaskId;
+    private static int counter = 0;
+
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
     public int getPreviousTaskId() {
@@ -30,7 +32,7 @@ public class Task {
     * @date 2021/4/14
      */
     public Task(int id, int agentId, int boxId, Location targetLocation, int priority) {
-        this.id = id;
+        this.id = ++counter;
         this.boxId = boxId;
         this.agentId = agentId;
         this.targetLocation = targetLocation;
@@ -44,7 +46,7 @@ public class Task {
      * @date 2021/4/14
      */
     public Task(int id, int agentId, Location targetLocation, int priority) {
-        this.id = id;
+        this.id = ++counter;
         this.boxId = -1;
         this.agentId = agentId;
         this.targetLocation = targetLocation;

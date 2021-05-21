@@ -36,6 +36,9 @@ public class InMemoryDataSource {
 
     private HashMap<Location, Integer> staticdegreeMap; // location+degree four direction arraylist?
 
+    private HashMap<Location, Integer> collisionHeatMap; // location+degree four direction arraylist?
+
+
 
     public static InMemoryDataSource getInstance() {
         //System.err.println("[InMemoryDataSource] getInstance");
@@ -56,6 +59,7 @@ public class InMemoryDataSource {
         allTasksByAgent = new HashMap<Integer, ArrayList<Integer>>();
         wallMap = new HashMap<Location, Wall>();
         staticdegreeMap = new HashMap<Location, Integer>();
+        collisionHeatMap = new HashMap<>();
 
     }
 
@@ -87,7 +91,9 @@ public class InMemoryDataSource {
     }
 
     public void addTask(Task task) {
+//        System.err.println("[Add task] " + task.toString());
         allTasks.put(task.getId(), task);
+
         int agentId = task.getAgentId();
         //group tasks by agent id
         ArrayList<Integer> list = allTasksByAgent.get(agentId);
@@ -95,7 +101,7 @@ public class InMemoryDataSource {
             list = new ArrayList<>();
         }
         list.add(task.getId());
-        allTasksByAgent.put(task.getAgentId(), list);
+        allTasksByAgent.put(agentId, list);
     }
 
     public HashMap<Integer, Task> getAllTasks() {
@@ -260,8 +266,7 @@ public class InMemoryDataSource {
 
 
     public ArrayList<Integer> getAllTasksByAgent(int agentId) {
-        Integer id = agentId;
-        return allTasksByAgent.get(id);
+        return allTasksByAgent.get(agentId);
     }
 
     public ArrayList<Integer> getBoxByName(String name) {
@@ -314,9 +319,24 @@ public class InMemoryDataSource {
     }
     public void setTaskAsComplete(int taskId) {
         Task task = allTasks.get(taskId);
+        System.err.println("[TaskCompleted] " + task.toString());
         task.setCompleted(true);
         allTasks.put(taskId,task);
 
+    }
+
+    public void updateHeatMap(Location location){
+        int count;
+        if (collisionHeatMap.containsKey(location)){
+            count = collisionHeatMap.get(location) + 1;
+            collisionHeatMap.put(location,count);
+        }
+        else
+            collisionHeatMap.put(location,1);
+    }
+
+    public HashMap<Location,Integer> getCollisionHeatMap(){
+        return this.collisionHeatMap;
     }
 
 
@@ -361,7 +381,14 @@ public class InMemoryDataSource {
     }
 
 
+    public void printRemainingTasks() {
+        for (Task task:allTasks.values()){
+            if (!task.isCompleted()){
+                System.err.println("Uncompleted: " + task.toString());
+            }
+        }
 
+    }
 }
 
 

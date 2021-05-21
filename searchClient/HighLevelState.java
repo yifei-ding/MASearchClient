@@ -1,5 +1,6 @@
 package searchClient;
 
+import data.InMemoryDataSource;
 import domain.Constraint;
 import domain.Location;
 import domain.LocationPair;
@@ -13,11 +14,23 @@ public class HighLevelState {
 
     private HashSet<Constraint> constraints = new HashSet<>();
     private LocationPair[][] solution;
+    private int numberOfConflicts;
+
     private int cost;
+    private static InMemoryDataSource data = InMemoryDataSource.getInstance();
+
 
     public HighLevelState(HashSet<Constraint> constraints) {
 //        this.constraints = constraints;
         this.constraints.addAll(constraints);
+    }
+
+    public int getNumberOfConflicts() {
+        return numberOfConflicts;
+    }
+
+    public void setNumberOfConflicts(int numberOfConflicts) {
+        this.numberOfConflicts = numberOfConflicts;
     }
 
     public HashSet<Constraint> getConstraints() {
@@ -27,6 +40,7 @@ public class HighLevelState {
     public void addConstraint(Constraint constraint) {
         this.constraints.add(constraint);
     }
+
     public void addRangeConstraints(Constraint constraint, int length){
         int startTimeStep = constraint.getTimeStep();
         int endTimeStep = startTimeStep + length;
@@ -37,20 +51,121 @@ public class HighLevelState {
             this.constraints.add(new Constraint(agentId,isBoxConstraint,i,location));
         }
     }
+    public void addRangeConstraintsBackwards(Constraint constraint, int length){
+        System.err.println("Add RangeConstraintsBackwards: " + constraint.toString() + " length= " + length );
 
+        int startTimeStep = constraint.getTimeStep();
+        int endTimeStep = startTimeStep - length;
+        int agentId = constraint.getAgentId();
+        boolean isBoxConstraint = constraint.isBoxConstraint();
+        Location location = constraint.getLocation();
+        for (int i = startTimeStep; i > endTimeStep; i--) {
+            Constraint constraint1 = new Constraint(agentId,isBoxConstraint,i,location);
+//            System.err.println("Add constarint: " + constraint1.toString() );
+            this.constraints.add(constraint1);
+        }
+    }
+
+    private void updateNumberOfConflicts(){
+        LocationPair[][] solution = this.getSolution();
+        for(int i =0;i<solution.length;i++) { //i=agent 1
+            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+                LocationPair[] route1 = solution[i];
+                LocationPair[] route2 = solution[j];
+                //now we have one path each for agent1 and agent2
+                if ((route1 != null) && (route2 != null) && (route1.length>1) && (route2.length>1)){
+                    this.numberOfConflicts += countConflict(route1,route2);
+                }
+            }
+        }
+    }
+
+    public void updateCollisionHeatMap(){
+        LocationPair[][] solution = this.getSolution();
+        for(int i =0;i<solution.length;i++) { //i=agent 1
+            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+                LocationPair[] route1 = solution[i];
+                LocationPair[] route2 = solution[j];
+                //now we have one path each for agent1 and agent2
+                if ((route1 != null) && (route2 != null) && (route1.length>1) && (route2.length>1)){
+                    ArrayList<Location> overlapLocations;
+                    int minIndex = Math.min(route1.length, route2.length)-1;
+                    for (int k=0; k< minIndex; k++){ //timestep
+                        if (route1[k].overlaps(route2[k])) {
+                            overlapLocations = route1[k].getOverlapLocation(route2[k]);
+                            for (Location location:overlapLocations){
+                                data.updateHeatMap(location);
+                            }
+                        }
+                        else if (route1[k+1].overlaps(route2[k])) {
+                            overlapLocations = route1[k].getOverlapLocation(route2[k]);
+                            for (Location location:overlapLocations){
+                                data.updateHeatMap(location);
+                            }
+                        }
+                        else if (route1[k].overlaps(route2[k+1])) {
+                            overlapLocations = route1[k].getOverlapLocation(route2[k]);
+                            for (Location location:overlapLocations){
+                                data.updateHeatMap(location);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private int countConflict(LocationPair[] route1, LocationPair[] route2) {
+        int count=0;
+        ArrayList<Location> overlapLocations;
+        int minIndex = Math.min(route1.length, route2.length)-1;
+        for (int k=0; k< minIndex; k++){ //timestep
+            if (route1[k].overlaps(route2[k])) {
+              count++;
+            }
+            else if (route1[k+1].overlaps(route2[k])) {
+                count++;
+            }
+            else if (route1[k].overlaps(route2[k+1])) {
+                count++;
+            }
+        }
+        return count;
+    }
 
     public LocationPair[][] calculateSolution() {
-        solution = LowLevelSolver.solveForAllAgents(this.constraints);
-        return solution;
+        this.solution = LowLevelSolver.solveForAllAgents(this.constraints);
+        if (validSolution())
+                this.updateNumberOfConflicts();
+
+        return this.solution;
     }
 
     public LocationPair[][] getSolution() {
-        //print solution
-//        System.err.println("[HighLevelState] Get solution:");
-//        for (int i=0; i<solution.length;i++)
-//            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
+        return  this.solution;
+    }
 
-        return solution;
+    public boolean validSolution(){
+        int i = -1;
+        for (LocationPair[] singeAgentSolution: solution){
+            i++;
+            if (singeAgentSolution == null)
+                System.err.println("[HighLevelState] Agent " + i + " task error in low level");
+
+            if (singeAgentSolution.length==0) {
+                System.err.println("[HighLevelState] Agent " + i + " doesn't have solution in low level");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void printSolution(){
+        //print solution
+        System.err.println("[HighLevelState] Get solution:");
+        for (int i=0; i<solution.length;i++){
+            System.err.println("Agent "+i+" : " + Arrays.toString(solution[i]));
+                    System.err.println("Agent "+i+" : " + solution[i].length);}
+
     }
 
     public int getCost() {
@@ -89,6 +204,12 @@ public class HighLevelState {
                 '}';
     }
 
+    public void addConstraints(ArrayList<Constraint> constraints) {
+        for (Constraint constraint:constraints){
+            this.addConstraint(constraint);
+        }
+//        System.err.println(this.constraints.toString());
+    }
 
 
 //    public static void main(String[] args) {

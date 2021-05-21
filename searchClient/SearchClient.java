@@ -240,7 +240,7 @@ public class SearchClient {
                 } while (staticdegreeMap.get(currentLocation) < 3 && exploredPath.size()>=exploredCellNumber);
             }
         }
-        // TODO: assign goal sequence for corrdior
+        // TODO: assign goal sequence for corridor
 
     }
 
@@ -263,8 +263,8 @@ public class SearchClient {
     public static void main(String[] args)
             throws IOException {
 
-        // Send client name to server. Don't remove. TODO: change to group name
-        System.out.println("SearchClient");
+        //IMPORTANT: Send client name to server. Don't remove.
+        System.out.println("MAG18");
 
         System.err.println("[SearchClient] Start");
 

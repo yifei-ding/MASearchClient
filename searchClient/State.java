@@ -22,6 +22,10 @@ public class State {
     private InMemoryDataSource data = InMemoryDataSource.getInstance();
     private HashMap<Location,Boolean> obstacleMap = data.getObstacleMap();
     private HashMap<Location, Object> map = data.getStaticMap();
+    private HashMap<Location, Integer> heatMap = data.getCollisionHeatMap();
+    private int numberOfCollisonsHappenedBefore;
+
+
 
 
     public State(int timeStep, Location location, Location goalLocation, int agentId, int boxId, Location agentLocation, HashSet<Constraint> constraints) {
@@ -92,7 +96,7 @@ public class State {
                 state = state.parent;
             }
             plan[0] = new LocationPair(state.location,null);; //this is the initial location
-            System.err.println("[State] plan.length=" + plan.length);
+            //updateHeat(plan);
             return plan;
 
         }
@@ -105,12 +109,21 @@ public class State {
                 state = state.parent;
             }
             plan[0] = new LocationPair(state.agentLocation,state.location); //this is the initial location
-            System.err.println("[State] plan.length=" + plan.length);
+            //updateHeat(plan);
             return plan;
 
 
         }
 
+    }
+
+    private void updateHeat(LocationPair[] plan) {
+        int count=0;
+        for (LocationPair locationPair:plan){
+            if (heatMap.containsKey(locationPair.getAgentLocation()))
+                count+=heatMap.get(locationPair.getAgentLocation());
+        }
+        this.setNumberOfCollisonsHappenedBefore(count);
     }
 
 
@@ -408,6 +421,15 @@ public class State {
 
     public Location getAgentLocation() {
         return agentLocation;
+    }
+
+    public int getNumberOfCollisonsHappenedBefore() {
+        return numberOfCollisonsHappenedBefore;
+    }
+
+    public void setNumberOfCollisonsHappenedBefore(int numberOfCollisonsHappenedBefore) {
+        System.err.println("this.numberOfCollisonsHappenedBefore =" + numberOfCollisonsHappenedBefore);
+        this.numberOfCollisonsHappenedBefore = numberOfCollisonsHappenedBefore;
     }
 
     @Override

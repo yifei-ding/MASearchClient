@@ -10,6 +10,7 @@ public class CorridorConflict {
     private int length;
     private int t1e1;
     private int t2e2;
+
     
     /**
     * @author Yifei
@@ -29,7 +30,10 @@ public class CorridorConflict {
         this.length = length;
         this.t1e1 = t1e1;
         this.t2e2 = t2e2;
+
     }
+
+
 
     public int getAgentId1() {
         return agentId1;

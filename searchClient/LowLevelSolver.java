@@ -32,11 +32,10 @@ public class LowLevelSolver {
             Task task = taskHandler.pop(agent.getId());
             if (task != null) {
 //                System.err.println("Agent "+agent.getId() + " have task " + task.toString());
-
                 taskList.add(task);
             }
             else{ //agent has no task, then don't move
-//                System.err.println("Agent "+agent.getId() + " don't have task");
+                System.err.println("Agent "+agent.getId() + " don't have task");
 
                 action = new LocationPair[1];
                 action[0] = new LocationPair(agent.getLocation(),null);
@@ -143,19 +142,22 @@ public class LowLevelSolver {
 //        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Location " + agentLocation.toString());
         State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
-//        Frontier frontier = new FrontierDFS();
+//        Frontier frontier = new FrontierBestFirst(new HeuristicPWXD(initialState,2));
+//        Frontier frontier = new FrontierBestFirst(new HeuristicXDP(initialState,2));
+
 
         frontier.add(initialState);
         HashSet<State> explored = new HashSet<>();
         while (true) {
 //            System.err.println("[LowLevelSolver] Frontier size: " + frontier.size());
             //if frontier is null return false
-//            if (frontier.isEmpty()) { //TODO: Note: frontier will never be empty
-//                System.err.println("[LowLevelSolver]Frontier is empty");
-//                return new LocationPair[]{};
-//            }
+            if (frontier.isEmpty()) { //Frontier is empty means under the constraints, this level is not solvable.
+                System.err.println("[LowLevelSolver]Frontier is empty");
+                return new LocationPair[]{};
+            }
             //choose a node n from frontier (and remove)
             State node = frontier.pop();
+
             //if n is a goal state then return solution
             if (node.isGoalState()) {
 //                System.err.println("[LowLevelSolver] Found goal state " + node.toString());
@@ -187,8 +189,8 @@ public class LowLevelSolver {
     {
         HashSet<Constraint> constraints = null;
         State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
+//        Frontier frontier = new FrontierBestFirst(new HeuristicPWXD(initialState,2));//        Frontier frontier = new FrontierDFS();
         Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
-//        Frontier frontier = new FrontierDFS();
 
         frontier.add(initialState);
         HashSet<State> explored = new HashSet<>();
