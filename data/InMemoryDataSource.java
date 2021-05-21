@@ -36,6 +36,9 @@ public class InMemoryDataSource {
 
     private HashMap<Location, Integer> staticdegreeMap; // location+degree four direction arraylist?
 
+    private HashMap<Location, Integer> collisionHeatMap; // location+degree four direction arraylist?
+
+
 
     public static InMemoryDataSource getInstance() {
         //System.err.println("[InMemoryDataSource] getInstance");
@@ -56,6 +59,7 @@ public class InMemoryDataSource {
         allTasksByAgent = new HashMap<Integer, ArrayList<Integer>>();
         wallMap = new HashMap<Location, Wall>();
         staticdegreeMap = new HashMap<Location, Integer>();
+        collisionHeatMap = new HashMap<>();
 
     }
 
@@ -321,6 +325,20 @@ public class InMemoryDataSource {
 
     }
 
+    public void updateHeatMap(Location location){
+        int count;
+        if (collisionHeatMap.containsKey(location)){
+            count = collisionHeatMap.get(location) + 1;
+            collisionHeatMap.put(location,count);
+        }
+        else
+            collisionHeatMap.put(location,1);
+    }
+
+    public HashMap<Location,Integer> getCollisionHeatMap(){
+        return this.collisionHeatMap;
+    }
+
 
     public Task getTaskById(Integer taskId) {
         return allTasks.get(taskId);
@@ -363,7 +381,14 @@ public class InMemoryDataSource {
     }
 
 
+    public void printRemainingTasks() {
+        for (Task task:allTasks.values()){
+            if (!task.isCompleted()){
+                System.err.println("Uncompleted: " + task.toString());
+            }
+        }
 
+    }
 }
 
 

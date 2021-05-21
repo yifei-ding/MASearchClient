@@ -67,7 +67,6 @@ class HeuristicAStar
     public int f(State s)
     {
 //        System.err.println("A* h value = " + this.h(s));
-//        System.err.println("A* f value = " + s.g()+this.h(s));
 
         return s.g() + this.h(s);
     }
@@ -115,7 +114,7 @@ class HeuristicGreedy
     public int f(State s)
     {
 //        System.err.println("Greedy h value = " + this.h(s));
-        return this.h(s);
+        return this.h(s)+s.getNumberOfCollisonsHappenedBefore();
     }
 
     @Override

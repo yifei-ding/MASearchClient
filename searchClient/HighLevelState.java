@@ -1,6 +1,6 @@
 package searchClient;
 
-import domain.Conflict;
+import data.InMemoryDataSource;
 import domain.Constraint;
 import domain.Location;
 import domain.LocationPair;
@@ -15,7 +15,10 @@ public class HighLevelState {
     private HashSet<Constraint> constraints = new HashSet<>();
     private LocationPair[][] solution;
     private int numberOfConflicts;
+
     private int cost;
+    private static InMemoryDataSource data = InMemoryDataSource.getInstance();
+
 
     public HighLevelState(HashSet<Constraint> constraints) {
 //        this.constraints = constraints;
@@ -77,8 +80,43 @@ public class HighLevelState {
         }
     }
 
+    public void updateCollisionHeatMap(){
+        LocationPair[][] solution = this.getSolution();
+        for(int i =0;i<solution.length;i++) { //i=agent 1
+            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+                LocationPair[] route1 = solution[i];
+                LocationPair[] route2 = solution[j];
+                //now we have one path each for agent1 and agent2
+                if ((route1 != null) && (route2 != null) && (route1.length>1) && (route2.length>1)){
+                    ArrayList<Location> overlapLocations;
+                    int minIndex = Math.min(route1.length, route2.length)-1;
+                    for (int k=0; k< minIndex; k++){ //timestep
+                        if (route1[k].overlaps(route2[k])) {
+                            overlapLocations = route1[k].getOverlapLocation(route2[k]);
+                            for (Location location:overlapLocations){
+                                data.updateHeatMap(location);
+                            }
+                        }
+                        else if (route1[k+1].overlaps(route2[k])) {
+                            overlapLocations = route1[k].getOverlapLocation(route2[k]);
+                            for (Location location:overlapLocations){
+                                data.updateHeatMap(location);
+                            }
+                        }
+                        else if (route1[k].overlaps(route2[k+1])) {
+                            overlapLocations = route1[k].getOverlapLocation(route2[k]);
+                            for (Location location:overlapLocations){
+                                data.updateHeatMap(location);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     private int countConflict(LocationPair[] route1, LocationPair[] route2) {
         int count=0;
+        ArrayList<Location> overlapLocations;
         int minIndex = Math.min(route1.length, route2.length)-1;
         for (int k=0; k< minIndex; k++){ //timestep
             if (route1[k].overlaps(route2[k])) {

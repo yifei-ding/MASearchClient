@@ -28,11 +28,12 @@ public class HighLevelSolver {
         int count=0;
         while (data.countRemainingTask()>0 && (count < observingLimit )) {
             count++;
-            w = 100;
+            w = 50;
             tree = new ArrayList<>();
             HighLevelState initialState = new HighLevelState(new HashSet<>());
             initialState.calculateSolution();
             initialState.updateCost();
+//            initialState.updateCollisionHeatMap();
             tree.add(initialState);
             System.err.println("[-------**********----------Current remaining tasks-----******---------]: " + data.countRemainingTask());
             while (!tree.isEmpty()) {
@@ -41,7 +42,12 @@ public class HighLevelSolver {
                 System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
                 node.printSolution();
                 int minLength = getMinLength(node.getSolution());
+                if (minLength == INFINITY) {
+                    data.printRemainingTasks();
+                    return finalSolution;
+                }
                 w = Math.min(w,minLength);
+                System.err.println("w = " + w);
                 if (!hasVertexConflict(node) && !hasEdgeConflict(node) && !hasTargetConflict(node)) {
                     step+=w;
                     System.err.println("Current steps: " + step );
@@ -59,6 +65,7 @@ public class HighLevelSolver {
                 }
             }
         }
+        data.printRemainingTasks();
         //printSolution(finalSolution);
         return finalSolution;
 
@@ -117,8 +124,8 @@ public class HighLevelSolver {
         Location boxStartLocation1 = route1[0].getBoxLocation();
         Location boxStartLocation2 = route2[0].getBoxLocation();
         String scenario = null;
-        Location agent2Head;
-        Location agent1Head;
+        Location collision1;
+        Location collision2;
         Location collision;
 
         if (boxStartLocation1 == null && boxStartLocation2 == null){
@@ -193,39 +200,64 @@ public class HighLevelSolver {
                             addConflict2(state, conflict2);
                             break;
                         case "BothWithBox", "Agent1HasBox", "Agent2HasBox":
-                            agent2Head = overlap1.get(0);
-                            agent1Head = overlap2.get(0);
+                            collision1 = overlap1.get(0); //the location agent1 collide into
+                            collision2 = overlap2.get(0); //the location agent2 collide into
+//                            location1 = route1[k + 1];
+//                            location2 = route2[k + 1];
+                            if (overlap.size()==2) {
+                                if (route1[k + 1].getAgentLocation().hasNeighbour(route1[k + 1].getBoxLocation()) && route2[k + 1].getAgentLocation().hasNeighbour(route2[k + 1].getBoxLocation())) {
+                                    if (collision1.equals(route2[k].getAgentLocation()))
+                                        location2 = new LocationPair(collision2, null);
+                                    else
+                                        location2 = new LocationPair(null, collision2);
 
-                            if (agent2Head.equals(route2[k].getAgentLocation()))
-                                location2 = new LocationPair(agent1Head,null);
-                            else
-                                location2 = new LocationPair(null, agent1Head);
+                                    if (collision2.equals(route1[k].getAgentLocation()))
+                                        location1 = new LocationPair(collision1, null);
+                                    else
+                                        location1 = new LocationPair(null, collision1);
 
+                                    conflict2 = new Conflict2(agentId1, agentId2, location1, location2, k + 1, k + 1, ConflictType.MutualEdge);
+                                    addConflict2(state, conflict2);
+                                    break;
+                                } else if (collision1.equals(route2[k + 1].getBoxLocation()) && collision2.equals(route1[k + 1].getBoxLocation())) { //each agent bump into another box (which isn't moving yet)
+                                    location1 = new LocationPair(collision1, null);
+                                    location2 = new LocationPair(collision2, null);
+                                    conflict2 = new Conflict2(agentId1, agentId2, location1, location2, k + 1, k + 1, ConflictType.Vertex);
+                                    addConflict2(state, conflict2);
+                                    break;
+                                }
+                            }
+                            else if (overlap.size() ==1 || overlap.size() ==0 ) {
+                                if (collision1.equals(route2[k].getAgentLocation()))
+                                    location2 = new LocationPair(collision2, null);
+                                else
+                                    location2 = new LocationPair(null, collision2);
 
-                            if (agent1Head.equals(route1[k].getAgentLocation()))
-                                location1 = new LocationPair(agent2Head,null);
-                            else
-                                location1 = new LocationPair(null, agent2Head);
+                                if (collision2.equals(route1[k].getAgentLocation()))
+                                    location1 = new LocationPair(collision1, null);
+                                else
+                                    location1 = new LocationPair(null, collision1);
+                                conflict2 = new Conflict2(agentId1, agentId2, location1, location2, k + 1, k + 1, ConflictType.MutualEdge);
+                                addConflict2(state, conflict2);
+                                break;
+                            }
 
-                            conflict2 = new Conflict2(agentId1, agentId2, location1, location2, k + 1, k + 1, ConflictType.MutualEdge);
-                            addConflict2(state, conflict2);
-                            break;
 //                        case "Agent1HasBox":
-//                            agent1Head = overlap2.get(0);
-//                            if (agent1Head.equals(route1[k].getAgentLocation()))
-//                                location1 = new LocationPair(agent1Head,null);
+//                            collision2 = overlap2.get(0);
+//                            if (collision2.equals(route1[k].getAgentLocation()))
+//                                location1 = new LocationPair(collision2,null);
 //                            else
-//                                location1 = new LocationPair(null, agent1Head);
+//                                location1 = new LocationPair(null, collision2);
 //
 //                            conflict2 = new Conflict2(agentId1, agentId2, location1, location2, k + 1, k + 1, ConflictType.MutualEdge);
 //                            addConflict2(state, conflict2);
 //                            break;
 //                        case "Agent2HasBox":
-//                            agent2Head = overlap1.get(0);
-//                            if (agent2Head.equals(route2[k].getAgentLocation()))
-//                                location2 = new LocationPair(agent2Head,null);
+//                            collision1 = overlap1.get(0);
+//                            if (collision1.equals(route2[k].getAgentLocation()))
+//                                location2 = new LocationPair(collision1,null);
 //                            else
-//                                location2 = new LocationPair(null, agent2Head);
+//                                location2 = new LocationPair(null, collision1);
 //
 //                            conflict2 = new Conflict2(agentId1, agentId2, location1, location2, k + 1, k + 1, ConflictType.MutualEdge);
 //                            addConflict2(state, conflict2);
@@ -360,7 +392,7 @@ public class HighLevelSolver {
                         addToTree(childOfCorridorConflict);
                     }
                 } else {
-                    for (int i = 1; i<2; i++) {
+                    for (int i = 1; i<3; i++) {
                         child = new HighLevelState(state.getConstraints());
                         constraints = conflictToConstraints(conflict2, i);
                         child.addConstraints(constraints);
@@ -696,7 +728,7 @@ public class HighLevelSolver {
 
     private void updateTask(LocationPair[][] currentSolution) {
         for (int i = 0; i < currentSolution.length; i++) { //i=agentId
-            if (currentSolution[i].length<=w)
+            if (currentSolution[i].length<=w && currentSolution[i].length>1) //currentSolution[i].length>1?
                 taskHandler.completeTask(i);
         }
     }

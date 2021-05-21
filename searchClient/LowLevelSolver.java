@@ -35,7 +35,7 @@ public class LowLevelSolver {
                 taskList.add(task);
             }
             else{ //agent has no task, then don't move
-//                System.err.println("Agent "+agent.getId() + " don't have task");
+                System.err.println("Agent "+agent.getId() + " don't have task");
 
                 action = new LocationPair[1];
                 action[0] = new LocationPair(agent.getLocation(),null);
@@ -141,8 +141,8 @@ public class LowLevelSolver {
         //Use graph search to find a solution
 //        System.err.println("[LowLevelSolver]: Graph Search from " + from.toString() + " to " + to.toString() + " Agent Location " + agentLocation.toString());
         State initialState = new State(0, from, to, agentId, boxId, agentLocation, constraints);
-        Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
-//        Frontier frontier = new FrontierBestFirst(new HeuristicPWXD(initialState,2));
+//        Frontier frontier = new FrontierBestFirst(new HeuristicAStar(initialState));
+        Frontier frontier = new FrontierBestFirst(new HeuristicPWXD(initialState,2));
 //        Frontier frontier = new FrontierBestFirst(new HeuristicXDP(initialState,2));
 
 
