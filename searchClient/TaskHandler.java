@@ -33,6 +33,20 @@ public class TaskHandler {
         HashMap<Location, Wall> wallMap = data.getWallMap();
 //        System.err.println("wall map print"+wallMap.toString());
 //        System.err.println(("goal map"+data.getAllGoals().toString()));
+        HashMap<Integer, Box> boxMap = data.getAllBoxes();
+        System.err.println("BOXMAP:"+boxMap);
+        Iterator<Integer> iterator_box = boxMap.keySet().iterator();
+        while (iterator_box.hasNext())
+        {
+            Box check_box = boxMap.get(iterator_box.next());
+            System.err.println("box_wall:"+check_box);
+            Color correspond_color = check_box.getColor();
+            Wall box_wall = new Wall(check_box.getLocation(),true);
+            if(data.getAgentByColor(correspond_color) == null)
+            {
+                wallMap.put(check_box.getLocation(),box_wall);
+            }
+        }
         int num = 0;
         ArrayList<Location> explored = new ArrayList<>();
         ArrayList<Location> unExplored = new ArrayList<>();
@@ -179,6 +193,7 @@ public class TaskHandler {
                     priority = priority + 10000;//considering normally the agent need done box tasks
                     Task task = new Task(taskId, agent.getId(), goal.getLocation(), priority);
                     taskId++;
+                    task.setGoalId(goal.getId()); //5/21 add goal id for mapping to a goal
                     data.addTask(task);
                 }
             }
@@ -257,6 +272,8 @@ public class TaskHandler {
                     matchedBoxes.add(matchedBox.getId()); // add matched box into restriction
 //                    taskId++;
                     //data.addTask(task1);
+                    task2.setGoalId(goal.getId()); //5/21 add goal id for mapping to a goal
+
                     data.addTask(task2);
                 }
 //                goalCount--;
@@ -367,27 +384,23 @@ public class TaskHandler {
             System.err.println("364 TaskId: " + taskId);
             Location targetLocation = findTargetLocation(obstacles, firstObstacle,data.getAgent(newAgentId).getLocation());//from the original cell to find a nearest cell match the requirements
             System.err.println("366 Target location: " + targetLocation);
-//                        temp_obstacles.add(targetLocation);// Add the location to restrictions
             // Find the best match agent
             int distance = getManhattanDistance(allAgents.get(newAgentId).getLocation(), allBoxes.get(newBoxId).getLocation()) + getManhattanDistance(allBoxes.get(newBoxId).getLocation(), targetLocation);
             int priority = distance * 10;
-//                    Task newTask_1 = new Task(taskId,newAgentId,-1,allBoxes.get(boxId).getLocation(),priority);
             Task newTask_2 = new Task(taskId, newAgentId, newBoxId, targetLocation, task.getPriority() - 1); // TOdo: set the priority
-//                    data.addTask(newTask_1);
             task.setPreviousTaskId(newTask_2.getId());
-            data.addTask(task);
+            data.addTask(task); //update original task
             System.err.println("Add task " + newTask_2.toString());
+            //deal with reverse tasks
+            data.setReverseTask(task);
             data.addTask(newTask_2);
         } else if (obj instanceof Agent) {
-//                    System.out.println("340 Location: "+location_temp);
-//            System.out.println("340 AgentID: " + newAgentId);
-            int taskId = data.getAllTasks().size() + 2;
+            int taskId = data.getAllTasks().size() + 1;
             Location targetLocation = findTargetLocation(obstacles, firstObstacle,data.getAgent(newAgentId).getLocation());
             System.err.println("352 targetLocation: " + targetLocation);
-//                        temp_obstacles.add(targetLocation);// Add the location to restrictions
             Task newTask = new Task(taskId, newAgentId, -1, targetLocation, 0);
             task.setPreviousTaskId(newTask.getId());
-            data.addTask(task);
+            data.addTask(task); //update original task
             System.err.println("Add task " + newTask.toString());
             data.addTask(newTask);
         }
@@ -515,6 +528,9 @@ public class TaskHandler {
         Task task = null;
         ArrayList<Integer> taskList = data.getAllTasksByAgent(agentId); //already in descending order
 //        System.err.println("Task list of agent " + agentId + " :" + taskList.toString());
+        //sort taskllist
+        int min = INFINITY;
+        Task bestTask=null;
         if (taskList != null){
             for (Integer taskId:taskList){
                 Task currentTask = data.getTaskById(taskId);
@@ -522,16 +538,22 @@ public class TaskHandler {
 
                 if (!currentTask.isCompleted()){ //check whether the task is completed，also check whether precondition tasks are completed
                     if(previousTaskId!=-1){
-                        if(data.getTaskById(previousTaskId).isCompleted()){
+                        if(data.getTaskById(previousTaskId).isCompleted() ){
                             task = data.getTaskById(taskId);
+                            if (task.getPriority()<min)
+                                bestTask = task;
+
                         }
                     }else {
                         task = data.getTaskById(taskId);
+                        if (task.getPriority()<min)
+                            bestTask = task;
+
                     }
                 }
             }
         }
-        return task;
+        return bestTask;
     }
 
     public void completeTask(int agentId) {

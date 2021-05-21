@@ -11,7 +11,6 @@ public class InMemoryDataSource {
     private static final InMemoryDataSource dataSource = new InMemoryDataSource();
     private int row;
     private int col;
-    private int[][] goalMap; //store id of goal on the map
     private int[][] agentMap; //id of agent
     private int[][] boxMap;//id of box
 
@@ -31,12 +30,15 @@ public class InMemoryDataSource {
     private HashMap<Location, Object> staticMap; //goal+wall
     private HashMap<Location, Wall> wallMap; //single wall map
 
+
     private HashMap<Location, Object> dynamicMap; //agent+box
     private HashMap<Location, Boolean> obstacleMap; //for low level to check if the cell is free
 
     private HashMap<Location, Integer> staticdegreeMap; // location+degree four direction arraylist?
 
-    private HashMap<Location, Integer> collisionHeatMap; // location+degree four direction arraylist?
+    private HashMap<Location, Integer> collisionHeatMap; // for storing history collision times on each location
+
+    private HashMap<Integer,Integer> goalToTaskMap; //given a goalId, return the task id   goalId --- taskId
 
 
 
@@ -60,6 +62,7 @@ public class InMemoryDataSource {
         wallMap = new HashMap<Location, Wall>();
         staticdegreeMap = new HashMap<Location, Integer>();
         collisionHeatMap = new HashMap<>();
+        goalToTaskMap = new HashMap<>();
 
     }
 
@@ -92,6 +95,9 @@ public class InMemoryDataSource {
 
     public void addTask(Task task) {
 //        System.err.println("[Add task] " + task.toString());
+        if (task.getGoalId() != -1){
+            goalToTaskMap.put(task.getGoalId(),task.getId());
+        }
         allTasks.put(task.getId(), task);
 
         int agentId = task.getAgentId();
@@ -226,6 +232,7 @@ public class InMemoryDataSource {
     }
 
 
+
     public HashMap<Location, Integer> getDegreeMap(){
         for (Map.Entry<Location,Wall> entry:wallMap.entrySet()){
             Location location = entry.getKey();
@@ -319,8 +326,16 @@ public class InMemoryDataSource {
     }
     public void setTaskAsComplete(int taskId) {
         Task task = allTasks.get(taskId);
+        Task task2;
         System.err.println("[TaskCompleted] " + task.toString());
         task.setCompleted(true);
+        if (task.getReverseTaskId() != -1) {
+            task2 = allTasks.get(task.getReverseTaskId());
+            task2.setCompleted(false);
+            System.err.println("[***************************]Set reverse task uncompleted " + task2.toString());
+            allTasks.put(task2.getId(),task2);
+
+        }
         allTasks.put(taskId,task);
 
     }
@@ -387,6 +402,46 @@ public class InMemoryDataSource {
                 System.err.println("Uncompleted: " + task.toString());
             }
         }
+
+    }
+
+    public void setReverseTask(Task task) {
+        Location location;
+        int goalId;
+        int taskId;
+        //if this task is completed, another task will be un-completed.
+        if (task.getBoxId() != -1){
+            location = this.getBox(task.getBoxId()).getLocation();
+        }
+        else
+            location = this.getAgent(task.getAgentId()).getLocation();
+
+        //check whether the start location has a goal
+        if (this.staticMap.containsKey(location)){
+            if (this.staticMap.get(location) instanceof Goal){{
+                goalId = ((Goal) this.staticMap.get(location)).getId();
+                taskId = goalToTaskMap.get(goalId);
+                Task task2 = getTaskById(taskId);
+                task2.setReverseTaskId(task.getId());
+                this.addTask(task2);
+                }
+            }
+        }
+
+    }
+
+
+      public boolean previousGoalCompleted(Task task) {
+        int goalId = task.getGoalId();
+        if (goalId != -1) {
+            if (allGoals.get(goalId).getPerviousGoalId() != -1){
+                int taskId =  goalToTaskMap.get(allGoals.get(goalId).getPerviousGoalId());
+                return this.getTaskById(taskId).isCompleted();
+            }
+            else return true;
+        }
+        else return true;
+
 
     }
 }

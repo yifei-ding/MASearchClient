@@ -24,7 +24,7 @@ public class HighLevelSolver {
         System.err.println("[HighLevelSolver] Solving...");
         Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
         int step=0;
-        int observingLimit=10; //end in x rounds of tasks, for observing how much it goes (x=5,10,...,INFINITY)
+        int observingLimit=INFINITY; //end in x rounds of tasks, for observing how much it goes (x=5,10,...,INFINITY)
         int count=0;
         while (data.countRemainingTask()>0 && (count < observingLimit)) {
             count++;
@@ -40,9 +40,10 @@ public class HighLevelSolver {
                 HighLevelState node = findBestNodeWithMinNumberOfConflict(tree);  //Heuristic: get a node with lowest cost/least conflicts; can replace with cardinal conflict (a conflict whose children has more cost)
                 System.err.println("[-------Constraints of the current pop out node-----]: " + node.getConstraints().size());
                 System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
-//                node.printSolution();
+                node.printSolution();
                 int minLength = getMinLength(node.getSolution());
                 if (minLength == INFINITY) {
+                    System.err.println("Min length = 1");
                     data.printRemainingTasks();
                     return finalSolution;
                 }
@@ -728,7 +729,7 @@ public class HighLevelSolver {
 
     private void updateTask(LocationPair[][] currentSolution) {
         for (int i = 0; i < currentSolution.length; i++) { //i=agentId
-            if (currentSolution[i].length<=w && currentSolution[i].length>1) //currentSolution[i].length>1?
+            if (currentSolution[i].length<=w && currentSolution[i].length>0) //currentSolution[i].length>1?
                 taskHandler.completeTask(i);
         }
     }
