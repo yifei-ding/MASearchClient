@@ -7,7 +7,7 @@ public class Goal {
     private Location location;
 
 
-    private int perviousGoalId;
+    private int perviousGoalId=-1;
     private boolean isCompleted;
 
     public int getPerviousGoalId() {

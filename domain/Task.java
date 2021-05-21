@@ -14,6 +14,8 @@ public class Task {
     private boolean isCompleted;
     private int previousTaskId;
     private static int counter = 0;
+    private int goalId = -1;
+    private int reverseTaskId = -1; //if the task is completed, the reverse task is no longer completed
 
     private static InMemoryDataSource data = InMemoryDataSource.getInstance();
 
@@ -54,6 +56,22 @@ public class Task {
         this.isCompleted = false;
         this.previousTaskId = -1; //5/15 debug: add default previousTaskId -1 to tasks without box
 
+    }
+
+    public int getGoalId() {
+        return goalId;
+    }
+
+    public void setGoalId(int goalId) {
+        this.goalId = goalId;
+    }
+
+    public int getReverseTaskId() {
+        return reverseTaskId;
+    }
+
+    public void setReverseTaskId(int reverseTaskId) {
+        this.reverseTaskId = reverseTaskId;
     }
 
     public Location getStartLocation() {
@@ -127,27 +145,18 @@ public class Task {
 
     @Override
     public String toString() {
-        if (boxId != -1) {
-            return "Task{" +
-                     "id=" + id + ", " +
-                    "box=" + data.getBox(boxId).toString() +
-                    ", agent=" + data.getAgent(agentId).toString() +
-                    ", targetLocation=" + targetLocation +
-//                    ", previousTask=" + previousTaskId +
-//                      ", priority=" + priority +
-//                     ", isCompleted=" + isCompleted +
-                    "}" + '\n';
-        }
-        else
-            return "Task{" +
-                     "id=" + id + ", "+
-                    "no box" +
-                    ", agent=" + data.getAgent(agentId).toString() +
-                    ", targetLocation=" + targetLocation +
-//                    ", previousTask=" + previousTaskId +
-//                    ", priority=" + priority +
-//                     ", isCompleted=" + isCompleted +
-                    "}" + '\n';
+        return "Task{" +
+                "id=" + id +
+                ", boxId=" + boxId +
+                ", agentId=" + agentId +
+                ", targetLocation=" + targetLocation +
+                ", priority=" + priority +
+//                ", isCompleted=" + isCompleted +
+//                ", previousTaskId=" + previousTaskId +
+                ", goalId=" + goalId +
+                ", reverseTaskId=" + reverseTaskId +
+//                ", startLocation=" + startLocation +
+                '}';
     }
 }
 
