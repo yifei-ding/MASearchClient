@@ -24,9 +24,9 @@ public class HighLevelSolver {
         System.err.println("[HighLevelSolver] Solving...");
         Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
         int step=0;
-        int observingLimit=INFINITY; //end in x rounds of tasks, for observing how much it goes (x=5,10,...,INFINITY)
+        int observingLimit=10; //end in x rounds of tasks, for observing how much it goes (x=5,10,...,INFINITY)
         int count=0;
-        while (data.countRemainingTask()>0 && (count < observingLimit )) {
+        while (data.countRemainingTask()>0 && (count < observingLimit)) {
             count++;
             w = 50;
             tree = new ArrayList<>();
@@ -40,7 +40,7 @@ public class HighLevelSolver {
                 HighLevelState node = findBestNodeWithMinNumberOfConflict(tree);  //Heuristic: get a node with lowest cost/least conflicts; can replace with cardinal conflict (a conflict whose children has more cost)
                 System.err.println("[-------Constraints of the current pop out node-----]: " + node.getConstraints().size());
                 System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
-                node.printSolution();
+//                node.printSolution();
                 int minLength = getMinLength(node.getSolution());
                 if (minLength == INFINITY) {
                     data.printRemainingTasks();
@@ -738,13 +738,13 @@ public class HighLevelSolver {
             int lastIndex = Math.min(currentSolution[i].length-1,w-1); //RHCR
             Location agentLocation = currentSolution[i][lastIndex].getAgentLocation(); //get latest agent location
             Location boxLocation = currentSolution[i][lastIndex].getBoxLocation(); //get latest box location
-            System.err.println("Set agent " + i + " at " + agentLocation.toString());
+//            System.err.println("Set agent " + i + " at " + agentLocation.toString());
             data.setAgentLocation(i,agentLocation); //update agent location in data
             Task task = taskHandler.pop(i);
             if (task != null) {
                 int boxId = task.getBoxId(); //get boxId
                 if (boxLocation!=null){
-                    System.err.println("Set box " + boxId  + " at " + boxLocation.toString());
+//                    System.err.println("Set box " + boxId  + " at " + boxLocation.toString());
                     data.setBoxLocation(boxId,boxLocation);
                 }
             }
