@@ -37,6 +37,7 @@ public class HighLevelState {
     public void addConstraint(Constraint constraint) {
         this.constraints.add(constraint);
     }
+
     public void addRangeConstraints(Constraint constraint, int length){
         int startTimeStep = constraint.getTimeStep();
         int endTimeStep = startTimeStep + length;
@@ -62,17 +63,50 @@ public class HighLevelState {
         }
     }
 
+    private void updateNumberOfConflicts(){
+        LocationPair[][] solution = this.getSolution();
+        for(int i =0;i<solution.length;i++) { //i=agent 1
+            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
+                LocationPair[] route1 = solution[i];
+                LocationPair[] route2 = solution[j];
+                //now we have one path each for agent1 and agent2
+                if ((route1 != null) && (route2 != null) && (route1.length>1) && (route2.length>1)){
+                    this.numberOfConflicts += countConflict(route1,route2);
+                }
+            }
+        }
+    }
+
+    private int countConflict(LocationPair[] route1, LocationPair[] route2) {
+        int count=0;
+        int minIndex = Math.min(route1.length, route2.length)-1;
+        for (int k=0; k< minIndex; k++){ //timestep
+            if (route1[k].overlaps(route2[k])) {
+              count++;
+            }
+            else if (route1[k+1].overlaps(route2[k])) {
+                count++;
+            }
+            else if (route1[k].overlaps(route2[k+1])) {
+                count++;
+            }
+        }
+        return count;
+    }
 
     public LocationPair[][] calculateSolution() {
         this.solution = LowLevelSolver.solveForAllAgents(this.constraints);
-        /**
-         * For checking whether all tasks in low level are solvable
-         */
+        if (validSolution())
+                this.updateNumberOfConflicts();
 
         return this.solution;
     }
 
     public LocationPair[][] getSolution() {
+        return  this.solution;
+    }
+
+    public boolean validSolution(){
         int i = -1;
         for (LocationPair[] singeAgentSolution: solution){
             i++;
@@ -81,12 +115,12 @@ public class HighLevelState {
 
             if (singeAgentSolution.length==0) {
                 System.err.println("[HighLevelState] Agent " + i + " doesn't have solution in low level");
-                return null;
+                return false;
             }
-
         }
-        return  this.solution;
+        return true;
     }
+
     public void printSolution(){
         //print solution
         System.err.println("[HighLevelState] Get solution:");

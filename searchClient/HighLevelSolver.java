@@ -24,8 +24,9 @@ public class HighLevelSolver {
         System.err.println("[HighLevelSolver] Solving...");
         Action[][] finalSolution  = new Action[data.getAllAgents().size()][];
         int step=0;
-        int count=0; //end in 5 rounds of tasks, to observe logs
-        while (data.countRemainingTask()>0) {
+        int observingLimit=INFINITY; //end in x rounds of tasks, for observing how much it goes (x=5,10,...,INFINITY)
+        int count=0;
+        while (data.countRemainingTask()>0 && (count < observingLimit )) {
             count++;
             w = 100;
             tree = new ArrayList<>();
@@ -35,7 +36,7 @@ public class HighLevelSolver {
             tree.add(initialState);
             System.err.println("[-------**********----------Current remaining tasks-----******---------]: " + data.countRemainingTask());
             while (!tree.isEmpty()) {
-                HighLevelState node = findBestNodeWithMinCost(tree);  //Heuristic: get a node with lowest cost; can replace with cardinal conflict (a conflict whose children has more cost)
+                HighLevelState node = findBestNodeWithMinNumberOfConflict(tree);  //Heuristic: get a node with lowest cost/least conflicts; can replace with cardinal conflict (a conflict whose children has more cost)
                 System.err.println("[-------Constraints of the current pop out node-----]: " + node.getConstraints().size());
                 System.err.println("[------------------Current CT tree size--------------]: " + tree.size());
                 node.printSolution();
@@ -48,7 +49,8 @@ public class HighLevelSolver {
                     updateLocation(currentSolution); //given each agent's solution, get the last element, and update agent/box location in data accordingly
                     updateTask(currentSolution); //set the task as completed
                     Action[][] action = translate(currentSolution); //translate
-                    action = addPadding2(action); //add NoOp to the end of short solutions if each solution is of different length TODO: can switch to RHCR
+                    //[IMPORTANT]NOTE: switch between addPadding and addPadding2 to switch between baseline and RHCR approach
+                    action = addPadding2(action); //add NoOp to the end of short solutions if each solution is of different length
 //                    printSolution(action);
                     finalSolution = concatenateSolution(finalSolution, action); //append current solution to final solution
                     break;
@@ -63,7 +65,7 @@ public class HighLevelSolver {
     }
 
     private boolean hasTargetConflict(HighLevelState state) {
-        return false; // 5/18 skip target conflict temporarily
+        return false; // skip target conflict
 //        LocationPair[][] solution = state.getSolution();
 //        for(int i =0;i<solution.length;i++) { //i=agent 1
 //            for (int j = i + 1; j < solution.length; j++) { //j=agent 2
@@ -410,7 +412,7 @@ public class HighLevelSolver {
                 }
             }
         }
-        else {
+        else { //MutualEdge
             if (locationPair2.getAgentLocation() != null)
                 temp = locationPair2.getAgentLocation();
             else
@@ -419,11 +421,15 @@ public class HighLevelSolver {
 //                System.err.println("Add constraint 3");
                 constraints.add(new Constraint(agentId, false, timeStep-1, temp));
                 constraints.add(new Constraint(agentId, false, timeStep, locationPair.getAgentLocation()));
+                constraints.add(new Constraint(agentId, false, timeStep+1, locationPair.getAgentLocation())); //avoid accessory conflicts
+
             }
             else if (locationPair.getBoxLocation() != null) {
 //                System.err.println("Add constraint 4");
                 constraints.add(new Constraint(agentId, true, timeStep-1, temp));
                 constraints.add(new Constraint(agentId, true, timeStep, locationPair.getBoxLocation()));
+                constraints.add(new Constraint(agentId, true, timeStep+1, locationPair.getBoxLocation()));  //avoid accessory conflicts
+
             }
         }
         return constraints;
@@ -546,6 +552,18 @@ public class HighLevelSolver {
         }
         return bestNode;
     }
+    private HighLevelState findBestNodeWithMinNumberOfConflict(ArrayList<HighLevelState> tree) {
+        int min = INFINITY;
+        HighLevelState bestNode = null;
+        for (HighLevelState node: tree){
+            if (node.getNumberOfConflicts() < min){
+                min = node.getNumberOfConflicts();
+                bestNode = node;
+            }
+        }
+        return bestNode;
+    }
+
 
     private boolean hasVertexConflict(HighLevelState state) {
         LocationPair[][] solution = state.getSolution();
@@ -562,6 +580,7 @@ public class HighLevelSolver {
         }
         return false;
     }
+
 
     private boolean hasVertexConflict(LocationPair[] route1, LocationPair[] route2) {
         int minIndex = Math.min(route1.length, route2.length);
@@ -815,12 +834,11 @@ public class HighLevelSolver {
      */
     private void addToTree(HighLevelState child) {
 //        System.err.println("[Check child] " + child.toString());
-        if (child.getSolution() != null) {
-            if (child.getCost() > 0 && !tree.contains(child)) {
-                System.err.println("[Add child]");
-                tree.add(child);
-            }
+        if (child.validSolution() && !tree.contains(child)) {
+            System.err.println("[Add child]");
+            tree.add(child);
         }
+
         else
             System.err.println("[Pruned]");
 

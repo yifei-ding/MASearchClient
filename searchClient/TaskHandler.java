@@ -520,7 +520,7 @@ public class TaskHandler {
                 Task currentTask = data.getTaskById(taskId);
                 int previousTaskId = currentTask.getPreviousTaskId();
 
-                if (!currentTask.isCompleted()){ //check whether the task is completed TODO:check whether precondition tasks are completed
+                if (!currentTask.isCompleted()){ //check whether the task is completed，also check whether precondition tasks are completed
                     if(previousTaskId!=-1){
                         if(data.getTaskById(previousTaskId).isCompleted()){
                             task = data.getTaskById(taskId);
