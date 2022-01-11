@@ -1,6 +1,6 @@
 ## Description
-Implement conflict-based search and Rolling-Horizon Collision Resolution (RHCR) for solving the multi-agent Sokoban tasks
-Reference: https://arxiv.org/pdf/2005.07371.pdf
+* Conflict-based search and Rolling-Horizon Collision Resolution (RHCR) for solving the multi-agent Sokoban tasks
+* Reference: https://arxiv.org/pdf/2005.07371.pdf
 
 # MASearchClient
 Run **build_and_run.sh** to build and run the client
